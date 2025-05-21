@@ -12,4 +12,9 @@ target/
 
 # Ignore markdown documentation
 *.md
-# Ignore Java class files
+# Ignore gitignore
+
+.gitignore
+
+# Ignore Dockerfile
+Dockerfile
