@@ -16,11 +16,11 @@ Spring Boot backend service for the **Sensei** .
 
 ## For Contributors (Developers):
 Follow the guidelines for programmers: \
-**[Developers Guide](https://github.com/SAARKSensei/sensei-app-backend/blob/vaishnav/CONTRIBUTING.md)**
+**[Developers Guide](https://github.com/SAARKSensei/Backend_Aws/blob/main/CONTRIBUTING.md)**
 
 ## For maintainers (Code Owners):
 Follow the guidelines for code owners: \
-**[Maintainers Guide](https://github.com/SAARKSensei/sensei-app-backend/blob/vaishnav/MAINTAINERS.md)**
+**[Maintainers Guide](https://github.com/SAARKSensei/Backend_Aws/blob/main/MAINTAINERS.md)**
 
 ---
 

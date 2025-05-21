@@ -15,8 +15,8 @@
 
 1. Clone the repo:
 ```sh
-   git clone https://github.com/SAARKSensei/sensei-app-backend.git
-   cd sensei-app-backend
+   git clone https://github.com/SAARKSensei/Backend_Aws.git
+   cd Backend_Aws/
 ```
 
 2. Build the project:
@@ -49,7 +49,7 @@ Test on http://localhost:9090/api/.....
 
 3. Sync your fork regularly:
 ```shell
-    git remote add upstream https://github.com/SAARKSensei/sensei-app-backend.git
+    git remote add upstream https://github.com/SAARKSensei/Backend_Aws.git
     git fetch upstream
     git checkout your-branch-name
     git merge upstream/main
@@ -64,11 +64,11 @@ Test on http://localhost:9090/api/.....
 
 6. Compare and Open a Pull Request on GitHub.\
 Go to the original repo: 
-- URL: `https://github.com/SAARKSensei/sensei-app-backend`
+- URL: `https://github.com/SAARKSensei/Backend_Aws`
 - Click `Contribute` → `Open pull request` \
 **Then: Check all fields are same as below**
 - Base repository: `SAARKSensei/sensei-app-backend`
-- Base branch: `test` (Make sure this branch is `test` for testing is done before server push. If not, please select it from dropdown.)
+- Base branch: **`test`** (Make sure this branch is `test` for testing is done before server push. If not, please select it from dropdown.)
 - Head repository: `your-username/your-forked-repo-name`
 - Compare: `your-branch`
 - Submit the PR with a clear title and description.
@@ -103,7 +103,7 @@ Again sync your fork regularly.
 
 If you find a bug or have a feature request:
 
-- Use the [GitHub Issues](https://github.com/SAARKSensei/sensei-app-backend/issues) tab.
+- Use the [GitHub Issues](https://github.com/SAARKSensei/Backend_Aws/issues) tab.
 - Include as much detail as possible (logs, screenshots, steps to reproduce).
 
 ---
