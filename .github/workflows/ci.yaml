@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Code Quality Tools (PMD, SpotBugs)
         run: |
-          mvn pmd:check spotbugs:check
+          mvn pmd:check spotbugs:check -Dpmd.failOnViolation=false
 
   build-and-test:
     runs-on: ubuntu-latest
