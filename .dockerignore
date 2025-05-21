@@ -1,0 +1,15 @@
+# Ignore build artifacts
+target/
+
+# Ignore Git directory
+.git/
+
+# Ignore CI/CD configs (not needed in container runtime)
+.github/
+
+# Ignore logs
+*.log
+
+# Ignore markdown documentation
+*.md
+# Ignore Java class files
