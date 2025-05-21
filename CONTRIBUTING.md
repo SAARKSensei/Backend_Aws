@@ -21,7 +21,7 @@
 
 2. Build the project:
 ```sh
-   ./mvnw clean package -DskipTests
+   mvn clean package -DskipTests
 ```
 
 3. Run locally with Docker:
@@ -52,7 +52,7 @@ Test on http://localhost:9090/api/.....
     git remote add upstream https://github.com/SAARKSensei/sensei-app-backend.git
     git fetch upstream
     git checkout your-branch-name
-    git merge upstream/your-branch-name
+    git merge upstream/main
 ```
 
 4. Make your changes and commit them to your branch.
