@@ -1,48 +1,44 @@
 package com.sensei.backend.entity;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "referral_codes")
 public class ReferralCode {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "uuid")
+	@Column(length = 36, updatable = false, nullable = false)
+	private String id;
 
-    // Use userId (Long) instead of User entity
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
-
-    @Column(nullable = false, unique = true, length = 50)
+    private String referrerUserId;
+    private String referredUserId;
     private String code;
+    private BigDecimal bonusAmount;
 
+    // ✅ Add this field
     @Column(name = "is_school", nullable = false)
     private Boolean isSchool;
+    
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-    // Getters and setters
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-
+    
+    // Getters
+    public String getId() { return id; }
+    public String getReferrerUserId() { return referrerUserId; }
+    public String getReferredUserId() { return referredUserId; }
     public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
-
+    public BigDecimal getBonusAmount() { return bonusAmount; }
     public Boolean getIsSchool() { return isSchool; }
-    public void setIsSchool(Boolean isSchool) { this.isSchool = isSchool; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    // Setters
+    public void setReferrerUserId(String referrerUserId) { this.referrerUserId = referrerUserId; }
+    public void setReferredUserId(String referredUserId) { this.referredUserId = referredUserId; }
+    public void setCode(String code) { this.code = code; }
+    public void setBonusAmount(BigDecimal bonusAmount) { this.bonusAmount = bonusAmount; }
+    public void setIsSchool(Boolean isSchool) { this.isSchool = isSchool; }
 }

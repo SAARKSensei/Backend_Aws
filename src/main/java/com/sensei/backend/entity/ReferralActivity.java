@@ -1,23 +1,28 @@
 package com.sensei.backend.entity;
 
 import javax.persistence.*;
+
+import org.hibernate.annotations.GenericGenerator;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "referral_activity")
 public class ReferralActivity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "uuid")
+	@Column(length = 36, updatable = false, nullable = false)
+	private String id;
 
     // Use referralCodeId (Long) instead of ReferralCode entity
     @Column(name = "referral_code_id", nullable = false)
-    private Long referralCodeId;
+    private String referralCodeId;
 
     // Use userId (Long) instead of User entity
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private String userId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -29,14 +34,14 @@ public class ReferralActivity {
 
     // Getters and setters
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public Long getReferralCodeId() { return referralCodeId; }
-    public void setReferralCodeId(Long referralCodeId) { this.referralCodeId = referralCodeId; }
+    public String getReferralCodeId() { return referralCodeId; }
+    public void setReferralCodeId(String referralCodeId) { this.referralCodeId = referralCodeId; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
