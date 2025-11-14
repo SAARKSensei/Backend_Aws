@@ -20,11 +20,14 @@ public class QuizAnswer {
 
     @Column(name = "answer_text", nullable = false)
     private String answerText;
+    
+    @Column(name = "is_correct", nullable = false)
+    private boolean isCorrect = false; // ✅ New field
 
     @ManyToOne
     @JoinColumn(name = "question_id")
     @JsonIgnore
-    private Question question;
+    private Questions question;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name = "lifeskill_id", referencedColumnName = "lifeskill_id")
@@ -36,9 +39,12 @@ public class QuizAnswer {
 
     public String getAnswerText() { return answerText; }
     public void setAnswerText(String answerText) { this.answerText = answerText; }
+    
+    public boolean isCorrect() { return isCorrect; }
+    public void setCorrect(boolean correct) { isCorrect = correct; }
 
-    public Question getQuestion() { return question; }
-    public void setQuestion(Question question) { this.question = question; }
+    public Questions getQuestion() { return question; }
+    public void setQuestion(Questions question) { this.question = question; }
 
     public LifeSkill getLifeSkill() { return lifeSkill; }
     public void setLifeSkill(LifeSkill lifeSkill) { this.lifeSkill = lifeSkill; }
