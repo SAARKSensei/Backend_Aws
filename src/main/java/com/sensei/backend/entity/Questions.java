@@ -1,58 +1,45 @@
 package com.sensei.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
-
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
+import java.util.List;
+import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "question")
 public class Questions {
+
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name="system-uuid",strategy = "uuid")
-    private String questionId;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "question_id", updatable = false, nullable = false)
+    private String questionId = UUID.randomUUID().toString();
 
-    private int questionNumber;
+    @Column(name = "question_text", nullable = false)
+    private String questionText;
 
-    private String questionName;
+    // ✅ Many questions belong to one life skill
+    @ManyToOne
+    @JoinColumn(name = "lifeskill_id") // FK column in question table
+    private LifeSkill lifeSkill;
 
-    @Column(columnDefinition = "TEXT")
-    private String senseiQuestion;
+    // One question has many answers
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<QuizAnswer> answers;
 
-    @Column(columnDefinition = "TEXT")
-    private String option1;
+    // Getters and setters
+    public String getQuestionId() { return questionId; }
+    public void setQuestionId(String questionId) { this.questionId = questionId; }
 
-    @Column(columnDefinition = "TEXT")
-    private String option2;
+    public String getQuestionText() { return questionText; }
+    public void setQuestionText(String questionText) { this.questionText = questionText; }
 
-    @Column(columnDefinition = "TEXT")
-    private String option3;
+    public List<QuizAnswer> getAnswers() { return answers; }
+    public void setAnswers(List<QuizAnswer> answers) { this.answers = answers; }
 
-    @Column(columnDefinition = "TEXT")
-    private String senseiAnswer;
-
-    @Column(columnDefinition = "TEXT")
-    private String correctAnswerDescription;
-
-    @Column(columnDefinition = "TEXT")
-    private String incorrectAnswerDescription;
-
-    @Column(columnDefinition = "TEXT")
-    private String questionImage;
-
-    private int digitalActivityRef;
-
-    // New Column
-    @Column(columnDefinition = "TEXT")
-    private String digitalActivityIdRef;
-
-    // New Column
-    @Column(columnDefinition = "TEXT")
-    private String nextQuestionIdRef;
+    public LifeSkill getLifeSkill() { return lifeSkill; }
+    public void setLifeSkill(LifeSkill lifeSkill) { this.lifeSkill = lifeSkill; }
 }
