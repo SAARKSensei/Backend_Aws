@@ -31,20 +31,47 @@ public class DigitalActivityController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DigitalActivityDTO> getDigitalActivityById(@PathVariable String id) {
-        Optional<DigitalActivityDTO> digitalActivity = digitalActivityService.getDigitalActivityById(id);
-        return digitalActivity.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<?> getDigitalActivityById(@PathVariable String id) {
+        try {
+            Optional<DigitalActivityDTO> digitalActivity = digitalActivityService.getDigitalActivityById(id);
+            if (digitalActivity.isPresent()) {
+                return ResponseEntity.ok(digitalActivity.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Digital Activity not found with id: " + id);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching Digital Activity: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DigitalActivityDTO> updateDigitalActivity(@PathVariable String id, @Valid @RequestBody DigitalActivityDTO digitalActivityDTO) {
-        DigitalActivityDTO updatedDigitalActivity = digitalActivityService.updateDigitalActivity(id, digitalActivityDTO);
-        return new ResponseEntity<>(updatedDigitalActivity, HttpStatus.OK);
+    public ResponseEntity<?> updateDigitalActivity(@PathVariable String id, @Valid @RequestBody DigitalActivityDTO digitalActivityDTO) {
+        try {
+            DigitalActivityDTO updated = digitalActivityService.updateDigitalActivity(id, digitalActivityDTO);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Update failed: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating Digital Activity: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDigitalActivity(@PathVariable String id) {
-        digitalActivityService.deleteDigitalActivity(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<?> deleteDigitalActivity(@PathVariable String id) {
+        try {
+            digitalActivityService.deleteDigitalActivity(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Delete failed: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting Digital Activity: " + e.getMessage());
+        }
     }
+
 }
