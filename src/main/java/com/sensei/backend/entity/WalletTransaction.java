@@ -1,45 +1,40 @@
 package com.sensei.backend.entity;
 
 import javax.persistence.*;
-
 import org.hibernate.annotations.GenericGenerator;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "wallet_transactions")  
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) 
-
+@Table(name = "wallet_transactions")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class WalletTransaction {
 
-	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "uuid")
-	@Column(length = 36, updatable = false, nullable = false)
-	private String id;
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(length = 36, updatable = false, nullable = false)
+    private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id")
-    @JsonIgnore 
+    @JsonIgnore
     private Wallet wallet;
 
     @Column(name = "user_id", nullable = false)
     private String userId;
 
     @Column(name = "transaction_type", nullable = false)
-    private String transactionType;
+    private String transactionType;  // RAZORPAY_PAYMENT, REFERRAL_BONUS, PLAN_PURCHASE
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-    @Column
+    @Column(length = 500)
     private String description;
 
-    // ✅ match your DB column name: created_at
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -48,7 +43,7 @@ public class WalletTransaction {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Getters & Setters
+    // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 

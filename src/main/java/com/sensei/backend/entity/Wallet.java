@@ -15,7 +15,7 @@ public class Wallet {
     @Column(length = 36, updatable = false, nullable = false)
     private String id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false, unique = true)
     private String userId;
 
     @Column(nullable = false, precision = 10, scale = 2)
@@ -26,7 +26,6 @@ public class Wallet {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-    
 
     @PrePersist
     protected void onCreate() {
@@ -40,45 +39,19 @@ public class Wallet {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // ✅ Getters and Setters
-    public String getId() {
-        return id;
-    }
+    // Getters and Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    // ❌ FIXED: your earlier code used setId(Wallet id) (wrong parameter type)
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
-    public String getUserId() {
-        return userId;
-    }
+    public BigDecimal getBalance() { return balance; }
+    public void setBalance(BigDecimal balance) { this.balance = balance; }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

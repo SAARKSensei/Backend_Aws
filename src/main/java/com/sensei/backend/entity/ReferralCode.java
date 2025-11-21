@@ -1,44 +1,61 @@
 package com.sensei.backend.entity;
 
 import javax.persistence.*;
-
 import org.hibernate.annotations.GenericGenerator;
-
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "referral_codes")
 public class ReferralCode {
 
-	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "uuid")
-	@Column(length = 36, updatable = false, nullable = false)
-	private String id;
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(length = 36, updatable = false, nullable = false)
+    private String id;
 
-    private String referrerUserId;
-    private String referredUserId;
-    private String code;
-    private BigDecimal bonusAmount;
+    @Column(name = "referrer_user_id", nullable = false)
+    private String referrerUserId;  // User who owns this code
 
-    // ✅ Add this field
+    @Column(name = "code", unique = true, nullable = false, length = 20)
+    private String code;  // Auto-generated referral code (e.g., "SHAAN8472")
+
+    @Column(name = "usage_count", nullable = false)
+    private Integer usageCount = 0;  // How many times this code has been used
+
+    @Column(name = "max_usage_limit", nullable = false)
+    private Integer maxUsageLimit = 5;  // Maximum 5 uses
+
     @Column(name = "is_school", nullable = false)
-    private Boolean isSchool;
-    
+    private Boolean isSchool = false;  // Special flag for school codes
 
-    
-    // Getters
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+    // Getters and Setters
     public String getId() { return id; }
-    public String getReferrerUserId() { return referrerUserId; }
-    public String getReferredUserId() { return referredUserId; }
-    public String getCode() { return code; }
-    public BigDecimal getBonusAmount() { return bonusAmount; }
-    public Boolean getIsSchool() { return isSchool; }
+    public void setId(String id) { this.id = id; }
 
-    // Setters
+    public String getReferrerUserId() { return referrerUserId; }
     public void setReferrerUserId(String referrerUserId) { this.referrerUserId = referrerUserId; }
-    public void setReferredUserId(String referredUserId) { this.referredUserId = referredUserId; }
+
+    public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
-    public void setBonusAmount(BigDecimal bonusAmount) { this.bonusAmount = bonusAmount; }
+
+    public Integer getUsageCount() { return usageCount; }
+    public void setUsageCount(Integer usageCount) { this.usageCount = usageCount; }
+
+    public Integer getMaxUsageLimit() { return maxUsageLimit; }
+    public void setMaxUsageLimit(Integer maxUsageLimit) { this.maxUsageLimit = maxUsageLimit; }
+
+    public Boolean getIsSchool() { return isSchool; }
     public void setIsSchool(Boolean isSchool) { this.isSchool = isSchool; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
