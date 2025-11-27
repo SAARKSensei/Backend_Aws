@@ -1,11 +1,11 @@
 package com.sensei.backend.controller;
 
-import com.sensei.backend.entity.Question;
+import com.sensei.backend.entity.Questiontable;
 import com.sensei.backend.entity.LifeSkill;
 import com.sensei.backend.dto.QuizResultDTO;
 import com.sensei.backend.dto.QuizSubmitRequest;
 import com.sensei.backend.service.QuizResultService;
-import com.sensei.backend.repository.QuestionRepository;
+import com.sensei.backend.repository.QuestiontableRepository;
 import com.sensei.backend.repository.LifeSkillRepository;
 
 import org.springframework.web.bind.annotation.*;
@@ -18,21 +18,21 @@ import java.util.*;
 @RequestMapping("/api")
 public class QuizController {
 
-    private final QuestionRepository questionRepository;
+    private final QuestiontableRepository questiontableRepository;
     private final QuizResultService quizResultService;
     private final LifeSkillRepository lifeSkillRepository;
 
-    public QuizController(QuestionRepository questionRepository,
+    public QuizController(QuestiontableRepository questiontableRepository,
                           QuizResultService quizResultService,
                           LifeSkillRepository lifeSkillRepository) {
-        this.questionRepository = questionRepository;
+        this.questiontableRepository = questiontableRepository;
         this.quizResultService = quizResultService;
         this.lifeSkillRepository = lifeSkillRepository;
     }
 
     // ✅ Create new Question (with auto LifeSkill linking)
     @PostMapping("/question")
-    public ResponseEntity<?> createQuestion(@RequestBody Question question) {
+    public ResponseEntity<?> createQuestion(@RequestBody Questiontable question) {
         try {
             // ✅ Handle Question-level LifeSkill
             if (question.getLifeSkill() != null && question.getLifeSkill().getLifeskillName() != null) {
@@ -65,7 +65,7 @@ public class QuizController {
                 });
             }
 
-            Question savedQuestion = questionRepository.save(question);
+            Questiontable savedQuestion = questiontableRepository.save(question);
             return ResponseEntity.ok(savedQuestion);
 
         } catch (Exception e) {
@@ -75,22 +75,15 @@ public class QuizController {
 
     // ✅ Get all questions
     @GetMapping("/question")
-    public List<Question> getAllQuestions() {
-        return questionRepository.findAll();
+    public List<Questiontable> getAllQuestions() {
+        return questiontableRepository.findAll();
     }
 
     @PostMapping("/submit")
-    public ResponseEntity<Map<String, Object>> submitQuiz(@RequestBody QuizSubmitRequest request) {
-        Map<String, Object> result = quizResultService.saveQuizResultAndGetSummary(request);
-        return ResponseEntity.ok(result);
+    public Map<String, Object> submitQuiz(@RequestBody QuizResultDTO quizResultDTO) {
+        return quizResultService.saveQuizResultAndGetSummary(quizResultDTO);
     }
 
-
-    // ✅ Get LifeSkill scores (raw counts)
-    @GetMapping("/quiz-results/child/{childId}")
-    public ResponseEntity<Map<String, Integer>> getScores(@PathVariable String childId) {
-        return ResponseEntity.ok(quizResultService.getLifeSkillScores(childId));
-    }
 
     // ✅ Get all LifeSkills
     @GetMapping("/lifeskills")

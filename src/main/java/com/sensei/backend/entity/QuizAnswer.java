@@ -2,7 +2,7 @@ package com.sensei.backend.entity;
 
 import org.hibernate.annotations.GenericGenerator;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import java.util.UUID;
 
@@ -23,8 +23,8 @@ public class QuizAnswer {
 
     @ManyToOne
     @JoinColumn(name = "question_id")
-    @JsonIgnore
-    private Question question;
+    @JsonBackReference
+    private Questiontable question;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name = "lifeskill_id", referencedColumnName = "lifeskill_id")
@@ -37,8 +37,8 @@ public class QuizAnswer {
     public String getAnswerText() { return answerText; }
     public void setAnswerText(String answerText) { this.answerText = answerText; }
 
-    public Question getQuestion() { return question; }
-    public void setQuestion(Question question) { this.question = question; }
+    public Questiontable getQuestion() { return question; }
+    public void setQuestion(Questiontable question) { this.question = question; }
 
     public LifeSkill getLifeSkill() { return lifeSkill; }
     public void setLifeSkill(LifeSkill lifeSkill) { this.lifeSkill = lifeSkill; }

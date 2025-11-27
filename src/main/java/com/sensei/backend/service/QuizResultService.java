@@ -7,41 +7,43 @@ import com.sensei.backend.entity.QuizResult;
 import com.sensei.backend.repository.LifeSkillRepository;
 import com.sensei.backend.repository.QuizAnswerRepository;
 import com.sensei.backend.repository.QuizResultRepository;
-import com.sensei.backend.repository.QuestionRepository;
+import com.sensei.backend.repository.QuestiontableRepository;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.*;
 
+@Transactional
 @Service
 public class QuizResultService {
 
     private final QuizResultRepository quizResultRepository;
     private final QuizAnswerRepository quizAnswerRepository;
     private final LifeSkillRepository lifeSkillRepository;
-    private final QuestionRepository questionRepository;
+    private final QuestiontableRepository questiontableRepository;
 
     public QuizResultService(QuizResultRepository quizResultRepository,
                              QuizAnswerRepository quizAnswerRepository,
                              LifeSkillRepository lifeSkillRepository,
-                             QuestionRepository questionRepository) {
+                             QuestiontableRepository questiontableRepository) {
         this.quizResultRepository = quizResultRepository;
         this.quizAnswerRepository = quizAnswerRepository;
         this.lifeSkillRepository = lifeSkillRepository;
-        this.questionRepository = questionRepository;
+        this.questiontableRepository = questiontableRepository;
     }
 
     // ✅ Save quiz and return summary
     public Map<String, Object> saveQuizResultAndGetSummary(QuizResultDTO quizResultDTO) {
         System.out.println("✅ Quiz submitted for childId: " + quizResultDTO.getChildId());
 
-        // 🧹 Step 1: Delete old results for the same child (to avoid duplication)
+        // 🧹 Step 1: Delete old results for the same child
         quizResultRepository.deleteByChildId(quizResultDTO.getChildId());
 
         // 🧩 Step 2: Create new QuizResult entity
         QuizResult quizResult = new QuizResult();
         quizResult.setChildId(quizResultDTO.getChildId());
 
-        // 🧠 Step 3: Collect selected answers from the map (questionId -> answerId)
+        // 🧠 Step 3: Collect selected answers from map (questionId -> answerId)
         Map<UUID, UUID> answerSelections = quizResultDTO.getAnswerSelections();
         if (answerSelections == null || answerSelections.isEmpty()) {
             throw new RuntimeException("No answers submitted!");
@@ -50,9 +52,7 @@ public class QuizResultService {
         List<QuizAnswer> selectedAnswers = new ArrayList<>();
 
         for (Map.Entry<UUID, UUID> entry : answerSelections.entrySet()) {
-            UUID questionId = entry.getKey();
             UUID answerId = entry.getValue();
-
             quizAnswerRepository.findById(answerId.toString()).ifPresent(selectedAnswers::add);
         }
 
@@ -60,31 +60,29 @@ public class QuizResultService {
         quizResult.setSelectedAnswers(selectedAnswers);
         quizResultRepository.save(quizResult);
 
-        // ✅ Step 5: Return summary (strong / needAttention)
-        return getQuizSummary(quizResultDTO.getChildId());
+        // ✅ Step 5: Generate summary (strong / needAttention)
+        return getQuizSummaryBasedOnSelections(selectedAnswers);
     }
 
-
-    // ✅ Generate summary of Life Skills
-    public Map<String, Object> getQuizSummary(String childId) {
+    // ✅ Generate summary directly from selected answers
+    private Map<String, Object> getQuizSummaryBasedOnSelections(List<QuizAnswer> selectedAnswers) {
         Map<String, Object> summary = new HashMap<>();
-
-        Map<String, Integer> skillScores = getLifeSkillScores(childId);
 
         Set<String> strong = new LinkedHashSet<>();
         Set<String> needAttention = new LinkedHashSet<>();
 
-        // Fetch all life skills from DB
+        // ✅ Step 1: Collect life skills from selected answers
+        for (QuizAnswer answer : selectedAnswers) {
+            if (answer.getLifeSkill() != null) {
+                strong.add(answer.getLifeSkill().getLifeskillName());
+            }
+        }
+
+        // ✅ Step 2: Get all life skills from DB and find which are missing
         List<LifeSkill> allSkills = lifeSkillRepository.findAll();
-
         for (LifeSkill skill : allSkills) {
-            String skillName = skill.getLifeskillName();
-            int score = skillScores.getOrDefault(skillName, 0);
-
-            if (score >= 1) {
-                strong.add(skillName);
-            } else {
-                needAttention.add(skillName);
+            if (!strong.contains(skill.getLifeskillName())) {
+                needAttention.add(skill.getLifeskillName());
             }
         }
 
@@ -92,22 +90,5 @@ public class QuizResultService {
         summary.put("needAttention", new ArrayList<>(needAttention));
 
         return summary;
-    }
-
-    // ✅ Calculate how many times each life skill appears
-    public Map<String, Integer> getLifeSkillScores(String childId) {
-        List<QuizResult> results = quizResultRepository.findByChildId(childId);
-        Map<String, Integer> scoreMap = new HashMap<>();
-
-        for (QuizResult result : results) {
-            for (QuizAnswer answer : result.getSelectedAnswers()) {
-                if (answer.getLifeSkill() != null) {
-                    String skillName = answer.getLifeSkill().getLifeskillName();
-                    scoreMap.put(skillName, scoreMap.getOrDefault(skillName, 0) + 1);
-                }
-            }
-        }
-
-        return scoreMap;
     }
 }
