@@ -7,7 +7,7 @@ import com.sensei.backend.entity.QuizResult;
 import com.sensei.backend.repository.LifeSkillRepository;
 import com.sensei.backend.repository.QuizAnswerRepository;
 import com.sensei.backend.repository.QuizResultRepository;
-import com.sensei.backend.repository.QuestionsRepository;
+import com.sensei.backend.repository.QuestiontableRepository;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -20,16 +20,16 @@ public class QuizResultService {
     private final QuizResultRepository quizResultRepository;
     private final QuizAnswerRepository quizAnswerRepository;
     private final LifeSkillRepository lifeSkillRepository;
-    private final QuestionsRepository questionsRepository;
+    private final QuestiontableRepository questiontableRepository;
 
     public QuizResultService(QuizResultRepository quizResultRepository,
                              QuizAnswerRepository quizAnswerRepository,
                              LifeSkillRepository lifeSkillRepository,
-                             QuestionsRepository questionsRepository) {
+                             QuestiontableRepository questiontableRepository) {
         this.quizResultRepository = quizResultRepository;
         this.quizAnswerRepository = quizAnswerRepository;
         this.lifeSkillRepository = lifeSkillRepository;
-        this.questionsRepository = questionsRepository;
+        this.questiontableRepository = questiontableRepository;
     }
 
     // ✅ Save quiz and return summary
