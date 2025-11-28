@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class QuizSubmitRequest {
-    private String childId;
+    private String childId;  //UUID stored as String
     private List<UUID> selectedAnswers;
 
     public String getChildId() { 

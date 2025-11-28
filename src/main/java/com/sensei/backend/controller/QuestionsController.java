@@ -1,6 +1,6 @@
 package com.sensei.backend.controller;
 
-import com.sensei.backend.entity.Question;
+import com.sensei.backend.entity.Questions;
 import com.sensei.backend.dto.QuestionsDTO;
 import com.sensei.backend.service.QuestionsService;
 import org.apache.http.HttpStatus;
@@ -18,14 +18,14 @@ public class QuestionsController {
     @Autowired
     private QuestionsService questionsService;
 
-    // ✅ Create Question linked to a specific DigitalActivity
+    // ✅ Create Question directly
     @PostMapping
-    public ResponseEntity<Question> createQuestion(@Valid @RequestBody Question question) {
-        Question saved = questionsService.createQuestion(question, question.getDigitalActivityIdRef());
+    public ResponseEntity<Questions> createQuestion(@Valid @RequestBody Questions questions) {
+        Questions saved = questionsService.createQuestion(questions, questions.getDigitalActivityIdRef());
         return ResponseEntity.status(201).body(saved);
     }
 
-    // ✅ Create from DTO (optional)
+    // ✅ Create Question using DTO
     @PostMapping("/dto")
     public ResponseEntity<QuestionsDTO> createQuestionFromDTO(
             @Valid @RequestBody QuestionsDTO dto,
@@ -35,16 +35,18 @@ public class QuestionsController {
         return ResponseEntity.status(201).body(savedDto);
     }
 
+    // ✅ Get all questions
     @GetMapping
     public ResponseEntity<List<QuestionsDTO>> getAllQuestions() {
         List<QuestionsDTO> dtos = questionsService.getAllQuestionsDTO();
         return ResponseEntity.ok().body(dtos);
     }
 
+    // ✅ Get question by ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getQuestionById(@PathVariable String id) {
         try {
-            Optional<Question> opt = questionsService.findById(id);
+            Optional<Questions> opt = questionsService.findById(id);
             if (opt.isPresent()) {
                 return ResponseEntity.ok(opt.get());
             } else {
@@ -57,10 +59,11 @@ public class QuestionsController {
         }
     }
 
+    // ✅ Update Question
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateQuestion(@PathVariable String id, @Valid @RequestBody Question updated) {
+    public ResponseEntity<?> updateQuestion(@PathVariable String id, @Valid @RequestBody Questions updated) {
         try {
-            Question saved = questionsService.updateQuestion(id, updated);
+            Questions saved = questionsService.updateQuestion(id, updated);
             return ResponseEntity.ok(saved);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.SC_NOT_FOUND)
@@ -71,6 +74,7 @@ public class QuestionsController {
         }
     }
 
+    // ✅ Delete Question
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteQuestion(@PathVariable String id) {
         try {

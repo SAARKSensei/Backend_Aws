@@ -24,7 +24,7 @@ public class WalletController {
     private WalletTransactionRepository transactionRepository;
 
     /**
-     * Step 1: Create Razorpay order (frontend calls before opening payment gateway)
+     * Create Razorpay order
      */
     @PostMapping("/payment/createOrder")
     public ResponseEntity<?> createOrder(@RequestParam BigDecimal amount) {
@@ -38,7 +38,7 @@ public class WalletController {
     }
 
     /**
-     * Step 2: Verify payment (frontend calls after Razorpay payment success)
+     * ✅ Verify payment (uses dual tracking)
      */
     @PostMapping("/payment/verify")
     public ResponseEntity<?> verifyPayment(@RequestBody WalletPaymentRequest request) {
@@ -59,10 +59,10 @@ public class WalletController {
     public ResponseEntity<?> getBalance(@RequestParam String userId) {
         try {
             BigDecimal balance = walletService.getBalance(userId);
-            Map<String, Object> response = new HashMap<>();
-            response.put("userId", userId);
-            response.put("balance", balance);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of(
+                "userId", userId,
+                "balance", balance
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
@@ -70,7 +70,7 @@ public class WalletController {
     }
 
     /**
-     * Get transaction history
+     * Get wallet transaction history
      */
     @GetMapping("/transactions")
     public ResponseEntity<?> getTransactions(@RequestParam String userId) {
@@ -80,12 +80,14 @@ public class WalletController {
     }
 
     /**
-     * Purchase plan using wallet balance
+     * ✅ UPDATED: Purchase plan with dual tracking
      */
     @PostMapping("/purchase-plan")
     public ResponseEntity<?> purchasePlan(
             @RequestParam String userId,
-            @RequestParam String planType) {  // "99" or "199"
+            @RequestParam(required = false) String parentId,
+            @RequestParam String planType,
+            @RequestParam(required = false) String referralCode) {
         try {
             BigDecimal planCost;
             
@@ -98,20 +100,26 @@ public class WalletController {
                     .body(Map.of("error", "Invalid plan type. Use '99' or '199'"));
             }
             
-            // Deduct from wallet
-            walletService.deductFromWallet(userId, planCost, 
-                "Purchased ₹" + planType + " plan");
+            // ✅ Use dual tracking method
+            walletService.deductMoneyWithTracking(
+                userId,
+                parentId != null ? parentId : userId,
+                planCost,
+                "plan_" + planType,
+                "PLAN_" + planType,
+                referralCode,
+                BigDecimal.ZERO, // No discount for now
+                "Purchased ₹" + planType + " plan"
+            );
             
-            // Get updated balance
             BigDecimal newBalance = walletService.getBalance(userId);
             
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "✅ Plan purchased successfully!");
-            response.put("planType", planType);
-            response.put("amountDeducted", planCost);
-            response.put("remainingBalance", newBalance);
-            
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of(
+                "message", "✅ Plan purchased successfully!",
+                "planType", planType,
+                "amountDeducted", planCost,
+                "remainingBalance", newBalance
+            ));
             
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()

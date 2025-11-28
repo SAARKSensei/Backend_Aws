@@ -1,9 +1,9 @@
 package com.sensei.backend.service;
 
 import com.sensei.backend.entity.DigitalActivity;
-import com.sensei.backend.entity.Question;
+import com.sensei.backend.entity.Questions;
 import com.sensei.backend.dto.QuestionsDTO;
-import com.sensei.backend.repository.QuestionRepository;
+import com.sensei.backend.repository.QuestionsRepository;
 import com.sensei.backend.repository.DigitalActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,13 +15,13 @@ import java.util.stream.Collectors;
 public class QuestionsService {
 
     @Autowired
-    private QuestionRepository questionRepository;
+    private QuestionsRepository questionsRepository;
 
     @Autowired
     private DigitalActivityRepository digitalActivityRepository;
 
     // Create question linked to DigitalActivity
-    public Question createQuestion(Question question, String digitalActivityId) {
+    public Questions createQuestion(Questions question, String digitalActivityId) {
         if (question.getQuestionId() == null || question.getQuestionId().isEmpty()) {
             question.setQuestionId(UUID.randomUUID().toString());
         }
@@ -38,12 +38,12 @@ public class QuestionsService {
 
         autoSetOptionStatuses(question);
 
-        return questionRepository.save(question);
+        return questionsRepository.save(question);
     }
 
     // Create from DTO
     public QuestionsDTO createQuestionFromDTO(QuestionsDTO dto, String digitalActivityId) {
-        Question q = new Question();
+        Questions q = new Questions();
         q.setQuestionId(dto.getQuestionId() != null ? dto.getQuestionId() : UUID.randomUUID().toString());
         q.setQuestion(dto.getQuestionName());
         q.setSenseiQuestion(dto.getSenseiQuestion());
@@ -71,23 +71,23 @@ public class QuestionsService {
 
         autoSetOptionStatuses(q);
 
-        Question saved = questionRepository.save(q);
+        Questions saved = questionsRepository.save(q);
         return convertToDTO(saved);
     }
 
     // Get all questions as DTOs
     public List<QuestionsDTO> getAllQuestionsDTO() {
-        return questionRepository.findAll().stream()
+        return questionsRepository.findAll().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    public Optional<Question> findById(String id) {
-        return questionRepository.findById(id);
+    public Optional<Questions> findById(String id) {
+        return questionsRepository.findById(id);
     }
 
-    public Question updateQuestion(String id, Question updated) {
-        Question existing = questionRepository.findById(id)
+    public Questions updateQuestion(String id, Questions updated) {
+        Questions existing = questionsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
 
         existing.setQuestion(updated.getQuestion());
@@ -110,15 +110,15 @@ public class QuestionsService {
         existing.setOption3Hint(null);
 
         autoSetOptionStatuses(existing);
-        return questionRepository.save(existing);
+        return questionsRepository.save(existing);
     }
 
     public void deleteQuestion(String id) {
-        questionRepository.deleteById(id);
+        questionsRepository.deleteById(id);
     }
 
     // Convert entity → DTO
-    public QuestionsDTO convertToDTO(Question q) {
+    public QuestionsDTO convertToDTO(Questions q) {
         QuestionsDTO dto = new QuestionsDTO();
         dto.setQuestionId(q.getQuestionId());
         dto.setQuestionNumber(q.getQuestionNumber());
@@ -154,7 +154,7 @@ public class QuestionsService {
     }
 
     // Auto mark correct/wrong
-    public void autoSetOptionStatuses(Question q) {
+    public void autoSetOptionStatuses(Questions q) {
         String correct = normalize(q.getSenseiAnswer());
 
         if (q.getOption1() != null)
@@ -176,7 +176,7 @@ public class QuestionsService {
         return s == null ? "" : s.trim().replaceAll("\\s+", " ");
     }
     
-    public QuestionsDTO convertToDTOWithoutHints(Question q) {
+    public QuestionsDTO convertToDTOWithoutHints(Questions q) {
         QuestionsDTO dto = new QuestionsDTO();
 
         dto.setQuestionId(q.getQuestionId());

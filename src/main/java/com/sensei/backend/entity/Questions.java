@@ -7,14 +7,13 @@ import org.hibernate.annotations.GenericGenerator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "questions")
-public class Question{
+public class Questions{
 
-	    @Id
-	    @GeneratedValue(generator = "UUID")
-	    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-	    @Column(name = "questionId", updatable = false, nullable = false)
-	    private String questionId;
+    @Id
+	@GeneratedValue(generator = "UUID")
+	@GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+	@Column(name = "questionId", updatable = false, nullable = false)
+	private String questionId;
 
 
     private String question;
