@@ -26,18 +26,14 @@ public class ReferralService {
 
     /**
      * Generate unique referral code for new user
-     * Format: USERNAME + 4-digit random number (e.g., "SHAAN8472")
      */
     public String generateUniqueReferralCode(String userName) {
-        // Extract only alphabets and convert to uppercase
         String baseCode = userName.toUpperCase().replaceAll("[^A-Z]", "");
         
-        // If name has no alphabets, use "USER"
         if (baseCode.isEmpty()) {
             baseCode = "USER";
         }
         
-        // Limit to first 6 characters
         if (baseCode.length() > 6) {
             baseCode = baseCode.substring(0, 6);
         }
@@ -45,9 +41,8 @@ public class ReferralService {
         String code;
         Random random = new Random();
         
-        // Keep generating until we find a unique code
         do {
-            int randomNum = 1000 + random.nextInt(9000); // 4-digit number
+            int randomNum = 1000 + random.nextInt(9000);
             code = baseCode + randomNum;
         } while (referralCodeRepository.existsByCode(code));
         
@@ -59,7 +54,6 @@ public class ReferralService {
      */
     @Transactional
     public ReferralCode createReferralCodeForUser(String userId, String userName, Boolean isSchool) {
-        // Check if user already has a code
         if (referralCodeRepository.findByReferrerUserId(userId).isPresent()) {
             throw new RuntimeException("User already has a referral code!");
         }
@@ -77,8 +71,7 @@ public class ReferralService {
     }
 
     /**
-     * Apply referral code when new user signs up
-     * Gives ₹100 to both code owner and new user
+     * ✅ UPDATED: Apply referral code with dual tracking
      */
     @Transactional
     public String applyReferral(String code, String referredUserId) {
@@ -93,7 +86,7 @@ public class ReferralService {
             throw new RuntimeException("You have already used a referral code!");
         }
         
-        // Step 3: Check if code has reached maximum usage (5 times)
+        // Step 3: Check if code has reached maximum usage
         if (referral.getUsageCount() >= referral.getMaxUsageLimit()) {
             throw new RuntimeException(
                 String.format("This referral code has reached its maximum usage limit (%d/%d)!",
@@ -101,14 +94,14 @@ public class ReferralService {
             );
         }
         
-        // Step 4: Give ₹100 to code owner (referrer)
+        // ✅ Step 4: Give ₹100 to code owner (with dual tracking)
         walletService.addReferralBonus(
             referral.getReferrerUserId(),
             BigDecimal.valueOf(100),
             "Referral bonus: User " + referredUserId + " used your code " + code
         );
         
-        // Step 5: Give ₹100 to new user (referred)
+        // ✅ Step 5: Give ₹100 to new user (with dual tracking)
         walletService.addReferralBonus(
             referredUserId,
             BigDecimal.valueOf(100),
@@ -119,7 +112,7 @@ public class ReferralService {
         referral.setUsageCount(referral.getUsageCount() + 1);
         referralCodeRepository.save(referral);
         
-        // Step 7: Record activity in referral_activity table
+        // Step 7: Record activity
         ReferralActivity activity = new ReferralActivity();
         activity.setReferralCodeId(referral.getId());
         activity.setReferredUserId(referredUserId);
@@ -140,3 +133,4 @@ public class ReferralService {
             .orElseThrow(() -> new RuntimeException("No referral code found for user: " + userId));
     }
 }
+

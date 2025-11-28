@@ -3,8 +3,14 @@ package com.sensei.backend.service;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.Utils;
+import com.sensei.backend.dto.TransactionRequest;
+import com.sensei.backend.entity.TransactionMaster;
 import com.sensei.backend.entity.Wallet;
 import com.sensei.backend.entity.WalletTransaction;
+import com.sensei.backend.enums.PaymentGateway;
+import com.sensei.backend.enums.PaymentMethod;
+import com.sensei.backend.enums.TransactionStatus;
+import com.sensei.backend.enums.TransactionType;
 import com.sensei.backend.repository.WalletRepository;
 import com.sensei.backend.repository.WalletTransactionRepository;
 import org.json.JSONObject;
@@ -32,6 +38,9 @@ public class WalletService {
     private final WalletTransactionRepository transactionRepository;
 
     @Autowired
+    private TransactionMasterService transactionMasterService; // ✅ NEW: For dual tracking
+
+    @Autowired
     public WalletService(WalletRepository walletRepository,
                          WalletTransactionRepository transactionRepository,
                          @Value("${razorpay.key.id}") String keyId,
@@ -43,12 +52,13 @@ public class WalletService {
         this.client = new RazorpayClient(this.keyId, this.keySecret);
     }
 
+    // ==================== EXISTING METHODS (Keep as is) ====================
+
     /**
      * Create a new wallet for user with ₹0 balance
      */
     @Transactional
     public Wallet createWallet(String userId) {
-        // Check if wallet already exists
         if (walletRepository.findByUserId(userId).isPresent()) {
             throw new RuntimeException("Wallet already exists for user: " + userId);
         }
@@ -75,11 +85,9 @@ public class WalletService {
 
     /**
      * Create Razorpay order for adding money to wallet
-     * Amount is in rupees (e.g., 200 means ₹200)
      */
     public Map<String, Object> createOrder(BigDecimal amount) {
         try {
-            // Convert rupees to paise (200 → 20000)
             int amountInPaise = amount.multiply(BigDecimal.valueOf(100)).intValue();
 
             JSONObject options = new JSONObject();
@@ -102,7 +110,204 @@ public class WalletService {
     }
 
     /**
-     * Verify Razorpay payment and add money to wallet
+     * Get wallet balance
+     */
+    public BigDecimal getBalance(String userId) {
+        return walletRepository.findByUserId(userId)
+            .map(Wallet::getBalance)
+            .orElse(BigDecimal.ZERO);
+    }
+
+    // ==================== INTERNAL METHODS (Keep for backward compatibility) ====================
+
+    /**
+     * Internal method: Add to wallet (wallet_transactions only)
+     * Keep for backward compatibility, but new code should use addMoneyWithTracking()
+     */
+    @Transactional
+    public void addMoneyToWallet(String userId, BigDecimal amount, 
+                                 String transactionType, String description) {
+        Wallet wallet = getOrCreateWallet(userId);
+        
+        wallet.setBalance(wallet.getBalance().add(amount));
+        walletRepository.save(wallet);
+        
+        WalletTransaction transaction = new WalletTransaction();
+        transaction.setWallet(wallet);
+        transaction.setUserId(userId);
+        transaction.setTransactionType(transactionType);
+        transaction.setAmount(amount);
+        transaction.setDescription(description);
+        transactionRepository.save(transaction);
+    }
+
+    /**
+     * Internal method: Deduct from wallet (wallet_transactions only)
+     * Keep for backward compatibility, but new code should use deductMoneyWithTracking()
+     */
+    @Transactional
+    public void deductFromWallet(String userId, BigDecimal amount, String description) {
+        Wallet wallet = walletRepository.findByUserId(userId)
+            .orElseThrow(() -> new RuntimeException("Wallet not found for user: " + userId));
+        
+        if (wallet.getBalance().compareTo(amount) < 0) {
+            throw new RuntimeException("Insufficient wallet balance! Current: ₹" + 
+                wallet.getBalance() + ", Required: ₹" + amount);
+        }
+        
+        wallet.setBalance(wallet.getBalance().subtract(amount));
+        walletRepository.save(wallet);
+        
+        WalletTransaction transaction = new WalletTransaction();
+        transaction.setWallet(wallet);
+        transaction.setUserId(userId);
+        transaction.setTransactionType("PLAN_PURCHASE");
+        transaction.setAmount(amount.negate());
+        transaction.setDescription(description);
+        transactionRepository.save(transaction);
+    }
+
+    // ==================== ✅ NEW DUAL-TRACKING METHODS ====================
+
+    /**
+     * ✅ Add money to wallet + record in transaction_master
+     * Use this for all new implementations
+     */
+    @Transactional
+    public TransactionMaster addMoneyWithTracking(
+            String userId, 
+            String parentId,
+            BigDecimal amount,
+            TransactionType transactionType,
+            PaymentGateway gateway,
+            PaymentMethod method,
+            String gatewayTxnId,
+            String productId,
+            String productType,
+            String referralCode,
+            String description) {
+        
+        // 1. Update wallet balance and wallet_transactions
+        addMoneyToWallet(userId, amount, transactionType.name(), description);
+        
+        // 2. Record in transaction_master
+        TransactionRequest txnRequest = new TransactionRequest();
+        txnRequest.setChildId(userId);
+        txnRequest.setParentId(parentId != null ? parentId : userId);
+        txnRequest.setAmount(amount);
+        txnRequest.setTransactionType(transactionType);
+        txnRequest.setPaymentGateway(gateway);
+        txnRequest.setPaymentMethod(method);
+        txnRequest.setGatewayTransactionId(gatewayTxnId);
+        txnRequest.setProductId(productId);
+        txnRequest.setProductType(productType);
+        txnRequest.setReferralCode(referralCode);
+        txnRequest.setDiscountAmount(BigDecimal.ZERO);
+        txnRequest.setNotes(description);
+        
+        TransactionMaster transaction = transactionMasterService.createTransaction(txnRequest);
+        
+        // 3. Mark as success
+        transactionMasterService.updateTransactionStatus(
+            transaction.getTransactionId(), 
+            TransactionStatus.SUCCESS, 
+            null
+        );
+        
+        return transaction;
+    }
+
+    /**
+     * ✅ Overloaded version with fewer parameters (for referrals)
+     */
+    @Transactional
+    public TransactionMaster addMoneyWithTracking(
+            String userId,
+            String parentId,
+            BigDecimal amount,
+            TransactionType transactionType,
+            PaymentGateway gateway,
+            PaymentMethod method,
+            String gatewayTxnId,
+            String description) {
+        
+        return addMoneyWithTracking(
+            userId, parentId, amount, transactionType, 
+            gateway, method, gatewayTxnId, 
+            null, null, null, description
+        );
+    }
+
+    /**
+     * ✅ Deduct money from wallet + record in transaction_master
+     * Use this for plan purchases
+     */
+    @Transactional
+    public TransactionMaster deductMoneyWithTracking(
+            String userId,
+            String parentId,
+            BigDecimal amount,
+            String productId,
+            String productType,
+            String referralCode,
+            BigDecimal discountAmount,
+            String description) {
+        
+        // 1. Calculate final amount after discount
+        BigDecimal finalAmount = amount.subtract(discountAmount != null ? discountAmount : BigDecimal.ZERO);
+        
+        // 2. Deduct from wallet and wallet_transactions
+        deductFromWallet(userId, finalAmount, description);
+        
+        // 3. Record in transaction_master
+        TransactionRequest txnRequest = new TransactionRequest();
+        txnRequest.setChildId(userId);
+        txnRequest.setParentId(parentId != null ? parentId : userId);
+        txnRequest.setAmount(amount);
+        txnRequest.setDiscountAmount(discountAmount);
+        txnRequest.setTransactionType(TransactionType.PLAN_PURCHASE);
+        txnRequest.setPaymentGateway(PaymentGateway.INTERNAL_WALLET);
+        txnRequest.setPaymentMethod(PaymentMethod.WALLET);
+        txnRequest.setProductId(productId);
+        txnRequest.setProductType(productType);
+        txnRequest.setReferralCode(referralCode);
+        txnRequest.setNotes(description);
+        
+        TransactionMaster transaction = transactionMasterService.createTransaction(txnRequest);
+        
+        // 4. Mark as success
+        transactionMasterService.updateTransactionStatus(
+            transaction.getTransactionId(), 
+            TransactionStatus.SUCCESS, 
+            null
+        );
+        
+        return transaction;
+    }
+
+    /**
+     * ✅ Overloaded version without discount
+     */
+    @Transactional
+    public TransactionMaster deductMoneyWithTracking(
+            String userId,
+            String parentId,
+            BigDecimal amount,
+            String productId,
+            String productType,
+            String description) {
+        
+        return deductMoneyWithTracking(
+            userId, parentId, amount, 
+            productId, productType, 
+            null, BigDecimal.ZERO, description
+        );
+    }
+
+    // ==================== ✅ UPDATED PAYMENT VERIFICATION ====================
+
+    /**
+     * ✅ UPDATED: Verify Razorpay payment and add to wallet (dual tracking)
      */
     @Transactional
     public Map<String, Object> verifyPayment(String userId,
@@ -121,12 +326,22 @@ public class WalletService {
 
             Utils.verifyPaymentSignature(attributes, this.keySecret);
 
-            // Signature valid → Add money to wallet
-            addMoneyToWallet(userId, amount, "RAZORPAY_PAYMENT", 
-                "Payment added via Razorpay - Order: " + razorpayOrderId);
+            // ✅ CHANGED: Use dual tracking
+            TransactionMaster transaction = addMoneyWithTracking(
+                userId,
+                userId, // parentId = userId (update when you have actual parent ID)
+                amount,
+                TransactionType.WALLET_TOPUP,
+                PaymentGateway.RAZORPAY,
+                PaymentMethod.UPI, // Default, can be extracted from Razorpay response
+                razorpayPaymentId,
+                "Wallet top-up via Razorpay - Order: " + razorpayOrderId
+            );
 
             result.put("status", "success");
             result.put("message", "Payment verified and ₹" + amount + " added to wallet");
+            result.put("transactionId", transaction.getTransactionId());
+            result.put("newBalance", getBalance(userId));
             
         } catch (Exception e) {
             result.put("status", "failed");
@@ -137,70 +352,19 @@ public class WalletService {
     }
 
     /**
-     * Add money to wallet (internal method)
-     */
-    @Transactional
-    public void addMoneyToWallet(String userId, BigDecimal amount, 
-                                 String transactionType, String description) {
-        Wallet wallet = getOrCreateWallet(userId);
-        
-        // Add to balance
-        wallet.setBalance(wallet.getBalance().add(amount));
-        walletRepository.save(wallet);
-        
-        // Record transaction
-        WalletTransaction transaction = new WalletTransaction();
-        transaction.setWallet(wallet);
-        transaction.setUserId(userId);
-        transaction.setTransactionType(transactionType);
-        transaction.setAmount(amount);
-        transaction.setDescription(description);
-        transactionRepository.save(transaction);
-    }
-
-    /**
-     * Add referral bonus (called by ReferralService)
+     * ✅ Add referral bonus (called by ReferralService)
      */
     @Transactional
     public void addReferralBonus(String userId, BigDecimal amount, String description) {
-        addMoneyToWallet(userId, amount, "REFERRAL_BONUS", description);
+        addMoneyWithTracking(
+            userId,
+            userId,
+            amount,
+            TransactionType.REFERRAL_REWARD,
+            PaymentGateway.NONE,
+            PaymentMethod.OTHER,
+            null,
+            description
+        );
     }
-
-    /**
-     * Deduct money from wallet (for plan purchase)
-     */
-    @Transactional
-    public void deductFromWallet(String userId, BigDecimal amount, String description) {
-        Wallet wallet = walletRepository.findByUserId(userId)
-            .orElseThrow(() -> new RuntimeException("Wallet not found for user: " + userId));
-        
-        // Check sufficient balance
-        if (wallet.getBalance().compareTo(amount) < 0) {
-            throw new RuntimeException("Insufficient wallet balance! Current: ₹" + 
-                wallet.getBalance() + ", Required: ₹" + amount);
-        }
-        
-        // Deduct from balance
-        wallet.setBalance(wallet.getBalance().subtract(amount));
-        walletRepository.save(wallet);
-        
-        // Record transaction (negative amount)
-        WalletTransaction transaction = new WalletTransaction();
-        transaction.setWallet(wallet);
-        transaction.setUserId(userId);
-        transaction.setTransactionType("PLAN_PURCHASE");
-        transaction.setAmount(amount.negate()); // Negative value
-        transaction.setDescription(description);
-        transactionRepository.save(transaction);
-    }
-
-    /**
-     * Get wallet balance
-     */
-    public BigDecimal getBalance(String userId) {
-        return walletRepository.findByUserId(userId)
-            .map(Wallet::getBalance)
-            .orElse(BigDecimal.ZERO);
-    }
-    
 }

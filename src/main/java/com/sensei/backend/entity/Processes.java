@@ -13,9 +13,10 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Processes {
+
     @Id
     @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name="system-uuid",strategy = "uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
     private String processId;
 
     @NotBlank
@@ -26,20 +27,23 @@ public class Processes {
     @Column(columnDefinition = "TEXT")
     private String senseiMessage;
 
-    @Column(columnDefinition = "TEXT")
-    private String parentMessage;
+    // Renamed from parentMessage → childMessage
+    @Column(name = "child_message", columnDefinition = "TEXT")
+    private String childMessage;
 
     @Column(columnDefinition = "TEXT")
     private String image;
 
     private int interactiveActivityRef;
 
-    // New Column
     @Column(columnDefinition = "TEXT")
     private String interactiveActivityIdRef;
 
-    // New Column
     @Column(columnDefinition = "TEXT")
     private String nextProcessIdRef;
+
+    // NEW COLUMN
+    @Column(columnDefinition = "TEXT")
+    private String hint;
 
 }

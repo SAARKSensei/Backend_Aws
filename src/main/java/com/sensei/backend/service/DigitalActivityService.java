@@ -3,9 +3,9 @@ package com.sensei.backend.service;
 import com.sensei.backend.dto.DigitalActivityDTO;
 import com.sensei.backend.dto.QuestionsDTO;
 import com.sensei.backend.entity.DigitalActivity;
-import com.sensei.backend.entity.Question;
+import com.sensei.backend.entity.Questions;
 import com.sensei.backend.repository.DigitalActivityRepository;
-import com.sensei.backend.repository.QuestionRepository;
+import com.sensei.backend.repository.QuestionsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +22,7 @@ public class DigitalActivityService {
     private QuestionsService questionsService;
 
     @Autowired
-    private QuestionRepository questionRepository;
+    private QuestionsRepository questionsRepository;
 
     // Create DigitalActivity with questions
     public DigitalActivityDTO createDigitalActivity(DigitalActivityDTO dto) {
@@ -40,9 +40,9 @@ public class DigitalActivityService {
         DigitalActivity saved = digitalActivityRepository.save(entity);
 
         if (dto.getQuestions() != null && !dto.getQuestions().isEmpty()) {
-            List<Question> savedQuestions = new ArrayList<>();
+            List<Questions> savedQuestions = new ArrayList<>();
             for (QuestionsDTO qdto : dto.getQuestions()) {
-                Question q = new Question();
+                Questions q = new Questions();
                 q.setQuestion(qdto.getQuestionName());
                 q.setSenseiQuestion(qdto.getSenseiQuestion());
                 q.setSenseiAnswer(qdto.getSenseiAnswer());
@@ -78,7 +78,7 @@ public class DigitalActivityService {
         return activities.stream().map(activity -> {
             DigitalActivityDTO dto = mapToDTO(activity);
 
-            List<QuestionsDTO> relatedQuestions = questionRepository
+            List<QuestionsDTO> relatedQuestions = questionsRepository
                     .findByDigitalActivity_DigitalActivityId(activity.getDigitalActivityId())
                     .stream()
                     .map(questionsService::convertToDTOWithoutHints) // ❌ NO HINTS
@@ -94,7 +94,7 @@ public class DigitalActivityService {
         return digitalActivityRepository.findById(id).map(activity -> {
             DigitalActivityDTO dto = mapToDTO(activity);
 
-            List<QuestionsDTO> relatedQuestions = questionRepository
+            List<QuestionsDTO> relatedQuestions = questionsRepository
                     .findByDigitalActivity_DigitalActivityId(activity.getDigitalActivityId())
                     .stream()
                     .map(questionsService::convertToDTOWithoutHints) // ❌ NO HINTS
@@ -121,11 +121,11 @@ public class DigitalActivityService {
         existing.setFirstQuestionIdRef(dto.getFirstQuestionIdRef());
 
         if (dto.getQuestions() != null && !dto.getQuestions().isEmpty()) {
-            List<Question> updatedQuestions = new ArrayList<>();
+            List<Questions> updatedQuestions = new ArrayList<>();
 
             for (QuestionsDTO qdto : dto.getQuestions()) {
-                Question question = questionRepository.findById(qdto.getQuestionId())
-                        .orElse(new Question());
+                Questions question = questionsRepository.findById(qdto.getQuestionId())
+                        .orElse(new Questions());
 
                 question.setQuestion(qdto.getQuestionName());
                 question.setSenseiQuestion(qdto.getSenseiQuestion());
@@ -162,8 +162,8 @@ public class DigitalActivityService {
             throw new RuntimeException("DigitalActivity not found with id: " + id);
         }
 
-        questionRepository.deleteAll(
-                questionRepository.findByDigitalActivity_DigitalActivityId(id)
+        questionsRepository.deleteAll(
+                questionsRepository.findByDigitalActivity_DigitalActivityId(id)
         );
 
         digitalActivityRepository.deleteById(id);
