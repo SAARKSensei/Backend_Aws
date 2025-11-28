@@ -20,6 +20,9 @@ public class QuizAnswer {
 
     @Column(name = "answer_text", nullable = false)
     private String answerText;
+    
+    @Column(name = "is_correct", nullable = false)
+    private boolean isCorrect = false; // ✅ New field
 
     @ManyToOne
     @JoinColumn(name = "question_id")
@@ -36,6 +39,9 @@ public class QuizAnswer {
 
     public String getAnswerText() { return answerText; }
     public void setAnswerText(String answerText) { this.answerText = answerText; }
+    
+    public boolean isCorrect() { return isCorrect; }
+    public void setCorrect(boolean correct) { isCorrect = correct; }
 
     public Questiontable getQuestion() { return question; }
     public void setQuestion(Questiontable question) { this.question = question; }
