@@ -71,4 +71,14 @@ public class InteractiveActivity {
     // New Column
     @Column(columnDefinition = "TEXT")
     private String firstProcessIdRef;
+    
+ // 🆕 Newly Added Fields
+    @Column(columnDefinition = "TEXT")
+    private String submissionType;
+
+    @Column(columnDefinition = "TEXT")
+    private String submissionLink;
+
+    @Column(columnDefinition = "TEXT")
+    private String typeOfInteractiveActivity;
 }

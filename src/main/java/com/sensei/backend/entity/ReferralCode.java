@@ -1,6 +1,7 @@
 package com.sensei.backend.entity;
 
 import javax.persistence.*;
+import org.hibernate.annotations.GenericGenerator;
 import java.time.LocalDateTime;
 
 @Entity
@@ -8,18 +9,25 @@ import java.time.LocalDateTime;
 public class ReferralCode {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(length = 36, updatable = false, nullable = false)
+    private String id;
 
-    // Use userId (Long) instead of User entity
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "referrer_user_id", nullable = false)
+    private String referrerUserId;  // User who owns this code
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String code;
+    @Column(name = "code", unique = true, nullable = false, length = 20)
+    private String code;  // Auto-generated referral code (e.g., "SHAAN8472")
+
+    @Column(name = "usage_count", nullable = false)
+    private Integer usageCount = 0;  // How many times this code has been used
+
+    @Column(name = "max_usage_limit", nullable = false)
+    private Integer maxUsageLimit = 5;  // Maximum 5 uses
 
     @Column(name = "is_school", nullable = false)
-    private Boolean isSchool;
+    private Boolean isSchool = false;  // Special flag for school codes
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -29,16 +37,21 @@ public class ReferralCode {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Getters and setters
+    // Getters and Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getReferrerUserId() { return referrerUserId; }
+    public void setReferrerUserId(String referrerUserId) { this.referrerUserId = referrerUserId; }
 
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
+
+    public Integer getUsageCount() { return usageCount; }
+    public void setUsageCount(Integer usageCount) { this.usageCount = usageCount; }
+
+    public Integer getMaxUsageLimit() { return maxUsageLimit; }
+    public void setMaxUsageLimit(Integer maxUsageLimit) { this.maxUsageLimit = maxUsageLimit; }
 
     public Boolean getIsSchool() { return isSchool; }
     public void setIsSchool(Boolean isSchool) { this.isSchool = isSchool; }

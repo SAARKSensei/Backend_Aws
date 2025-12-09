@@ -5,6 +5,7 @@ import javax.validation.constraints.NotBlank;
 
 @Data
 public class ProcessesDTO {
+
     private String processId;
 
     @NotBlank
@@ -14,19 +15,20 @@ public class ProcessesDTO {
 
     private String senseiMessage;
 
-    private String parentMessage;
+    // Renamed
+    private String childMessage;
 
     private String image;
 
     private int interactiveActivityRef;
 
-    // New Field
     private String interactiveActivityIdRef;
 
-    // New Field
     private String nextProcessIdRef;
 
-    // Getter for processNumber
+    // NEW FIELD
+    private String hint;
+
     public int getProcessNumber() {
         return this.processNumber;
     }
