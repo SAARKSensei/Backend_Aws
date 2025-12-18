@@ -9,15 +9,14 @@ import com.sensei.backend.repository.SubjectRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // ✅ IMPORTED
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional // ✅ FIX 1: Keeps the database connection open (Prevents LazyInitializationException)
+@Transactional
 public class PricingPlanService {
 
     @Autowired
@@ -29,41 +28,57 @@ public class PricingPlanService {
     @Autowired
     private ModelMapper modelMapper;
 
+    // ================= CREATE =================
     public PricingPlanDTO createPricingPlan(PricingPlanDTO pricingPlanDTO) {
-        PricingPlan pricingPlan = modelMapper.map(pricingPlanDTO, PricingPlan.class);
 
-        // ✅ FIX 2: Fetch REAL existing subjects from the DB instead of creating fake ones
+        PricingPlan pricingPlan = new PricingPlan();
+
+        pricingPlan.setName(pricingPlanDTO.getName());
+        pricingPlan.setPrice(pricingPlanDTO.getPrice());
+        pricingPlan.setDurationInMonths(pricingPlanDTO.getDurationInMonths());
+        pricingPlan.setGrade(pricingPlanDTO.getGrade());
+        pricingPlan.setStatus(pricingPlanDTO.getStatus());
+        pricingPlan.setDescription(pricingPlanDTO.getDescription());
+
+        /*
+         * 🔑 CRITICAL LOGIC
+         * We ONLY extract subjectId
+         * All other interconnected fields remain untouched
+         */
         if (pricingPlanDTO.getSubjects() != null && !pricingPlanDTO.getSubjects().isEmpty()) {
-            List<String> subjectIds = pricingPlanDTO.getSubjects().stream()
+
+            List<String> subjectIds = pricingPlanDTO.getSubjects()
+                    .stream()
                     .map(SubjectDTO::getSubjectId)
                     .collect(Collectors.toList());
 
             List<Subject> subjects = subjectRepository.findAllById(subjectIds);
             pricingPlan.setSubjects(subjects);
-        } else {
-            pricingPlan.setSubjects(new ArrayList<>());
         }
 
-        PricingPlan savedPricingPlan = pricingPlanRepository.save(pricingPlan);
-        return modelMapper.map(savedPricingPlan, PricingPlanDTO.class);
+        PricingPlan savedPlan = pricingPlanRepository.save(pricingPlan);
+        return modelMapper.map(savedPlan, PricingPlanDTO.class);
     }
 
+    // ================= READ =================
     public List<PricingPlanDTO> getAllPricingPlans() {
-        return pricingPlanRepository.findAll().stream()
-                .map(pricingPlan -> modelMapper.map(pricingPlan, PricingPlanDTO.class))
+        return pricingPlanRepository.findAll()
+                .stream()
+                .map(plan -> modelMapper.map(plan, PricingPlanDTO.class))
                 .collect(Collectors.toList());
     }
 
     public Optional<PricingPlanDTO> getPricingPlanById(String id) {
         return pricingPlanRepository.findById(id)
-                .map(pricingPlan -> modelMapper.map(pricingPlan, PricingPlanDTO.class));
+                .map(plan -> modelMapper.map(plan, PricingPlanDTO.class));
     }
 
+    // ================= UPDATE =================
     public PricingPlanDTO updatePricingPlan(String id, PricingPlanDTO pricingPlanDTO) {
+
         PricingPlan existingPlan = pricingPlanRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pricing Plan not found"));
 
-        // Manual update to ensure safety
         existingPlan.setName(pricingPlanDTO.getName());
         existingPlan.setPrice(pricingPlanDTO.getPrice());
         existingPlan.setDurationInMonths(pricingPlanDTO.getDurationInMonths());
@@ -71,9 +86,10 @@ public class PricingPlanService {
         existingPlan.setStatus(pricingPlanDTO.getStatus());
         existingPlan.setDescription(pricingPlanDTO.getDescription());
 
-        // ✅ FIX 3: Correctly update the list of subjects
         if (pricingPlanDTO.getSubjects() != null) {
-            List<String> subjectIds = pricingPlanDTO.getSubjects().stream()
+
+            List<String> subjectIds = pricingPlanDTO.getSubjects()
+                    .stream()
                     .map(SubjectDTO::getSubjectId)
                     .collect(Collectors.toList());
 
@@ -81,10 +97,11 @@ public class PricingPlanService {
             existingPlan.setSubjects(subjects);
         }
 
-        PricingPlan updatedPricingPlan = pricingPlanRepository.save(existingPlan);
-        return modelMapper.map(updatedPricingPlan, PricingPlanDTO.class);
+        PricingPlan updatedPlan = pricingPlanRepository.save(existingPlan);
+        return modelMapper.map(updatedPlan, PricingPlanDTO.class);
     }
 
+    // ================= DELETE =================
     public void deletePricingPlan(String id) {
         pricingPlanRepository.deleteById(id);
     }
