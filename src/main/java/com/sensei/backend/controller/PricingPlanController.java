@@ -13,6 +13,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/pricing-plans")
+@CrossOrigin(origins = "*") // ✅ SAFETY NET: Ensures this specific controller allows connections
 public class PricingPlanController {
 
     @Autowired
