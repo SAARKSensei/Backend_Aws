@@ -80,16 +80,12 @@
 //        return source;
 //    }
 //}
-
-
 package com.sensei.backend.config;
-
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -103,35 +99,28 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ Enable CORS via this method
-                .csrf(csrf -> csrf.disable()) // ❌ Disable CSRF for APIs
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ Enable the new policy
+                .csrf(csrf -> csrf.disable()) // ❌ Disable strict checking for APIs
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(new AntPathRequestMatcher("/api/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/**")).permitAll() // Allow public access to API
                         .anyRequest().authenticated()
                 )
-                .logout(logout -> logout.logoutSuccessUrl("/")); // Handle logout (if needed)
-//                .oauth2Login(Customizer.withDefaults()) // Enable OAuth2 login with AWS Cognito
-//                .logout(logout -> logout
-//                        .logoutSuccessHandler(cognitoLogoutHandler) // Handle logout with Cognito
-//                )
-//                .sessionManagement(session -> session
-//                        .sessionFixation().migrateSession());
+                .logout(logout -> logout.logoutSuccessUrl("/")); 
 
         return http.build();
     }
 
-    // ✅ Define a Proper CORS Configuration
+    // ✅ This is the fixed 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "https://sensei-website-preview.vercel.app",
-                "https://www.sensei.org.in"
-        )); // ✅ Define allowed domains explicitly
+        
+        // This star "*" means "Allow Everyone"
+        configuration.setAllowedOriginPatterns(List.of("*")); 
+        
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // ✅ Required if using authentication
+        configuration.setAllowCredentials(true); 
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
