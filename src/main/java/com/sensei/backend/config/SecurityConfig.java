@@ -80,13 +80,61 @@
 //        return source;
 //    }
 //}
+// package com.sensei.backend.config;
+
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+// import org.springframework.security.web.SecurityFilterChain;
+// import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+// import org.springframework.web.cors.CorsConfiguration;
+// import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+// import org.springframework.web.cors.CorsConfigurationSource;
+
+// import java.util.List;
+
+// @Configuration
+// public class SecurityConfig {
+
+//     @Bean
+//     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//         http
+//                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ Enable the new policy
+//                 .csrf(csrf -> csrf.disable()) // ❌ Disable strict checking for APIs
+//                 .authorizeHttpRequests(authz -> authz
+//                         .requestMatchers(new AntPathRequestMatcher("/api/**")).permitAll() // Allow public access to API
+//                         .anyRequest().authenticated()
+//                 )
+//                 .logout(logout -> logout.logoutSuccessUrl("/")); 
+
+//         return http.build();
+//     }
+
+//     // ✅ This is the fixed 
+//     @Bean
+//     public CorsConfigurationSource corsConfigurationSource() {
+//         CorsConfiguration configuration = new CorsConfiguration();
+        
+//         // This star "*" means "Allow Everyone"
+//         configuration.setAllowedOriginPatterns(List.of("*")); 
+        
+//         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//         configuration.setAllowedHeaders(List.of("*"));
+//         configuration.setAllowCredentials(true); 
+
+//         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//         source.registerCorsConfiguration("/**", configuration);
+//         return source;
+//     }
+// }
+
 package com.sensei.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.config.Customizer;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -97,33 +145,43 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ Enable the new policy
-                .csrf(csrf -> csrf.disable()) // ❌ Disable strict checking for APIs
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(new AntPathRequestMatcher("/api/**")).permitAll() // Allow public access to API
-                        .anyRequest().authenticated()
-                )
-                .logout(logout -> logout.logoutSuccessUrl("/")); 
+            .cors(Customizer.withDefaults())
+            .csrf().disable()
+            .authorizeRequests()
+                .antMatchers(
+                    "/api/**",
+                    "/actuator/**",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/auth/**"
+                ).permitAll()
+                .anyRequest().authenticated()
+            .and()
+            .oauth2Login()
+            .and()
+            .logout();
 
         return http.build();
     }
 
-    // ✅ This is the fixed 
+    // CORS for Vercel + localhost + Postman
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        
-        // This star "*" means "Allow Everyone"
-        configuration.setAllowedOriginPatterns(List.of("*")); 
-        
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); 
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowedOriginPatterns(List.of("*")); // allow Vercel + localhost + Postman
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 }
+
+
