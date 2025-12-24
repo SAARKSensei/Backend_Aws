@@ -9,6 +9,7 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 
 
@@ -20,10 +21,14 @@ import java.util.List;
 // @Table(name="ParentUser",uniqueConstraints = {@UniqueConstraint(columnNames = {"userName"})})  // Added name="ParentUser" by Vaishnav Kale
 public class ParentUser {
 
+    // @Id
+    // @GeneratedValue(generator = "system-uuid")
+    // @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    // private String parentId;
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    private String parentId;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     private String name;
 

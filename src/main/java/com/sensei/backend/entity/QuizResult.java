@@ -9,11 +9,15 @@ import java.util.UUID;
 @Table(name = "quiz_result")
 public class QuizResult {
 
+    // @Id
+    // @GeneratedValue(generator = "UUID")
+    // @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    // @Column(name = "result_id", updatable = false, nullable = false)
+    // private String resultId;
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "result_id", updatable = false, nullable = false)
-    private String resultId;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(name = "child_id", nullable = false)
     private String childId;

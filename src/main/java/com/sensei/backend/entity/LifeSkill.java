@@ -8,11 +8,15 @@ import java.util.UUID;
 @Table(name = "lifeskills")
 public class LifeSkill {
 
+    // @Id
+    // @GeneratedValue(generator = "UUID")
+    // @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    // @Column(name = "lifeskill_id", updatable = false, nullable = false)
+    // private String lifeskillId = UUID.randomUUID().toString();
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "lifeskill_id", updatable = false, nullable = false)
-    private String lifeskillId = UUID.randomUUID().toString();
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(name = "lifeskill_name", nullable = false)
     private String lifeskillName;

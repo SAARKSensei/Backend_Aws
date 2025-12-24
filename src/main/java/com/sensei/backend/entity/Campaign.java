@@ -7,6 +7,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -14,10 +15,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Campaign {
 
+    // @Id
+    // @GeneratedValue(generator = "system-uuid")
+    // @GenericGenerator(name="system-uuid", strategy = "uuid")
+    // private String campaignId;  // Auto-generated unique ID
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    private String campaignId;  // Auto-generated unique ID
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
+
     private String name; 
     private String schoolName;  // School name (text)
     private String email;       // Email (text)

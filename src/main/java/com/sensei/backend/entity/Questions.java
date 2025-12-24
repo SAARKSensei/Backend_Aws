@@ -1,5 +1,7 @@
 package com.sensei.backend.entity;
 
+import java.util.UUID;
+
 import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -9,12 +11,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 public class Questions{
 
+    // @Id
+	// @GeneratedValue(generator = "UUID")
+	// @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+	// @Column(name = "questionId", updatable = false, nullable = false)
+	// private String questionId;
     @Id
-	@GeneratedValue(generator = "UUID")
-	@GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-	@Column(name = "questionId", updatable = false, nullable = false)
-	private String questionId;
-
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     private String question;
     private String senseiQuestion;

@@ -1,5 +1,7 @@
 package com.sensei.backend.entity;
 
+import java.util.UUID;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 
@@ -15,10 +17,15 @@ import org.hibernate.annotations.GenericGenerator;
 @AllArgsConstructor
 @Builder
 public class ContactUs {
+    // @Id
+    // @GeneratedValue(generator = "system-uuid")
+    // @GenericGenerator(name="system-uuid",strategy = "uuid")
+    // private Long userId;
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name="system-uuid",strategy = "uuid")
-    private Long userId;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
+
 
     @NotBlank(message = "Please Add User Name")
     private String userName;

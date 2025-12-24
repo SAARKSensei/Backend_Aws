@@ -12,11 +12,15 @@ import javax.persistence.*;
 @Table(name = "quiz_answer")
 public class QuizAnswer {
 
+    // @Id
+    // @GeneratedValue(generator = "UUID")
+    // @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    // @Column(name = "answer_id", updatable = false, nullable = false)
+    // private String answerId;  // ❌ remove = UUID.randomUUID().toString()
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "answer_id", updatable = false, nullable = false)
-    private String answerId;  // ❌ remove = UUID.randomUUID().toString()
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(name = "answer_text", nullable = false)
     private String answerText;

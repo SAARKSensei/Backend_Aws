@@ -12,11 +12,15 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Entity
 public class Questiontable {
 
+    // @Id
+    // @GeneratedValue(generator = "UUID")
+    // @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    // @Column(name = "question_id", updatable = false, nullable = false)
+    // private String questionId = UUID.randomUUID().toString();
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "question_id", updatable = false, nullable = false)
-    private String questionId = UUID.randomUUID().toString();
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(name = "question_text", nullable = false)
     private String questionText;

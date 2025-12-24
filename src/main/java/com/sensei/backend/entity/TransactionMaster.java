@@ -9,16 +9,21 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "transaction_master")
 public class TransactionMaster {
 
+    // @Id
+    // @GeneratedValue(generator = "system-uuid")
+    // @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    // @Column(name = "transaction_id", length = 36, updatable = false, nullable = false)
+    // private String transactionId;
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "transaction_id", length = 36, updatable = false, nullable = false)
-    private String transactionId;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(name = "child_id", length = 36)
     private String childId;

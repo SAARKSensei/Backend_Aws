@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -19,10 +20,14 @@ import java.util.Date;
 @Builder
 public class Counsellor {
 
+    // @Id
+    // @GeneratedValue(generator = "system-uuid")
+    // @GenericGenerator(name="system-uuid",strategy = "uuid")
+    // private String CounsellorId;
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name="system-uuid",strategy = "uuid")
-    private String CounsellorId;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
     @NotNull
     private String name;
     @NotNull

@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.util.UUID;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -18,10 +20,14 @@ import javax.persistence.Id;
 @Builder
 public class School {
 
+    // @Id
+    // @GeneratedValue(generator = "system-uuid")
+    // @GenericGenerator(name="system-uuid",strategy = "uuid")
+    // private String SchoolId;
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name="system-uuid",strategy = "uuid")
-    private String SchoolId;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
     @NotNull
     private String name;
     @NotNull

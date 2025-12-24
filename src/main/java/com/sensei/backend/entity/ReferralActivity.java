@@ -3,16 +3,21 @@ package com.sensei.backend.entity;
 import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "referral_activity")
 public class ReferralActivity {
 
+    // @Id
+    // @GeneratedValue(generator = "system-uuid")
+    // @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    // @Column(length = 36, updatable = false, nullable = false)
+    // private String id;
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(length = 36, updatable = false, nullable = false)
-    private String id;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(name = "referral_code_id", nullable = false)
     private String referralCodeId;  // Which referral code was used

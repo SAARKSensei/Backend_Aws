@@ -3,15 +3,20 @@ package com.sensei.backend.entity;
 import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 public class DigitalActivity {
 
+    // @Id
+    // @GeneratedValue(generator = "uuid2")
+    // @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+    // @Column(length = 36)
+    // private String digitalActivityId;
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(length = 36)
-    private String digitalActivityId;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     private String digitalActivityName;
     private String keyOutcomes;

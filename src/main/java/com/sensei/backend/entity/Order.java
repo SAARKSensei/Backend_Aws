@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -23,8 +24,12 @@ import java.util.Date;
 @Table(name="order_table")
 public class Order {
 
+    // @Id
+    // private String id;
     @Id
-    private String id;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
     private String entity;
     private int amount;
     @JsonProperty("amount_paid")
