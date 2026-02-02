@@ -16,34 +16,52 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    // -------- Resource Not Found --------
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        log.error("Resource not found: {}", ex.getMessage());
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+
+        log.warn("RESOURCE_NOT_FOUND", ex);
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ex.getMessage());
     }
 
+    // -------- Validation Errors --------
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
+        ex.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
+            errors.put(fieldName, error.getDefaultMessage());
         });
-        log.error("Validation failed: {}", errors);
+
+        log.warn("VALIDATION_FAILED");
+
         return errors;
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGlobalException(Exception ex) {
-        log.error("An error occurred: {}", ex.getMessage());
-        return new ResponseEntity<>("An unexpected error occurred. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
+    // -------- Payment Errors --------
     @ExceptionHandler(PaymentException.class)
     public ResponseEntity<String> handlePaymentException(PaymentException ex) {
-        log.error("Payment error: {}", ex.getMessage());
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+
+        log.warn("PAYMENT_ERROR", ex);
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ex.getMessage());
+    }
+
+    // -------- Catch-All (ONLY ONE) --------
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleUnhandledException(Exception ex) {
+
+        log.error("UNHANDLED_EXCEPTION", ex);
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Internal Server Error");
     }
 }
