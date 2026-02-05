@@ -1,27 +1,164 @@
+// package com.sensei.backend.service;
+
+// import java.time.LocalDate;
+// import java.util.*;
+// import java.util.stream.Collectors;
+
+// import com.sensei.backend.dto.ParentUserDTO;
+// import com.sensei.backend.entity.ParentUser;
+// import com.sensei.backend.entity.ChildUser;
+// import com.sensei.backend.entity.PricingPlan;
+// import com.sensei.backend.enums.PlanStatus;
+// import com.sensei.backend.exception.ResourceNotFoundException;
+// import com.sensei.backend.repository.ParentUserRepository;
+// import com.sensei.backend.repository.PricingPlanRepository;
+
+// import lombok.RequiredArgsConstructor;
+// import lombok.extern.slf4j.Slf4j;
+
+// import org.modelmapper.ModelMapper;
+// import org.springframework.stereotype.Service;
+
+// @Service
+// @RequiredArgsConstructor
+// @Slf4j
+// public class ParentUserService {
+
+//     private final ParentUserRepository parentUserRepository;
+//     private final PricingPlanRepository pricingPlanRepository;
+//     private final ModelMapper modelMapper;
+
+//     // ================= CREATE =================
+//     public ParentUserDTO createParentUser(ParentUserDTO dto) {
+//         ParentUser parent = modelMapper.map(dto, ParentUser.class);
+//         parent = parentUserRepository.save(parent);
+//         return modelMapper.map(parent, ParentUserDTO.class);
+//     }
+
+//     // ================= READ =================
+//     public ParentUserDTO getParentUserById(UUID parentId) {
+//         ParentUser parent = parentUserRepository.findById(parentId)
+//                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+//         return modelMapper.map(parent, ParentUserDTO.class);
+//     }
+
+//     public List<ParentUserDTO> getAllParentUsers() {
+//         return parentUserRepository.findAll()
+//                 .stream()
+//                 .map(p -> modelMapper.map(p, ParentUserDTO.class))
+//                 .collect(Collectors.toList());
+//     }
+
+//     // ================= UPDATE =================
+//     public ParentUserDTO updateParentUser(UUID parentId, ParentUserDTO dto) {
+
+//         ParentUser parent = parentUserRepository.findById(parentId)
+//                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+
+//         // ⚠️ DO NOT TOUCH parentId
+//         parent.setName(dto.getName());
+//         parent.setUserName(dto.getUserName());
+//         parent.setEmail(dto.getEmail());
+//         parent.setPhone(dto.getPhone());
+//         parent.setPassword(dto.getPassword());
+//         parent.setMaritalStatus(dto.getMaritalStatus());
+//         parent.setOccupation(dto.getOccupation());
+//         parent.setRelationWithChildren(dto.getRelationWithChildren());
+
+//         parent.setSpouseName(dto.getSpouseName());
+//         parent.setSpouseGender(dto.getSpouseGender());
+//         parent.setSpouseEmail(dto.getSpouseEmail());
+//         parent.setSpousePhone(dto.getSpousePhone());
+//         parent.setSpouseOccupation(dto.getSpouseOccupation());
+//         parent.setSpouseRelationWithChild(dto.getSpouseRelationWithChild());
+
+//         ParentUser saved = parentUserRepository.save(parent);
+//         return modelMapper.map(saved, ParentUserDTO.class);
+//     }
+
+//     // ================= DELETE =================
+//     public void deleteParentUser(UUID parentId) {
+//         ParentUser parent = parentUserRepository.findById(parentId)
+//                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+//         parentUserRepository.delete(parent);
+//     }
+
+//     // ================= FILTERS =================
+//     public ParentUserDTO getParentUserByUserName(String userName) {
+//         ParentUser parent = parentUserRepository.findByUserName(userName)
+//                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+//         return modelMapper.map(parent, ParentUserDTO.class);
+//     }
+
+//     public ParentUserDTO getParentUserByPhoneNumber(String phone) {
+//         ParentUser parent = parentUserRepository.findByPhoneNumberWithChildUsers(phone)
+//                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+//         return modelMapper.map(parent, ParentUserDTO.class);
+//     }
+
+//     public Optional<ParentUser> findByEmail(String email) {
+//         return parentUserRepository.findByEmail(email);
+//     }
+
+//     // ================= PRICING LOOKUP =================
+//     public Map<String, Object> getPricingPlanForParent(String email) {
+
+//         ParentUser parent = parentUserRepository.findByEmail(email).orElse(null);
+//         if (parent == null || parent.getChildUsers() == null) return null;
+
+//         for (ChildUser child : parent.getChildUsers()) {
+
+//             // ✅ New model: plan directly linked to child
+//             if (child.getPricingPlan() == null) continue;
+//             if (child.getPlanStatus() != PlanStatus.ACTIVE) continue;
+
+//             LocalDate start = child.getPlanStartDate();
+//             LocalDate end = child.getPlanEndDate();
+
+//             if (start == null || end == null) continue;
+
+//             // Auto-expire safety check
+//             if (LocalDate.now().isAfter(end)) {
+//                 child.setPlanStatus(PlanStatus.EXPIRED);
+//                 continue;
+//             }
+
+//             PricingPlan plan = child.getPricingPlan();
+
+//             Map<String, Object> response = new HashMap<>();
+//             response.put("childId", child.getChildId());
+//             response.put("childName", child.getChildName());
+//             response.put("pricingPlan", plan);
+//             response.put("planStartDate", start);
+//             response.put("planEndDate", end);
+//             response.put("isPlanActive", true);
+
+//             return response;
+//         }
+
+//         return null;
+//     }
+// }
 package com.sensei.backend.service;
 
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.sensei.backend.dto.ParentUserDTO;
-import com.sensei.backend.dto.ChildUserDTO;
 import com.sensei.backend.entity.ParentUser;
 import com.sensei.backend.entity.ChildUser;
 import com.sensei.backend.entity.PricingPlan;
-import com.sensei.backend.entity.Subject;
+import com.sensei.backend.enums.PlanStatus;
 import com.sensei.backend.exception.ResourceNotFoundException;
 import com.sensei.backend.repository.ParentUserRepository;
 import com.sensei.backend.repository.PricingPlanRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.stream.Collectors;
-import java.util.Optional;
-import java.util.Objects;
-import java.util.Calendar;
-import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -32,132 +169,117 @@ public class ParentUserService {
     private final PricingPlanRepository pricingPlanRepository;
     private final ModelMapper modelMapper;
 
-    public ParentUserDTO createParentUser(ParentUserDTO parentUserDTO) {
-        ParentUser parentUser = modelMapper.map(parentUserDTO, ParentUser.class);
-        parentUser = parentUserRepository.save(parentUser);
-        log.info("Created ParentUser with ID: {}", parentUser.getParentId());
-        return modelMapper.map(parentUser, ParentUserDTO.class);
+    // ================= CREATE =================
+    public ParentUserDTO createParentUser(ParentUserDTO dto) {
+        ParentUser parent = modelMapper.map(dto, ParentUser.class);
+        parent = parentUserRepository.save(parent);
+        return modelMapper.map(parent, ParentUserDTO.class);
     }
 
-    public ParentUserDTO getParentUserById(String parentId) {
-        ParentUser parentUser = parentUserRepository.findById(parentId)
-                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found with ID: " + parentId));
-        return modelMapper.map(parentUser, ParentUserDTO.class);
+    // ================= READ =================
+    public ParentUserDTO getParentUserById(UUID parentId) {
+        ParentUser parent = parentUserRepository.findById(parentId)
+                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+        return modelMapper.map(parent, ParentUserDTO.class);
     }
 
     public List<ParentUserDTO> getAllParentUsers() {
-        List<ParentUser> parentUsers = parentUserRepository.findAll();
-        return parentUsers.stream()
-                .map(parentUser -> modelMapper.map(parentUser, ParentUserDTO.class))
+        return parentUserRepository.findAll()
+                .stream()
+                .map(p -> modelMapper.map(p, ParentUserDTO.class))
                 .collect(Collectors.toList());
     }
 
-    public ParentUserDTO updateParentUser(String parentId, ParentUserDTO parentUserDTO) {
-        ParentUser existingParentUser = parentUserRepository.findById(parentId)
-                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found with ID: " + parentId));
+    // ================= UPDATE =================
+    public ParentUserDTO updateParentUser(UUID parentId, ParentUserDTO dto) {
 
-        modelMapper.map(parentUserDTO, existingParentUser);
-        existingParentUser = parentUserRepository.save(existingParentUser);
-        log.info("Updated ParentUser with ID: {}", existingParentUser.getParentId());
-        return modelMapper.map(existingParentUser, ParentUserDTO.class);
+        ParentUser parent = parentUserRepository.findById(parentId)
+                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+
+        parent.setName(dto.getName());
+        parent.setUserName(dto.getUserName());
+        parent.setEmail(dto.getEmail());
+        parent.setPhone(dto.getPhone());
+        parent.setPassword(dto.getPassword());
+        parent.setMaritalStatus(dto.getMaritalStatus());
+        parent.setOccupation(dto.getOccupation());
+        parent.setRelationWithChildren(dto.getRelationWithChildren());
+
+        parent.setSpouseName(dto.getSpouseName());
+        parent.setSpouseGender(dto.getSpouseGender());
+        parent.setSpouseEmail(dto.getSpouseEmail());
+        parent.setSpousePhone(dto.getSpousePhone());
+        parent.setSpouseOccupation(dto.getSpouseOccupation());
+        parent.setSpouseRelationWithChild(dto.getSpouseRelationWithChild());
+
+        ParentUser saved = parentUserRepository.save(parent);
+        return modelMapper.map(saved, ParentUserDTO.class);
     }
 
-    public void deleteParentUser(String parentId) {
-        ParentUser parentUser = parentUserRepository.findById(parentId)
-                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found with ID: " + parentId));
-        parentUserRepository.delete(parentUser);
-        log.info("Deleted ParentUser with ID: {}", parentId);
+    // ================= DELETE =================
+    public void deleteParentUser(UUID parentId) {
+        ParentUser parent = parentUserRepository.findById(parentId)
+                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+        parentUserRepository.delete(parent);
     }
 
+    // ================= FILTERS =================
     public ParentUserDTO getParentUserByUserName(String userName) {
-        ParentUser parentUser = parentUserRepository.findByUserName(userName)
-                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found with username: " + userName));
-        return modelMapper.map(parentUser, ParentUserDTO.class);
+        ParentUser parent = parentUserRepository.findByUserName(userName)
+                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+        return modelMapper.map(parent, ParentUserDTO.class);
     }
 
-    // get parent user by phone number
-//    public ParentUserDTO getParentUserByPhoneNumber(String phone) {
-//        ParentUser parentUser = parentUserRepository.findByPhoneNumberWithChildUsers(phone)
-//                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found with phoneNumber: " + phone));
-//        return modelMapper.map(parentUser, ParentUserDTO.class);
-//    }
-
-    // get parent user with child user by phone number
     public ParentUserDTO getParentUserByPhoneNumber(String phone) {
-        ParentUser parentUser = parentUserRepository.findByPhoneNumberWithChildUsers(phone)
-                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found with phoneNumber: " + phone));
-
-        ParentUserDTO parentUserDTO = modelMapper.map(parentUser, ParentUserDTO.class);
-
-        // Ensure children mapping is correct if needed
-        if (parentUser.getChildUsers() != null) {
-            List<ChildUserDTO> childUserDTOList = parentUser.getChildUsers().stream()
-                    .map(child -> modelMapper.map(child, ChildUserDTO.class))
-                    .collect(Collectors.toList());
-            parentUserDTO.setChildUsers(childUserDTOList);
-        }
-
-        return parentUserDTO;
+        ParentUser parent = parentUserRepository.findByPhoneNumberWithChildUsers(phone)
+                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+        return modelMapper.map(parent, ParentUserDTO.class);
     }
 
-    //Get Parent User By Email
     public Optional<ParentUser> findByEmail(String email) {
         return parentUserRepository.findByEmail(email);
     }
 
-    // get Pricing plan of child user associated to Parent User
+    // ================= PRICING LOOKUP =================
     public Map<String, Object> getPricingPlanForParent(String email) {
-        Optional<ParentUser> optionalParentUser = parentUserRepository.findByEmail(email);
 
-        if (!optionalParentUser.isPresent()) {
-            return null; // No parent found
-        }
+        ParentUser parent = parentUserRepository.findByEmail(email).orElse(null);
+        if (parent == null || parent.getChildUsers() == null) return null;
 
-        ParentUser parentUser = optionalParentUser.get(); // Extract ParentUser from Optional
+        for (ChildUser child : parent.getChildUsers()) {
 
-        for (ChildUser child : parentUser.getChildUsers()) {
-            if (child.getActivePlanId() != null) {
-                Optional<PricingPlan> optionalPlan = pricingPlanRepository.findById(child.getActivePlanId());
+            if (child.getActivePlanId() == null) continue;
+            if (child.getPlanStatus() != PlanStatus.ACTIVE) continue;
 
-                if (optionalPlan.isPresent()) {
-                    PricingPlan pricingPlan = optionalPlan.get();
+            LocalDate start = child.getPlanStartDate();
+            LocalDate expiry = child.getPlanExpiryDate();
 
-                    // Fetch start date
-                    Date planStartDate = child.getPlanStartDate();
-                    if (planStartDate == null) {
-                        return null; // No start date, invalid plan
-                    }
+            if (start == null || expiry == null) continue;
 
-                    int durationMonths = pricingPlan.getDurationInMonths();
-
-                    // Calculate expiry date
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(planStartDate);
-                    calendar.add(Calendar.MONTH, durationMonths);
-                    Date expiryDate = calendar.getTime();
-
-                    // Check if plan is active
-                    boolean isPlanActive = new Date().before(expiryDate);
-
-                    if (!isPlanActive) {
-                        return null; // Plan is expired, return null
-                    }
-
-                    // Build response only if plan is active
-                    Map<String, Object> response = new HashMap<>();
-                    response.put("childId", child.getChildId());
-                    response.put("childName", child.getChildName());
-                    response.put("pricingPlan", pricingPlan);
-                    response.put("planStartDate", planStartDate);
-                    response.put("expiryDate", expiryDate);
-                    response.put("isPlanActive", true);
-
-                    return response;
-                }
+            // Auto-expire safety
+            if (LocalDate.now().isAfter(expiry)) {
+                child.setPlanStatus(PlanStatus.EXPIRED);
+                continue;
             }
+
+            PricingPlan plan = pricingPlanRepository
+                    .findById(child.getActivePlanId())
+                    .orElse(null);
+
+            if (plan == null) continue;
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("childId", child.getChildId());
+            response.put("childName", child.getChildName());
+            response.put("pricingPlan", plan);
+            response.put("planStartDate", start);
+            response.put("planExpiryDate", expiry);
+            response.put("isPlanActive", true);
+
+            return response;
         }
 
-        return null; // No active plan found
+        return null;
     }
-
 }
+

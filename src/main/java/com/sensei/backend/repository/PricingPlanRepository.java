@@ -1,12 +1,24 @@
+// package com.sensei.backend.repository;
+
+// import com.sensei.backend.entity.PricingPlan;
+// import org.springframework.data.jpa.repository.JpaRepository;
+// import org.springframework.stereotype.Repository;
+
+// import java.util.Optional;
+
+// @Repository
+// public interface PricingPlanRepository extends JpaRepository<PricingPlan, String> {
+//     Optional<PricingPlan> findById(String id);     // Added by Vaishnav Kale
+// }
 package com.sensei.backend.repository;
 
 import com.sensei.backend.entity.PricingPlan;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.UUID;
 
-@Repository
-public interface PricingPlanRepository extends JpaRepository<PricingPlan, String> {
-    Optional<PricingPlan> findById(String id);     // Added by Vaishnav Kale
+public interface PricingPlanRepository extends JpaRepository<PricingPlan, UUID> {
+
+    List<PricingPlan> findByStatusIgnoreCase(String status);
 }

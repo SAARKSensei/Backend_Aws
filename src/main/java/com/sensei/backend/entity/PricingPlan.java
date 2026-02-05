@@ -1,31 +1,57 @@
 package com.sensei.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Data
+@Table(name = "pricing_plan")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class PricingPlan {
 
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name="system-uuid",strategy = "uuid")
-    private String id;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid")
+    private UUID id;
+
+    @Column(nullable = false)
     private String name;
-    private int price;
-    private int durationInMonths;
+
+    /**
+     * Price in paise (₹499 = 49900)
+     */
+    @Column(nullable = false)
+    private Integer price;
+
+    /**
+     * Duration of plan in months
+     */
+    @Column(name = "duration_months", nullable = false)
+    private Integer durationMonths;
+
     private String grade;
+
+    /**
+     * ACTIVE / INACTIVE
+     */
+    @Column(nullable = false)
     private String status;
+
+    @Column(columnDefinition = "text")
     private String description;
-    @ManyToMany
-    private List<Subject> subjects;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

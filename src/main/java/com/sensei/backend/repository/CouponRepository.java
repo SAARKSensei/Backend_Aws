@@ -1,12 +1,12 @@
-package com.sensei.backend.repository;
+// package com.sensei.backend.repository;
 
-import com.sensei.backend.entity.Coupon;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+// import com.sensei.backend.entity.Coupon;
+// import org.springframework.data.jpa.repository.JpaRepository;
+// import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+// import java.util.Optional;
 
-@Repository
-public interface CouponRepository extends JpaRepository<Coupon, String> {
-	Optional<Coupon> findByCode(String code);
-}
+// @Repository
+// public interface CouponRepository extends JpaRepository<Coupon, String> {
+// 	Optional<Coupon> findByCode(String code);
+// }

@@ -2,11 +2,13 @@ package com.sensei.backend.repository;
 
 import com.sensei.backend.entity.Wallet;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import java.util.Optional;
 
-@Repository
-public interface WalletRepository extends JpaRepository<Wallet, String> {
-    
-    Optional<Wallet> findByUserId(String userId);
+import java.util.Optional;
+import java.util.UUID;
+
+public interface WalletRepository extends JpaRepository<Wallet, UUID> {
+
+    Optional<Wallet> findByParentId(UUID parentId);
+
+    boolean existsByParentId(UUID parentId);
 }

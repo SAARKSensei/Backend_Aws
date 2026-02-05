@@ -1,21 +1,21 @@
-package com.sensei.backend.service;
+// package com.sensei.backend.service;
 
-import com.sensei.backend.entity.ContactUs;
-import com.sensei.backend.error.UserNotFoundException;
+// import com.sensei.backend.entity.ContactUs;
+// import com.sensei.backend.error.UserNotFoundException;
 
-import java.util.List;
+// import java.util.List;
 
-public interface ContactUsService {
+// public interface ContactUsService {
 
-    public ContactUs saveUser(ContactUs user);
+//     public ContactUs saveUser(ContactUs user);
 
-    public List<ContactUs> fetchUserList();
+//     public List<ContactUs> fetchUserList();
 
-    public ContactUs fetchUserById(Long userId) throws UserNotFoundException;
+//     public ContactUs fetchUserById(Long userId) throws UserNotFoundException;
 
-    public void deleteUserById(Long userId);
+//     public void deleteUserById(Long userId);
 
-    public ContactUs updateUser(Long userId, ContactUs user);
+//     public ContactUs updateUser(Long userId, ContactUs user);
 
-    public ContactUs fetchUserByName(String userName);
-}
+//     public ContactUs fetchUserByName(String userName);
+// }

@@ -1,50 +1,28 @@
-package com.sensei.backend.service;
+// 
 
-import com.sensei.backend.dto.SubjectDTO;
-import com.sensei.backend.entity.Subject;
-import com.sensei.backend.repository.SubjectRepository;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+package com.sensei.backend.service;
+import com.sensei.backend.dto.subject.SubjectRequestDTO;
+import com.sensei.backend.dto.subject.SubjectResponseDTO;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
-@Service
-public class SubjectService {
+public interface SubjectService {
 
-    @Autowired
-    private SubjectRepository subjectRepository;
+    // SubjectResponseDTO createSubject(SubjectRequestDTO dto);
 
-    @Autowired
-    private ModelMapper modelMapper;
+    // List<SubjectResponseDTO> getAllSubjects();
 
-    public SubjectDTO createSubject(SubjectDTO subjectDTO) {
-        Subject subject = modelMapper.map(subjectDTO, Subject.class);
-        Subject savedSubject = subjectRepository.save(subject);
-        return modelMapper.map(savedSubject, SubjectDTO.class);
-    }
+    // SubjectResponseDTO getSubjectById(UUID id);
 
-    public List<SubjectDTO> getAllSubjects() {
-        return subjectRepository.findAll().stream()
-                .map(subject -> modelMapper.map(subject, SubjectDTO.class))
-                .collect(Collectors.toList());
-    }
+    // void deleteSubject(UUID id);
+    SubjectResponseDTO create(SubjectRequestDTO dto);
 
-    public Optional<SubjectDTO> getSubjectById(String id) {
-        return subjectRepository.findById(id)
-                .map(subject -> modelMapper.map(subject, SubjectDTO.class));
-    }
+    List<SubjectResponseDTO> getAll();
 
-    public SubjectDTO updateSubject(String id, SubjectDTO subjectDTO) {
-        Subject subject = modelMapper.map(subjectDTO, Subject.class);
-        subject.setSubjectId(id);
-        Subject updatedSubject = subjectRepository.save(subject);
-        return modelMapper.map(updatedSubject, SubjectDTO.class);
-    }
+    SubjectResponseDTO getById(UUID id);
 
-    public void deleteSubject(String id) {
-        subjectRepository.deleteById(id);
-    }
+    SubjectResponseDTO update(UUID id, SubjectRequestDTO dto);
+
+    void delete(UUID id);   // soft delete
 }

@@ -1,67 +1,59 @@
 package com.sensei.backend.entity;
 
+import lombok.*;
 import javax.persistence.*;
-import org.hibernate.annotations.GenericGenerator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "wallet_transactions")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "wallet_transaction")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class WalletTransaction {
 
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(length = 36, updatable = false, nullable = false)
-    private String id;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid")
+    private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wallet_id")
-    @JsonIgnore
-    private Wallet wallet;
+    @Column(name = "wallet_id", nullable = false)
+    private UUID walletId;
 
-    @Column(name = "user_id", nullable = false)
-    private String userId;
+    @Column(name = "parent_id", nullable = false)
+    private UUID parentId;
 
+    /**
+     * CREDIT / DEBIT
+     */
+    @Column(nullable = false)
+    private String direction;
+
+    /**
+     * Amount in rupees
+     */
+    @Column(nullable = false)
+    private Integer amount;
+
+    /**
+     * REFERRAL_REWARD / PLAN_PURCHASE / WALLET_TOPUP
+     */
     @Column(name = "transaction_type", nullable = false)
-    private String transactionType;  // RAZORPAY_PAYMENT, REFERRAL_BONUS, PLAN_PURCHASE
+    private String transactionType;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal amount;
+    /**
+     * PRICING_PLAN / REFERRAL / PAYMENT
+     */
+    @Column(name = "reference_type")
+    private String referenceType;
 
-    @Column(length = 500)
-    private String description;
+    @Column(name = "reference_id")
+    private UUID referenceId;
 
-    @Column(name = "created_at", nullable = false)
+    private String remarks;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-    // Getters and Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-
-    public Wallet getWallet() { return wallet; }
-    public void setWallet(Wallet wallet) { this.wallet = wallet; }
-
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
-
-    public String getTransactionType() { return transactionType; }
-    public void setTransactionType(String transactionType) { this.transactionType = transactionType; }
-
-    public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

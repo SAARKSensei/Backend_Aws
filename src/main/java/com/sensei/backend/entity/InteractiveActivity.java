@@ -1,84 +1,148 @@
+// package com.sensei.backend.entity;
+
+// import lombok.AllArgsConstructor;
+// import lombok.Data;
+// import lombok.NoArgsConstructor;
+// import org.hibernate.annotations.GenericGenerator;
+
+// import javax.persistence.*;
+// import javax.validation.constraints.NotBlank;
+// import java.util.List;
+
+// @Entity
+// @Data
+// @NoArgsConstructor
+// @AllArgsConstructor
+// public class InteractiveActivity {
+//     @Id
+//     @GeneratedValue(generator = "system-uuid")
+//     @GenericGenerator(name="system-uuid",strategy = "uuid")
+//     private String interactiveActivityId;
+
+//     @NotBlank
+//     private String interactiveActivityName;
+
+//     private int interactiveActivityNumber;
+
+//     @Column(columnDefinition = "TEXT")
+//     private String intro;
+
+//     @Column(columnDefinition = "TEXT")
+//     private String materialsRequired;
+
+//     @Column(columnDefinition = "TEXT")
+//     private String keyOutcomes;
+
+//     @Column(columnDefinition = "TEXT")
+//     private String howToDoIt;
+
+//     @Column(columnDefinition = "TEXT")
+//     private String learningObjective;
+
+//     private String duration;
+
+//     @Column(columnDefinition = "TEXT")
+//     private String image;
+
+//     private Boolean submission;
+
+//     private String ratings;
+
+//     private String feedback;
+
+//     private String tags;
+
+//     @Column(columnDefinition = "TEXT")
+//     private String bookRef;
+
+//     @Column(columnDefinition = "TEXT")
+//     private String videoRef;
+
+//     private float progress;
+
+//     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+//     @JoinColumn(name = "interactive_activity_id")
+//     private List<Processes> processes;
+
+//     // New Column
+//     @Column(columnDefinition = "TEXT")
+//     private String submoduleIdRef;
+
+//     // New Column
+//     @Column(columnDefinition = "TEXT")
+//     private String firstProcessIdRef;
+    
+//  // 🆕 Newly Added Fields
+//     @Column(columnDefinition = "TEXT")
+//     private String submissionType;
+
+//     @Column(columnDefinition = "TEXT")
+//     private String submissionLink;
+
+//     @Column(columnDefinition = "TEXT")
+//     private String typeOfInteractiveActivity;
+// }
+
 package com.sensei.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Data
+@Table(name = "interactive_activity")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class InteractiveActivity {
+
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name="system-uuid",strategy = "uuid")
-    private String interactiveActivityId;
+    @GeneratedValue
+    @Column(name = "id", nullable = false, updatable = false, columnDefinition = "uuid")
+    private UUID id;
 
-    @NotBlank
-    private String interactiveActivityName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sub_module_id", nullable = false)
+    private SubModule subModule;
 
-    private int interactiveActivityNumber;
+    @Column(name = "title", nullable = false, columnDefinition = "text")
+    private String title;
 
-    @Column(columnDefinition = "TEXT")
-    private String intro;
+    @Column(name = "learning_outcome", columnDefinition = "text")
+    private String learningOutcome;
 
-    @Column(columnDefinition = "TEXT")
-    private String materialsRequired;
+    @Column(name = "key_objectives", columnDefinition = "text")
+    private String keyObjectives;
 
-    @Column(columnDefinition = "TEXT")
-    private String keyOutcomes;
+    @Column(name = "reference_video", columnDefinition = "text")
+    private String referenceVideo;
 
-    @Column(columnDefinition = "TEXT")
-    private String howToDoIt;
+    @Column(name = "cover_image", columnDefinition = "text")
+    private String coverImage;
 
-    @Column(columnDefinition = "TEXT")
-    private String learningObjective;
+    @Column(name = "objective", columnDefinition = "text")
+    private String objective;
 
-    private String duration;
+    @Column(name = "activity_type", columnDefinition = "text")
+    private String activityType;    
 
-    @Column(columnDefinition = "TEXT")
-    private String image;
+    @Column(name = "order_index")
+    private Integer orderIndex;
 
-    private Boolean submission;
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 
-    private String ratings;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
-    private String feedback;
-
-    private String tags;
-
-    @Column(columnDefinition = "TEXT")
-    private String bookRef;
-
-    @Column(columnDefinition = "TEXT")
-    private String videoRef;
-
-    private float progress;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "interactive_activity_id")
-    private List<Processes> processes;
-
-    // New Column
-    @Column(columnDefinition = "TEXT")
-    private String submoduleIdRef;
-
-    // New Column
-    @Column(columnDefinition = "TEXT")
-    private String firstProcessIdRef;
-    
- // 🆕 Newly Added Fields
-    @Column(columnDefinition = "TEXT")
-    private String submissionType;
-
-    @Column(columnDefinition = "TEXT")
-    private String submissionLink;
-
-    @Column(columnDefinition = "TEXT")
-    private String typeOfInteractiveActivity;
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }
