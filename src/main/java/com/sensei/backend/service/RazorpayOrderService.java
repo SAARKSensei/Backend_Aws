@@ -6,6 +6,7 @@ import com.sensei.backend.entity.PaymentTransaction;
 import com.sensei.backend.enums.PaymentGateway;
 import com.sensei.backend.enums.TransactionStatus;
 import com.sensei.backend.repository.PaymentTransactionRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
@@ -24,13 +25,15 @@ public class RazorpayOrderService {
             Integer amount,
             UUID childId,
             UUID parentId,
-            UUID pricingPlanId
+            UUID pricingPlanId,
+            String couponCode,
+            Integer couponDiscount
     ) throws Exception {
 
         JSONObject options = new JSONObject();
-        options.put("amount", amount);
+        options.put("amount", amount * 100); // rupees → paise
         options.put("currency", "INR");
-        options.put("receipt", "rcpt_" + UUID.randomUUID());
+        options.put("receipt", "rcpt_" + System.currentTimeMillis());
 
         Order order = razorpayClient.orders.create(options);
 
@@ -43,6 +46,8 @@ public class RazorpayOrderService {
                 .childId(childId)
                 .parentId(parentId)
                 .pricingPlanId(pricingPlanId)
+                .couponCode(couponCode)
+                .couponDiscount(couponDiscount)
                 .rawResponse(order.toString())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())

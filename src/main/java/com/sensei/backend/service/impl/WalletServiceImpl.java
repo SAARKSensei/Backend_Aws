@@ -48,66 +48,134 @@ public class WalletServiceImpl implements WalletService {
     // ----------------------------------------
     // CREDIT WALLET
     // ----------------------------------------
+    // @Override
+    // @Transactional
+    // public WalletResponseDTO credit(WalletCreditRequestDTO dto) {
+
+    //     Wallet wallet = getWalletEntity(dto.getParentId());
+
+    //     wallet.setBalance(wallet.getBalance() + dto.getAmount());
+    //     wallet.setUpdatedAt(LocalDateTime.now());
+    //     walletRepository.save(wallet);
+
+    //     WalletTransaction tx = WalletTransaction.builder()
+    //             .walletId(wallet.getId())
+    //             .parentId(dto.getParentId())
+    //             .amount(dto.getAmount())
+    //             .direction("CREDIT")
+    //             .transactionType(dto.getTransactionType())
+    //             .referenceType(dto.getReferenceType())
+    //             .referenceId(dto.getReferenceId())
+    //             .remarks(dto.getRemarks())
+    //             .createdAt(LocalDateTime.now())
+    //             .build();
+
+    //     walletTransactionRepository.save(tx);
+
+    //     return mapWallet(wallet);
+    // }
     @Override
-    @Transactional
-    public WalletResponseDTO credit(WalletCreditRequestDTO dto) {
+@Transactional
+public WalletResponseDTO credit(WalletCreditRequestDTO dto) {
 
-        Wallet wallet = getWalletEntity(dto.getParentId());
+    Wallet wallet = getWalletEntity(dto.getParentId());
 
-        wallet.setBalance(wallet.getBalance() + dto.getAmount());
-        wallet.setUpdatedAt(LocalDateTime.now());
-        walletRepository.save(wallet);
+    int newBalance = wallet.getBalance() + dto.getAmount();
 
-        WalletTransaction tx = WalletTransaction.builder()
-                .walletId(wallet.getId())
-                .parentId(dto.getParentId())
-                .amount(dto.getAmount())
-                .direction("CREDIT")
-                .transactionType(dto.getTransactionType())
-                .referenceType(dto.getReferenceType())
-                .referenceId(dto.getReferenceId())
-                .remarks(dto.getRemarks())
-                .createdAt(LocalDateTime.now())
-                .build();
+    wallet.setBalance(newBalance);
+    wallet.setUpdatedAt(LocalDateTime.now());
+    walletRepository.save(wallet);
 
-        walletTransactionRepository.save(tx);
+    WalletTransaction tx = WalletTransaction.builder()
+            .walletId(wallet.getId())
+            .parentId(dto.getParentId())
+            .amount(dto.getAmount())
+            .direction("CREDIT")
+            .transactionType(dto.getTransactionType())
+            .referenceType(dto.getReferenceType())
+            .referenceId(dto.getReferenceId())
+            .remarks(dto.getRemarks())
+            .balanceAfter(newBalance)   // ✅ THIS IS THE FIX
+            .createdAt(LocalDateTime.now())
+            .build();
 
-        return mapWallet(wallet);
-    }
+    walletTransactionRepository.save(tx);
+
+    return mapWallet(wallet);
+}
+
 
     // ----------------------------------------
     // DEBIT WALLET
     // ----------------------------------------
+    // @Override
+    // @Transactional
+    // public WalletResponseDTO debit(WalletDebitRequestDTO dto) {
+
+    //     Wallet wallet = getWalletEntity(dto.getParentId());
+
+    //     if (wallet.getBalance() < dto.getAmount()) {
+    //         throw new RuntimeException("Insufficient wallet balance");
+    //     }
+
+    //     wallet.setBalance(wallet.getBalance() - dto.getAmount());
+    //     wallet.setUpdatedAt(LocalDateTime.now());
+    //     walletRepository.save(wallet);
+
+    //     WalletTransaction tx = WalletTransaction.builder()
+    //             .walletId(wallet.getId())
+    //             .parentId(dto.getParentId())
+    //             .amount(dto.getAmount())
+    //             .direction("DEBIT")
+    //             .transactionType(dto.getTransactionType())
+    //             .referenceType("PRICING_PLAN")
+    //             .referenceId(dto.getPricingPlanId())
+    //             .remarks(dto.getRemarks())
+    //             .createdAt(LocalDateTime.now())
+    //             .build();
+
+    //     walletTransactionRepository.save(tx);
+
+    //     return mapWallet(wallet);
+    // }
     @Override
-    @Transactional
-    public WalletResponseDTO debit(WalletDebitRequestDTO dto) {
+@Transactional
+public WalletResponseDTO debit(WalletDebitRequestDTO dto) {
 
-        Wallet wallet = getWalletEntity(dto.getParentId());
+    Wallet wallet = getWalletEntity(dto.getParentId());
 
-        if (wallet.getBalance() < dto.getAmount()) {
-            throw new RuntimeException("Insufficient wallet balance");
-        }
-
-        wallet.setBalance(wallet.getBalance() - dto.getAmount());
-        wallet.setUpdatedAt(LocalDateTime.now());
-        walletRepository.save(wallet);
-
-        WalletTransaction tx = WalletTransaction.builder()
-                .walletId(wallet.getId())
-                .parentId(dto.getParentId())
-                .amount(dto.getAmount())
-                .direction("DEBIT")
-                .transactionType(dto.getTransactionType())
-                .referenceType("PRICING_PLAN")
-                .referenceId(dto.getPricingPlanId())
-                .remarks(dto.getRemarks())
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        walletTransactionRepository.save(tx);
-
-        return mapWallet(wallet);
+    if (wallet.getBalance() < dto.getAmount()) {
+        throw new RuntimeException("Insufficient wallet balance");
     }
+
+    // ✅ Calculate new balance FIRST
+    int newBalance = wallet.getBalance() - dto.getAmount();
+
+    // ✅ Update wallet
+    wallet.setBalance(newBalance);
+    wallet.setUpdatedAt(LocalDateTime.now());
+    walletRepository.save(wallet);
+
+    // ✅ Persist transaction with balance_after
+    WalletTransaction tx = WalletTransaction.builder()
+            .walletId(wallet.getId())
+            .parentId(dto.getParentId())
+            .amount(dto.getAmount())
+            .direction("DEBIT")
+            .transactionType(dto.getTransactionType())
+            .referenceType("PRICING_PLAN")
+            .referenceId(dto.getPricingPlanId())
+            .remarks(dto.getRemarks())
+            .balanceAfter(newBalance)   // ⭐ THIS FIXES YOUR ERROR
+            .createdAt(LocalDateTime.now())
+            .build();
+
+    walletTransactionRepository.save(tx);
+
+    return mapWallet(wallet);
+}
+
+
 
     // ----------------------------------------
     // GET WALLET

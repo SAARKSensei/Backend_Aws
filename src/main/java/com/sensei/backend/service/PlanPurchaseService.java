@@ -1,13 +1,8 @@
 package com.sensei.backend.service;
 
-import java.util.UUID;
+import com.sensei.backend.dto.planpurchase.PlanPurchaseRequestDTO;
 
 public interface PlanPurchaseService {
 
-    void purchasePlan(
-            UUID parentId,
-            UUID childId,
-            UUID pricingPlanId,
-            int walletAmountUsed
-    );
+    void purchasePlan(PlanPurchaseRequestDTO dto);
 }

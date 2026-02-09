@@ -3,6 +3,9 @@ package com.sensei.backend.entity;
 import com.sensei.backend.enums.PaymentGateway;
 import com.sensei.backend.enums.PaymentMethod;
 import com.sensei.backend.enums.TransactionStatus;
+import com.sensei.backend.enums.TransactionType;
+
+
 import lombok.*;
 import org.hibernate.annotations.Type;
 
@@ -49,10 +52,24 @@ public class PaymentTransaction {
     private UUID parentId;
     private UUID pricingPlanId;
 
-    @Column(name = "raw_response", columnDefinition = "jsonb")
+    @Column(name = "raw_response", columnDefinition = "text")
     private String rawResponse;
+
 
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transaction_type", nullable = false)
+    private TransactionType transactionType;
+
+    @Column(name = "coupon_code")
+    private String couponCode;
+
+    @Column(name = "coupon_discount")
+    private Integer couponDiscount;
+
+
 }

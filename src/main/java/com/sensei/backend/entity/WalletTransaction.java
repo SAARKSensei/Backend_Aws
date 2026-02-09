@@ -56,4 +56,8 @@ public class WalletTransaction {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "balance_after", nullable = false)
+    private Integer balanceAfter;
+
 }

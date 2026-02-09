@@ -14,4 +14,7 @@ public interface MasterTransactionRepository
     List<MasterTransaction> findByChildIdOrderByCreatedAtDesc(UUID childId);
 
     List<MasterTransaction> findByTransactionType(String transactionType);
+
+    boolean existsByPaymentTransactionId(UUID paymentTransactionId);
+
 }
