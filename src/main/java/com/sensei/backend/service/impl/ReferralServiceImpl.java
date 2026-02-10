@@ -1,5 +1,7 @@
 package com.sensei.backend.service.impl;
 
+import com.sensei.backend.dto.referral.ReferralCodeResponseDTO;
+import com.sensei.backend.dto.referral.ReferralUsageResponseDTO;
 import com.sensei.backend.dto.wallet.WalletCreditRequestDTO;
 import com.sensei.backend.entity.ReferralCode;
 import com.sensei.backend.entity.ReferralUsage;
@@ -10,9 +12,9 @@ import com.sensei.backend.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -125,4 +127,44 @@ public class ReferralServiceImpl implements ReferralService {
                 parentId.toString().substring(0, 4).toUpperCase() +
                 "-" + (int) (Math.random() * 9000 + 1000);
     }
+
+    @Override
+public ReferralCodeResponseDTO getReferralCodeForParent(UUID parentId) {
+
+    ReferralCode code = referralCodeRepository
+            .findByParentId(parentId)
+            .orElseThrow(() -> new RuntimeException("Referral code not found"));
+
+    return ReferralCodeResponseDTO.builder()
+            .id(code.getId())
+            .parentId(code.getParentId())
+            .code(code.getCode())
+            .usedCount(code.getUsedCount())
+            .maxUsage(code.getMaxUsage())
+            .active(code.getActive())
+            .build();
+        }
+
+
+        @Override
+        public List<ReferralUsageResponseDTO> getReferralUsage(UUID parentId) {
+
+    ReferralCode code = referralCodeRepository
+            .findByParentId(parentId)
+            .orElseThrow(() -> new RuntimeException("Referral code not found"));
+
+    return referralUsageRepository
+            .findByReferralCodeId(code.getId())
+            .stream()
+            .map(usage -> ReferralUsageResponseDTO.builder()
+                    .referralCodeId(usage.getReferralCodeId())
+                    .referrerParentId(usage.getReferrerParentId())
+                    .referredParentId(usage.getReferredParentId())
+                    .rewardAmount(usage.getRewardAmount())
+                    .usedAt(usage.getUsedAt())
+                    .build()
+            )
+            .toList();
+}
+
 }

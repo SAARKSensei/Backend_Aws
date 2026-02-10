@@ -1,10 +1,12 @@
 package com.sensei.backend.controller;
 
+import com.sensei.backend.dto.referral.ReferralCodeResponseDTO;
+import com.sensei.backend.dto.referral.ReferralUsageResponseDTO;
 import com.sensei.backend.service.ReferralService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -38,4 +40,31 @@ public class ReferralController {
         referralService.applyReferralCode(parentId, referralCode);
         return ResponseEntity.ok("Referral code applied successfully");
     }
+
+
+    /**
+ * Get referral code for logged-in parent
+ */
+@GetMapping("/my-code")
+public ResponseEntity<ReferralCodeResponseDTO> getMyReferralCode(
+        @RequestParam UUID parentId
+) {
+    return ResponseEntity.ok(
+            referralService.getReferralCodeForParent(parentId)
+    );
+}
+
+
+/**
+ * Get referral usage history (analytics)
+ */
+@GetMapping("/usage")
+public ResponseEntity<List<ReferralUsageResponseDTO>> getReferralUsage(
+        @RequestParam UUID parentId
+) {
+    return ResponseEntity.ok(
+            referralService.getReferralUsage(parentId)
+    );
+}
+
 }
