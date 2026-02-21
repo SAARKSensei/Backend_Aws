@@ -106,9 +106,11 @@ public class ModuleController {
     @GetMapping("/by-subject/{subjectId}")
     public List<ModuleResponseDTO> getBySubject(
             @PathVariable UUID subjectId,
-            @RequestParam UUID childId) {
+            @RequestParam(required = false) UUID childId) {
 
-        accessControlService.validateSubjectAccess(childId, subjectId);
+        if (childId != null) {
+            accessControlService.validateSubjectAccess(childId, subjectId);
+        }
         return moduleService.getModulesBySubject(subjectId);
     }
 

@@ -135,12 +135,13 @@ public class QuestionController {
     @GetMapping("/digital-activity/{digitalActivityId}")
     public List<QuestionResponseDTO> getByDigitalActivity(
             @PathVariable UUID digitalActivityId,
-            @RequestParam UUID childId) {
+            @RequestParam(required = false) UUID childId) {
 
-        UUID subjectId = service.getSubjectIdByDigitalActivity(digitalActivityId);
-        accessControlService.validateSubjectAccess(childId, subjectId);
+        if (childId != null) {
+            UUID subjectId = service.getSubjectIdByDigitalActivity(digitalActivityId);
+            accessControlService.validateSubjectAccess(childId, subjectId);
+        }
 
         return service.getByDigitalActivity(digitalActivityId);
     }
 }
-

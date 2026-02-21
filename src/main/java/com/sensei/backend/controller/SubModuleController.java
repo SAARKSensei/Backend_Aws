@@ -82,10 +82,12 @@ public class SubModuleController {
     @GetMapping("/by-module/{moduleId}")
     public ResponseEntity<List<SubModuleResponseDTO>> getByModule(
             @PathVariable UUID moduleId,
-            @RequestParam UUID childId) {
+            @RequestParam(required = false) UUID childId) {
 
-        UUID subjectId = subModuleService.getSubjectIdByModule(moduleId);
-        accessControlService.validateSubjectAccess(childId, subjectId);
+        if (childId != null) {
+            UUID subjectId = subModuleService.getSubjectIdByModule(moduleId);
+            accessControlService.validateSubjectAccess(childId, subjectId);
+        }
 
         return ResponseEntity.ok(subModuleService.getByModule(moduleId));
     }

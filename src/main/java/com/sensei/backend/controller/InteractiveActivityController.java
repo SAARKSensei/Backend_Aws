@@ -101,10 +101,12 @@ public class InteractiveActivityController {
     @GetMapping("/by-submodule/{subModuleId}")
     public ResponseEntity<List<InteractiveActivityResponseDTO>> getBySubModule(
             @PathVariable UUID subModuleId,
-            @RequestParam UUID childId) {
+            @RequestParam(required = false) UUID childId) {
 
-        UUID subjectId = service.getSubjectIdBySubModule(subModuleId);
-        accessControlService.validateSubjectAccess(childId, subjectId);
+        if (childId != null) {
+            UUID subjectId = service.getSubjectIdBySubModule(subModuleId);
+            accessControlService.validateSubjectAccess(childId, subjectId);
+        }
 
         return ResponseEntity.ok(service.getBySubModule(subModuleId));
     }
@@ -128,4 +130,3 @@ public class InteractiveActivityController {
         return ResponseEntity.noContent().build();
     }
 }
-

@@ -69,78 +69,68 @@ public class InteractiveProcessController {
     private final InteractiveProcessService processService;
     private final AccessControlService accessControlService;
 
-    // -------------------------
-    // CREATE
-    // -------------------------
     @PostMapping
     public ResponseEntity<InteractiveProcessResponseDTO> create(
             @RequestBody InteractiveProcessRequestDTO dto,
-            @RequestParam UUID childId
-    ) {
+            @RequestParam(required = false) UUID childId) {
 
-        UUID subjectId = accessControlService.getSubjectIdByActivity(dto.getInteractiveActivityId());
-        accessControlService.validateSubjectAccess(childId, subjectId);
+        if (childId != null) {
+            UUID subjectId = accessControlService.getSubjectIdByActivity(dto.getInteractiveActivityId());
+            accessControlService.validateSubjectAccess(childId, subjectId);
+        }
 
         return ResponseEntity.ok(processService.create(dto));
     }
 
-    // -------------------------
-    // GET BY ACTIVITY
-    // -------------------------
     @GetMapping("/by-activity/{activityId}")
     public ResponseEntity<List<InteractiveProcessResponseDTO>> getByActivity(
             @PathVariable UUID activityId,
-            @RequestParam UUID childId
-    ) {
+            @RequestParam(required = false) UUID childId) {
 
-        UUID subjectId = accessControlService.getSubjectIdByActivity(activityId);
-        accessControlService.validateSubjectAccess(childId, subjectId);
+        if (childId != null) {
+            UUID subjectId = accessControlService.getSubjectIdByActivity(activityId);
+            accessControlService.validateSubjectAccess(childId, subjectId);
+        }
 
         return ResponseEntity.ok(processService.getByActivity(activityId));
     }
 
-    // -------------------------
-    // GET BY ID
-    // -------------------------
     @GetMapping("/{processId}")
     public ResponseEntity<InteractiveProcessResponseDTO> getById(
             @PathVariable UUID processId,
-            @RequestParam UUID childId
-    ) {
+            @RequestParam(required = false) UUID childId) {
 
-        UUID subjectId = accessControlService.getSubjectIdByProcess(processId);
-        accessControlService.validateSubjectAccess(childId, subjectId);
+        if (childId != null) {
+            UUID subjectId = accessControlService.getSubjectIdByProcess(processId);
+            accessControlService.validateSubjectAccess(childId, subjectId);
+        }
 
         return ResponseEntity.ok(processService.getById(processId));
     }
 
-    // -------------------------
-    // UPDATE
-    // -------------------------
     @PutMapping("/{processId}")
     public ResponseEntity<InteractiveProcessResponseDTO> update(
             @PathVariable UUID processId,
             @RequestBody InteractiveProcessRequestDTO dto,
-            @RequestParam UUID childId
-    ) {
+            @RequestParam(required = false) UUID childId) {
 
-        UUID subjectId = accessControlService.getSubjectIdByProcess(processId);
-        accessControlService.validateSubjectAccess(childId, subjectId);
+        if (childId != null) {
+            UUID subjectId = accessControlService.getSubjectIdByProcess(processId);
+            accessControlService.validateSubjectAccess(childId, subjectId);
+        }
 
         return ResponseEntity.ok(processService.update(processId, dto));
     }
 
-    // -------------------------
-    // DELETE
-    // -------------------------
     @DeleteMapping("/{processId}")
     public ResponseEntity<Void> delete(
             @PathVariable UUID processId,
-            @RequestParam UUID childId
-    ) {
+            @RequestParam(required = false) UUID childId) {
 
-        UUID subjectId = accessControlService.getSubjectIdByProcess(processId);
-        accessControlService.validateSubjectAccess(childId, subjectId);
+        if (childId != null) {
+            UUID subjectId = accessControlService.getSubjectIdByProcess(processId);
+            accessControlService.validateSubjectAccess(childId, subjectId);
+        }
 
         processService.delete(processId);
         return ResponseEntity.noContent().build();

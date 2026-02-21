@@ -119,10 +119,12 @@ public class DigitalActivityController {
     @GetMapping("/submodule/{subModuleId}")
     public List<DigitalActivityResponseDTO> getBySubModule(
             @PathVariable UUID subModuleId,
-            @RequestParam UUID childId) {
+            @RequestParam(required = false) UUID childId) {
 
-        UUID subjectId = service.getSubjectIdBySubModule(subModuleId);
-        accessControlService.validateSubjectAccess(childId, subjectId);
+        if (childId != null) {
+            UUID subjectId = service.getSubjectIdBySubModule(subModuleId);
+            accessControlService.validateSubjectAccess(childId, subjectId);
+        }
 
         return service.getBySubModule(subModuleId);
     }

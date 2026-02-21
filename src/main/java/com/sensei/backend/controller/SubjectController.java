@@ -142,9 +142,11 @@ public class SubjectController {
     @GetMapping("/{id}")
     public SubjectResponseDTO getById(
             @PathVariable UUID id,
-            @RequestParam UUID childId) {
+            @RequestParam(required = false) UUID childId) {
 
-        accessControlService.validateSubjectAccess(childId, id);
+        if (childId != null) {
+            accessControlService.validateSubjectAccess(childId, id);
+        }
         return subjectService.getById(id);
     }
 
