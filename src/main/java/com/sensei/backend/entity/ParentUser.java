@@ -6,7 +6,7 @@
 // import lombok.NoArgsConstructor;
 // import org.hibernate.annotations.GenericGenerator;
 
-// import javax.persistence.*;
+// import jakarta.persistence.*;
 // import java.util.Date;
 // import java.util.List;
 
@@ -74,7 +74,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -132,4 +132,5 @@ public class ParentUser {
     @Column(name = "location")
     private String location;
 }
+
 

@@ -1,7 +1,7 @@
 package com.sensei.backend.entity;
 
 import lombok.*;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -37,3 +37,4 @@ public class ReferralCode {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 }
+

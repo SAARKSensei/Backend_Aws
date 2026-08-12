@@ -1,7 +1,7 @@
 package com.sensei.backend.entity;
 
 import lombok.*;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -35,3 +35,4 @@ public class ChildInteractiveActivityProgress {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 }
+

@@ -1,7 +1,7 @@
 package com.sensei.backend.entity;
 
 import lombok.*;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -34,3 +34,4 @@ public class ChildQuestionAttempt {
     private Integer attemptNumber;
     private LocalDateTime attemptedAt;
 }
+

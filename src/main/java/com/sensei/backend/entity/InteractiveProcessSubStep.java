@@ -1,7 +1,7 @@
 // package com.sensei.backend.entity;
 
 // import lombok.*;
-// import javax.persistence.*;
+// import jakarta.persistence.*;
 // import java.util.UUID;
 // import java.time.LocalDateTime;
 
@@ -40,7 +40,7 @@
 package com.sensei.backend.entity;
 
 import lombok.*;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -83,3 +83,4 @@ public class InteractiveProcessSubStep {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
+

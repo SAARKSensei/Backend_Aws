@@ -1,6 +1,6 @@
 // package com.sensei.backend.entity;
 
-// import javax.persistence.*;
+// import jakarta.persistence.*;
 
 // import org.hibernate.annotations.GenericGenerator;
 
@@ -230,7 +230,7 @@ package com.sensei.backend.entity;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -271,6 +271,7 @@ public class Question {
     @Column(name = "is_active")
     private Boolean isActive = true;
 }
+
 
 
 

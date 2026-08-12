@@ -5,7 +5,7 @@
 // import lombok.NoArgsConstructor;
 // import org.hibernate.annotations.GenericGenerator;
 
-// import javax.persistence.*;
+// import jakarta.persistence.*;
 // import java.time.LocalDateTime;
 
 // @Entity
@@ -28,7 +28,7 @@
 package com.sensei.backend.entity;
 
 import lombok.*;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -64,3 +64,4 @@ public class Campaign {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 }
+

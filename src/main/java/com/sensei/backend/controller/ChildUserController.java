@@ -8,7 +8,7 @@
 // import org.springframework.http.ResponseEntity;
 // import org.springframework.web.bind.annotation.*;
 
-// import javax.validation.Valid;
+// import jakarta.validation.Valid;
 // import java.util.List;
 
 // @RestController
@@ -68,7 +68,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/children")
@@ -115,3 +115,4 @@ public ResponseEntity<List<ChildUserDTO>> getChildrenByParent(@PathVariable UUID
 }
 
 }
+

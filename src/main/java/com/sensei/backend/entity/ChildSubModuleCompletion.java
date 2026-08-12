@@ -1,7 +1,7 @@
 package com.sensei.backend.entity;
 
 import lombok.*;
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,3 +33,4 @@ public class ChildSubModuleCompletion {
 private BigDecimal score;
     private String remarks;
 }
+

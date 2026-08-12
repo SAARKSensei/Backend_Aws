@@ -9,7 +9,7 @@ import com.sensei.backend.enums.TransactionType;
 import lombok.*;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -73,3 +73,4 @@ public class PaymentTransaction {
 
 
 }
+

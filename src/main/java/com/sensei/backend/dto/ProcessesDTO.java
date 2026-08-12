@@ -1,7 +1,7 @@
 package com.sensei.backend.dto;
 
 import lombok.Data;
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 @Data
 public class ProcessesDTO {
@@ -33,3 +33,4 @@ public class ProcessesDTO {
         return this.processNumber;
     }
 }
+

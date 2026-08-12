@@ -1,6 +1,6 @@
 # Start with a JDK base image
 # FROM openjdk:11-jdk-slim AS builder
-FROM maven:3.9.6-eclipse-temurin-11 AS builder
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
 # Set working directory
 WORKDIR /app
@@ -20,7 +20,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # --- Production image ---
-FROM openjdk:11-jdk-slim
+FROM eclipse-temurin:17-jre
 
 # Set working directory
 WORKDIR /app

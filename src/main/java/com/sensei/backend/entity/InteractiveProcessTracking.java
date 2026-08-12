@@ -3,7 +3,7 @@ package com.sensei.backend.entity;
 import com.sensei.backend.enums.ProcessTrackingStatus;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -48,3 +48,4 @@ public class InteractiveProcessTracking {
 
     private LocalDateTime updatedAt;
 }
+

@@ -1,7 +1,7 @@
 package com.sensei.backend.entity;
 
 import lombok.*;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -61,3 +61,4 @@ public class WalletTransaction {
     private Integer balanceAfter;
 
 }
+

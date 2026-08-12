@@ -5,8 +5,8 @@
 // import lombok.NoArgsConstructor;
 // import org.hibernate.annotations.GenericGenerator;
 
-// import javax.persistence.*;
-// import javax.validation.constraints.NotBlank;
+// import jakarta.persistence.*;
+// import jakarta.validation.constraints.NotBlank;
 // import java.util.List;
 
 // @Entity
@@ -47,7 +47,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -85,3 +85,4 @@ public class Subject {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
+

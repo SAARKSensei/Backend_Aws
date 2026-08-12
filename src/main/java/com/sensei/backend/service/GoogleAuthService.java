@@ -11,7 +11,7 @@ import java.util.Collections;
 @Service
 public class GoogleAuthService {
 
-    private final String CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID";
+    private final String CLIENT_ID = "754090423794-rpnl155pei16p3ka7oltqe8hj8ignmte.apps.googleusercontent.com";
 
     public GoogleIdToken.Payload verifyToken(String idTokenString) {
 

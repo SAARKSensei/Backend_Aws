@@ -2,7 +2,7 @@
 
 // import lombok.Data;
 
-// import javax.validation.constraints.NotNull;
+// import jakarta.validation.constraints.NotNull;
 // import java.util.Date;
 
 // @Data
@@ -48,7 +48,7 @@
 //     private Date planExpiryDate;
 // }
 package com.sensei.backend.dto;
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -80,4 +80,5 @@ public class ChildUserDTO {
     private UUID activePlanId;
     private LocalDate planStartDate;
 }
+
 

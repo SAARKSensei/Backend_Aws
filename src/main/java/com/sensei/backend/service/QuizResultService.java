@@ -10,7 +10,7 @@
 // import com.sensei.backend.repository.QuestiontableRepository;
 // import org.springframework.stereotype.Service;
 
-// import javax.transaction.Transactional;
+// import jakarta.transaction.Transactional;
 // import java.util.*;
 
 // @Transactional
@@ -92,3 +92,4 @@
 //         return summary;
 //     }
 // }
+
