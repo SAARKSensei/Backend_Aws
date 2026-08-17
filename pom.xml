@@ -130,7 +130,7 @@
         <version>2.2.0</version>
         </dependency>
 
-        <!-- 🔥 THIS IS MISSING (IMPORTANT) -->
+        <!-- THIS IS MISSING (IMPORTANT) -->
         <dependency>
         <groupId>com.google.http-client</groupId>
         <artifactId>google-http-client-jackson2</artifactId>
