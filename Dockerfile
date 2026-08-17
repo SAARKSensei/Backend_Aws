@@ -1,26 +1,20 @@
 # Start with a JDK base image
-# FROM openjdk:11-jdk-slim AS builder
-FROM maven:3.9.6-eclipse-temurin-11 AS builder
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy the Maven wrapper and pom.xml
-# COPY .mvn/ .mvn
-# COPY mvnw mvnw
+# Copy the pom.xml
 COPY pom.xml .
-
-# Pre-fetch dependencies (better layer caching)
-# RUN ./mvnw dependency:go-offline -B
 
 # Copy the source code
 COPY src ./src
 
 # Package the application
-RUN mvn clean package -DskipTests
+RUN mvn -B clean package -DskipTests
 
 # --- Production image ---
-FROM openjdk:11-jdk-slim
+FROM eclipse-temurin:17-jre-jammy
 
 # Set working directory
 WORKDIR /app
