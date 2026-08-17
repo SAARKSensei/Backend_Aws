@@ -29,7 +29,7 @@ jobs:
           cache: 'maven'
 
       - name: Run Code Quality Tools (PMD, SpotBugs)
-        run: mvn -B pmd:check spotbugs:check -Dpmd.failOnViolation=false -Dspotbugs.failOnError=false
+        run: mvn -B clean compile pmd:check com.github.spotbugs:spotbugs-maven-plugin:check -Dpmd.failOnViolation=false -Dspotbugs.failOnError=false
 
   security-scan:
     if: github.repository == 'SAARKSensei/Backend_Aws'
