@@ -78,6 +78,8 @@ jobs:
           cache: 'maven'
 
       - name: Run Tests & Package
+        env:
+          JWT_SECRET: dummy_secret_for_ci_tests_only
         run: mvn -B clean verify
 
 #  deploy:
