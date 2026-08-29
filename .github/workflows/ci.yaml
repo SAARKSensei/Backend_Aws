@@ -5,10 +5,18 @@ on:
     branches:
       - main
       - test
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - '.github/workflows/ci.yaml'
   pull_request:
     branches:
       - main
       - test
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - '.github/workflows/ci.yaml'
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/sensei-springboot-backend
