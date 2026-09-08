@@ -55,7 +55,7 @@ public class RazorpayController {
      * 2️⃣ Verify Razorpay payment & activate plan
      */
     @PostMapping("/verify/plan")
-    public ResponseEntity<String> verifyPlanPayment(
+    public ResponseEntity<Map<String, String>> verifyPlanPayment(
             @RequestParam String orderId,
             @RequestParam String paymentId,
             @RequestParam String signature
@@ -69,7 +69,7 @@ public class RazorpayController {
                 razorpaySecret
         );
 
-        return ResponseEntity.ok("PLAN_PAYMENT_SUCCESS");
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "PLAN_PAYMENT_SUCCESS"));
     }
 
     /**
@@ -97,7 +97,7 @@ public class RazorpayController {
      * 4️⃣ Verify Razorpay wallet topup payment & credit wallet
      */
     @PostMapping("/verify/wallet")
-    public ResponseEntity<String> verifyWalletPayment(
+    public ResponseEntity<Map<String, String>> verifyWalletPayment(
             @RequestParam String orderId,
             @RequestParam String paymentId,
             @RequestParam String signature
@@ -111,6 +111,6 @@ public class RazorpayController {
                 razorpaySecret
         );
 
-        return ResponseEntity.ok("WALLET_TOPUP_SUCCESS");
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "WALLET_TOPUP_SUCCESS"));
     }
 }
