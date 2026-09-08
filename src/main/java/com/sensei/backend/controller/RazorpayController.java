@@ -77,18 +77,40 @@ public class RazorpayController {
      */
     @PostMapping("/order/wallet")
     public ResponseEntity<Map<String, Object>> createWalletTopupOrder(
-            @RequestParam int amount   // rupees
+            @RequestParam int amount,   // rupees
+            @RequestParam UUID parentId
     ) throws Exception {
-        log.info("Razorpay wallet topup created for amount: {}", amount);
+        log.info("Razorpay wallet topup created for amount: {}, parent: {}", amount, parentId);
 
-        var order = walletTopupService.createWalletTopupOrder(amount);
+        PaymentTransaction txn = walletTopupService.createWalletTopupOrder(amount, parentId);
 
         return ResponseEntity.ok(
                 Map.of(
-                        "orderId", order.get("id"),
-                        "amount", order.get("amount"),
-                        "currency", order.get("currency")
+                        "orderId", txn.getGatewayOrderId(),
+                        "amount", txn.getAmount(),
+                        "currency", txn.getCurrency()
                 )
         );
+    }
+
+    /**
+     * 4️⃣ Verify Razorpay wallet topup payment & credit wallet
+     */
+    @PostMapping("/verify/wallet")
+    public ResponseEntity<String> verifyWalletPayment(
+            @RequestParam String orderId,
+            @RequestParam String paymentId,
+            @RequestParam String signature
+    ) throws Exception {
+        log.info("Verifying Razorpay wallet topup payment orderId: {}", orderId);
+
+        verificationService.verifyAndTopupWallet(
+                orderId,
+                paymentId,
+                signature,
+                razorpaySecret
+        );
+
+        return ResponseEntity.ok("WALLET_TOPUP_SUCCESS");
     }
 }

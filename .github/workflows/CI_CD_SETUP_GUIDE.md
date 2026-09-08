@@ -49,7 +49,7 @@ Add the following 5 secrets exactly as named:
 | `EC2_HOST` | The public IP address of your EC2 instance (e.g., `54.123.45.67`) |
 | `EC2_USERNAME` | The username you use to SSH (usually `ubuntu` or `ec2-user`) |
 | `EC2_SSH_KEY` | Open your `.pem` file in a text editor. Copy ALL the text (including `-----BEGIN RSA PRIVATE KEY-----` and the end line) and paste it here. |
-| `PRODUCTION_ENV` | Copy the entire contents of your production `.env` file and paste it here. **Make sure it includes `LOG_LEVEL=INFO` to prevent log bloat!** The workflow will automatically generate the `.env` file securely on your server before starting the app! |
+| `PRODUCTION_ENV` | Copy the entire contents of your production `.env` file and paste it here. **Make sure it includes `LOG_LEVEL=INFO` (to prevent log bloat) and your `DOZZLE_USERNAME`/`DOZZLE_PASSWORD` credentials!** The workflow will automatically generate the `.env` file securely on your server before starting the app! |
 
 ### 3. How to Trigger a Deployment
 Once the above is done, you never have to do it again. To deploy new code:
