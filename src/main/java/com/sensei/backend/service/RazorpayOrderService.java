@@ -5,6 +5,7 @@ import com.razorpay.RazorpayClient;
 import com.sensei.backend.entity.PaymentTransaction;
 import com.sensei.backend.enums.PaymentGateway;
 import com.sensei.backend.enums.TransactionStatus;
+import com.sensei.backend.enums.TransactionType;
 import com.sensei.backend.repository.PaymentTransactionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,7 @@ public class RazorpayOrderService {
                 .pricingPlanId(pricingPlanId)
                 .couponCode(couponCode)
                 .couponDiscount(couponDiscount)
+                .transactionType(TransactionType.PLAN_PURCHASE)
                 .rawResponse(order.toString())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())

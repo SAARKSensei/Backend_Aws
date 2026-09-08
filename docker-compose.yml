@@ -23,6 +23,19 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # Init container to dynamically generate the users.yml from .env credentials
+  dozzle-init:
+    image: amir20/dozzle:alpine
+    container_name: dozzle-init
+    volumes:
+      - dozzle-data:/data
+    environment:
+      - DOZZLE_USERNAME=${DOZZLE_USERNAME}
+      - DOZZLE_PASSWORD=${DOZZLE_PASSWORD}
+    entrypoint: ["/bin/sh"]
+    # This securely hashes the .env variables on the fly!
+    command: ["-c", "/dozzle generate --name Admin --password \"$${DOZZLE_PASSWORD}\" \"$${DOZZLE_USERNAME}\" > /data/users.yml"]
+
   # dozzle for viewing logs
   dozzle:
     # Use the official, ultra-lightweight Dozzle image
@@ -31,11 +44,19 @@ services:
     # Give Dozzle read-only access to the Docker socket so it can read other containers' logs
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - dozzle-data:/data
     # Map Dozzle to port 9999 so it doesn't conflict with common apps (like Tomcat on 8080)
     ports:
       - "9999:8080"
-    # Automatically restart Dozzle if the server reboots
+    environment:
+      - DOZZLE_AUTH_PROVIDER=simple
     restart: unless-stopped
     # Wait for the backend to start before starting Dozzle
     depends_on:
-      - backend
+      dozzle-init:
+        condition: service_completed_successfully
+      backend:
+        condition: service_started
+
+volumes:
+  dozzle-data:

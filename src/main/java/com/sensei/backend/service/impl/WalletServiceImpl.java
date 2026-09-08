@@ -75,12 +75,23 @@ public class WalletServiceImpl implements WalletService {
     //     return mapWallet(wallet);
     // }
     @Override
-@Transactional
-public WalletResponseDTO credit(WalletCreditRequestDTO dto) {
+    @Transactional
+    public WalletResponseDTO credit(WalletCreditRequestDTO dto) {
 
-    Wallet wallet = getWalletEntity(dto.getParentId());
+        Wallet wallet = walletRepository
+                .findByParentId(dto.getParentId())
+                .orElseGet(() -> {
+                    Wallet w = Wallet.builder()
+                            .parentId(dto.getParentId())
+                            .balance(0)
+                            .status("ACTIVE")
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build();
+                    return walletRepository.save(w);
+                });
 
-    int newBalance = wallet.getBalance() + dto.getAmount();
+        int newBalance = wallet.getBalance() + dto.getAmount();
 
     wallet.setBalance(newBalance);
     wallet.setUpdatedAt(LocalDateTime.now());
