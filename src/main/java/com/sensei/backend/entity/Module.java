@@ -51,6 +51,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.sensei.backend.enums.LifeSkillType;
+
 @Entity
 @Table(name = "module")
 @Getter
@@ -83,6 +85,10 @@ public class Module {
     @Column(name = "is_active")
     @Builder.Default
     private Boolean isActive = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "associated_life_skill")
+    private LifeSkillType associatedLifeSkill;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

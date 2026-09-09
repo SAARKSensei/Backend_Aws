@@ -6,8 +6,7 @@ Spring Boot backend service for the **Sensei** .
 
 ## 🚀 Features
 
-- REST APIs 
-- Authentication: currently by Oauth2 at frontend (Next js)
+- REST APIs
 - Dockerized architecture
 - CI/CD pipeline with GitHub Actions
 - Auto-deployment to EC2 (Amazon Linux)

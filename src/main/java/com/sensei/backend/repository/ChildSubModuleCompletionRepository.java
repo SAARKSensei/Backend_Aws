@@ -26,4 +26,6 @@ Optional<ChildSubModuleCompletion> findByChildIdAndSubModule(
         SubModule subModule
 );
 
+java.util.List<ChildSubModuleCompletion> findByChildId(UUID childId);
+
 }

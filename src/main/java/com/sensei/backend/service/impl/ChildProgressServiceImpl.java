@@ -6,6 +6,7 @@ import com.sensei.backend.entity.*;
 import com.sensei.backend.exception.ResourceNotFoundException;
 import com.sensei.backend.repository.*;
 import com.sensei.backend.service.ChildProgressService;
+import com.sensei.backend.service.ChildLifeSkillService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,7 @@ public class ChildProgressServiceImpl implements ChildProgressService {
     private final ChildDigitalActivityProgressRepository digitalProgressRepo;
     private final ParentUserRepository parentUserRepository;
     private final ChildUserRepository childUserRepository;
+    private final ChildLifeSkillService childLifeSkillService;
 
     // -----------------------------------------
     // START INTERACTIVE ACTIVITY
@@ -178,6 +180,10 @@ public class ChildProgressServiceImpl implements ChildProgressService {
                 .build();
 
         subModuleCompletionRepo.save(completion);
+        
+        if (subModule.getModule() != null && subModule.getModule().getAssociatedLifeSkill() != null) {
+            childLifeSkillService.addLifeSkillPoints(childId, subModule.getModule().getAssociatedLifeSkill(), 1);
+        }
     }
 
     // -----------------------------------------

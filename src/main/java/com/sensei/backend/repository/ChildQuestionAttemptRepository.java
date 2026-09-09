@@ -12,6 +12,10 @@ public interface ChildQuestionAttemptRepository
     long countByChildIdAndQuestion(UUID childId, Question question);
 
     long countByChildIdAndQuestionAndIsCorrect(UUID childId, Question question, Boolean isCorrect);
+
+    java.util.List<ChildQuestionAttempt> findByChildIdAndIsCorrectFalse(UUID childId);
+
+    org.springframework.data.domain.Page<ChildQuestionAttempt> findByChildIdAndIsCorrectFalse(UUID childId, org.springframework.data.domain.Pageable pageable);
 }
 // This gives you:
 
