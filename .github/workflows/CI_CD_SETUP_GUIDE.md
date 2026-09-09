@@ -14,7 +14,7 @@ Before the automation can work, you must have the following prepared:
    - The instance must have Docker Compose installed.
 3. **The Initial Project Setup on EC2**
    - You must SSH into the server manually **one time** to set up the initial folder.
-   - The `docker-compose.yml` file must be placed in `/home/<your-ec2-username>/Backend_Aws` on the server. (The `.env` file will be generated automatically by GitHub).
+   - The `docker-compose.yml` file must be placed in `/home/ec2-user/Backend_Aws` on the server. (The `.env` file will be generated automatically by GitHub).
 4. **A Docker Hub Account**
    - You need a free account on [Docker Hub](https://hub.docker.com/) to store your images.
 
@@ -26,9 +26,9 @@ Before the automation can work, you must have the following prepared:
 SSH into your EC2 server and run the following:
 ```bash
 # Create the directory the GitHub Action expects to find
-mkdir -p /home/ubuntu/Backend_Aws
+mkdir -p /home/ec2-user/Backend_Aws
 
-# (Optional) If your username is ec2-user instead of ubuntu, change the path above.
+# (Optional) If your username is ubuntu instead of ec2-user, change the path above.
 ```
 *Next, use SCP, Cyberduck, or FileZilla to copy your `docker-compose.yml` file into that `Backend_Aws` folder on the server.*
 
@@ -44,14 +44,26 @@ Add the following 5 secrets exactly as named:
 
 | Secret Name | What to put in the "Secret" field |
 | :--- | :--- |
-| `DOCKER_USERNAME` | Your exact Docker Hub username (e.g., `vaishnavsk`) |
-| `DOCKER_PASSWORD` | Your Docker Hub password (or an Access Token created in Docker Hub settings) |
+| `DOCKER_USERNAME` | Your exact Docker Hub username (e.g., `vaishnav88sk`) |
+| `DOCKER_PASSWORD` | **(Recommended)** A Docker Hub Personal Access Token (PAT) created in Docker Hub Account Settings > Security. *You can use your account password, but a PAT is more secure for CI/CD.* |
 | `EC2_HOST` | The public IP address of your EC2 instance (e.g., `54.123.45.67`) |
 | `EC2_USERNAME` | The username you use to SSH (usually `ubuntu` or `ec2-user`) |
 | `EC2_SSH_KEY` | Open your `.pem` file in a text editor. Copy ALL the text (including `-----BEGIN RSA PRIVATE KEY-----` and the end line) and paste it here. |
 | `PRODUCTION_ENV` | Copy the entire contents of your production `.env` file and paste it here. **Make sure it includes `LOG_LEVEL=INFO` (to prevent log bloat) and your `DOZZLE_USERNAME`/`DOZZLE_PASSWORD` credentials!** The workflow will automatically generate the `.env` file securely on your server before starting the app! |
 
-### 3. How to Trigger a Deployment
+### 3. How to Update Secrets or Environment Variables
+If you ever need to change a value (for example, your EC2 IP address changes, or you need to add a new database password to `.env`), follow these steps:
+
+1. Go to GitHub **Settings** > **Secrets and variables** > **Actions**.
+2. Find the secret you want to change (e.g., `PRODUCTION_ENV` or `EC2_HOST`).
+3. Click the **Pencil (Edit)** icon next to it.
+4. Paste the new value and click **Update secret**.
+
+> [!IMPORTANT]
+> **Changing a secret does NOT automatically update your running server.** 
+> For the new secret (like a new `.env` variable) to take effect, you **must trigger a new deployment** (as explained in step 4 below). The GitHub Action will run, read the newly updated secret, securely write the new `.env` file to your server, and restart the Docker containers to apply the changes.
+
+### 4. How to Trigger a Deployment
 Once the above is done, you never have to do it again. To deploy new code:
 
 1. Write your code and push it to the `main` branch.
