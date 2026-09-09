@@ -6,6 +6,8 @@ import com.sensei.backend.entity.ParentUser;
 import com.sensei.backend.repository.ParentUserRepository;
 import com.sensei.backend.service.GoogleAuthService;
 import lombok.RequiredArgsConstructor;
+import com.sensei.backend.dto.auth.AuthResponse;
+import com.sensei.backend.dto.auth.TokenRefreshRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +30,9 @@ public class AuthController {
 
     // GOOGLE LOGIN (UNCHANGED)
     @PostMapping("/google")
-    public ResponseEntity<?> googleLogin(@RequestParam String idToken) {
-        log.info("Google login attempt");
+    public ResponseEntity<?> googleLogin(@RequestParam String idToken, 
+                                         @RequestParam(required = false, defaultValue = "web") String client) {
+        log.info("Google login attempt for client: {}", client);
         GoogleIdToken.Payload payload = googleAuthService.verifyToken(idToken);
 
         String email = payload.getEmail();
@@ -55,9 +58,18 @@ public class AuthController {
         }
 
         // Generate JWT
-        String token = jwtUtil.generateToken(email);
+        String accessToken = jwtUtil.generateToken(email);
+        
+        if ("app".equalsIgnoreCase(client)) {
+            String refreshToken = jwtUtil.generateRefreshToken(email);
+            AuthResponse authResponse = AuthResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .build();
+            return ResponseEntity.ok(authResponse);
+        }
 
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok(accessToken);
     }
 
     @Value("${TEST_ADMIN_EMAIL:admin.sensei.org.in@gmail.com}")
@@ -65,13 +77,45 @@ public class AuthController {
 
     // TEMP ADMIN LOGIN FOR POSTMAN (NEW)
     @PostMapping("/test-login")
-    public ResponseEntity<?> testLogin(@RequestParam String email) {
-        log.info("Test login attempt for email: {}", email);
+    public ResponseEntity<?> testLogin(@RequestParam String email, 
+                                       @RequestParam(required = false, defaultValue = "web") String client) {
+        log.info("Test login attempt for email: {} from client: {}", email, client);
         if (!email.equals(testAdminEmail)) {
             return ResponseEntity.status(403).body("Not allowed");
         }
 
-        String token = jwtUtil.generateToken(email);
-        return ResponseEntity.ok(token);
+        String accessToken = jwtUtil.generateToken(email);
+        
+        if ("app".equalsIgnoreCase(client)) {
+            String refreshToken = jwtUtil.generateRefreshToken(email);
+            AuthResponse authResponse = AuthResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .build();
+            return ResponseEntity.ok(authResponse);
+        }
+                
+        return ResponseEntity.ok(accessToken);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshAccessToken(@RequestBody TokenRefreshRequest request) {
+        String refreshToken = request.getRefreshToken();
+        
+        if (refreshToken != null && jwtUtil.validateToken(refreshToken)) {
+            String email = jwtUtil.extractEmail(refreshToken);
+            
+            String newAccessToken = jwtUtil.generateToken(email);
+            String newRefreshToken = jwtUtil.generateRefreshToken(email); // Issue a new refresh token (rotating)
+            
+            AuthResponse authResponse = AuthResponse.builder()
+                    .accessToken(newAccessToken)
+                    .refreshToken(newRefreshToken)
+                    .build();
+                    
+            return ResponseEntity.ok(authResponse);
+        } else {
+            return ResponseEntity.status(403).body("Invalid or expired refresh token");
+        }
     }
 }

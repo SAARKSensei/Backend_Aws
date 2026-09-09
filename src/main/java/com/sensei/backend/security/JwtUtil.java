@@ -34,6 +34,15 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateRefreshToken(String email) {
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(new Date())
+                // No expiration date set - valid until logout/key rotation
+                .signWith(getSigningKey())
+                .compact();
+    }
+
     public boolean validateToken(String token) {
         try {
             extractEmail(token);

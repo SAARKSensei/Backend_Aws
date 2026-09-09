@@ -57,7 +57,7 @@ class AuthControllerTest {
         when(parentUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(existingUser));
         when(jwtUtil.generateToken("test@example.com")).thenReturn("mock-jwt-token");
 
-        ResponseEntity<?> response = authController.googleLogin("valid-token");
+        ResponseEntity<?> response = authController.googleLogin("valid-token", "web");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("mock-jwt-token", response.getBody());
@@ -75,7 +75,7 @@ class AuthControllerTest {
         when(parentUserRepository.save(any(ParentUser.class))).thenAnswer(i -> i.getArgument(0));
         when(jwtUtil.generateToken("newuser@example.com")).thenReturn("mock-jwt-token");
 
-        ResponseEntity<?> response = authController.googleLogin("valid-token");
+        ResponseEntity<?> response = authController.googleLogin("valid-token", "web");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("mock-jwt-token", response.getBody());
@@ -86,7 +86,7 @@ class AuthControllerTest {
     void testTestLoginWithValidEmail() {
         when(jwtUtil.generateToken("admin.sensei.org.in@gmail.com")).thenReturn("mock-admin-token");
 
-        ResponseEntity<?> response = authController.testLogin("admin.sensei.org.in@gmail.com");
+        ResponseEntity<?> response = authController.testLogin("admin.sensei.org.in@gmail.com", "web");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("mock-admin-token", response.getBody());
@@ -94,7 +94,7 @@ class AuthControllerTest {
 
     @Test
     void testTestLoginWithInvalidEmail() {
-        ResponseEntity<?> response = authController.testLogin("hacker@example.com");
+        ResponseEntity<?> response = authController.testLogin("hacker@example.com", "web");
 
         assertEquals(403, response.getStatusCode().value());
         assertEquals("Not allowed", response.getBody());
