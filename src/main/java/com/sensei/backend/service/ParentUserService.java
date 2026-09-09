@@ -142,23 +142,25 @@
 package com.sensei.backend.service;
 
 import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
 
 import com.sensei.backend.dto.ParentUserDTO;
-import com.sensei.backend.entity.ParentUser;
 import com.sensei.backend.entity.ChildUser;
+import com.sensei.backend.entity.ParentUser;
 import com.sensei.backend.entity.PricingPlan;
 import com.sensei.backend.enums.PlanStatus;
 import com.sensei.backend.exception.ResourceNotFoundException;
+import com.sensei.backend.mapper.ParentUserMapper;
 import com.sensei.backend.repository.ParentUserRepository;
 import com.sensei.backend.repository.PricingPlanRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import com.sensei.backend.mapper.ParentUserMapper;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

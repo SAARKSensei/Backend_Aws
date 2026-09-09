@@ -1,24 +1,30 @@
 package com.sensei.backend.service;
 
-import com.sensei.backend.dto.ParentUserDTO;
-import com.sensei.backend.entity.ParentUser;
-import com.sensei.backend.exception.ResourceNotFoundException;
-import com.sensei.backend.repository.ParentUserRepository;
-import com.sensei.backend.repository.PricingPlanRepository;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.sensei.backend.dto.ParentUserDTO;
+import com.sensei.backend.entity.ParentUser;
+import com.sensei.backend.exception.ResourceNotFoundException;
 import com.sensei.backend.mapper.ParentUserMapper;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.sensei.backend.repository.ParentUserRepository;
+import com.sensei.backend.repository.PricingPlanRepository;
 
 /**
  * @author vaishnav88sk
