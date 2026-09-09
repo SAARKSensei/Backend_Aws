@@ -13,13 +13,20 @@ Spring Boot backend service for the **Sensei** .
 
 ---
 
-## For Contributors (Developers):
-Follow the guidelines for programmers: \
-**[Developers Guide](https://github.com/SAARKSensei/Backend_Aws/blob/main/CONTRIBUTING.md)**
+## 📚 Documentation Index
 
-## For maintainers (Code Owners):
-Follow the guidelines for code owners: \
-**[Maintainers Guide](https://github.com/SAARKSensei/Backend_Aws/blob/main/MAINTAINERS.md)**
+We have several documentation files to help you navigate, test, and deploy the system. Click on any document to read it:
+
+| Document | Purpose |
+| :--- | :--- |
+| **[README.md](./README.md)** | Main project overview and Docker deployment guide |
+| **[CONTRIBUTING.md](./CONTRIBUTING.md)** | Guidelines for developers contributing to the project |
+| **[MAINTAINERS.md](./MAINTAINERS.md)** | Guidelines and responsibilities for code owners/maintainers |
+| **[API_TESTING.md](./API_TESTING.md)** | Comprehensive list of active API endpoints for testing via Postman/cURL |
+| **[AUTHENTICATION_FLOW.md](./AUTHENTICATION_FLOW.md)** | Documentation on how JWT and Google OAuth authentication works |
+| **[FRONTEND_API_MIGRATION.md](./FRONTEND_API_MIGRATION.md)** | Guide for frontend devs on integrating with backend API changes |
+| **[LOGGING_GUIDE.md](./LOGGING_GUIDE.md)** | Best practices and standards for application logging |
+| **[CI_CD_SETUP_GUIDE.md](.github/workflows/CI_CD_SETUP_GUIDE.md)** | Detailed guide on configuring GitHub Actions and Docker Hub for automated EC2 deployments |
 
 ---
 
