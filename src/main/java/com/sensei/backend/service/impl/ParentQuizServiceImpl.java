@@ -1,5 +1,11 @@
 package com.sensei.backend.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.sensei.backend.dto.parentquiz.CreateQuizOptionDto;
 import com.sensei.backend.dto.parentquiz.CreateQuizQuestionRequest;
 import com.sensei.backend.dto.parentquiz.ParentQuizOptionDto;
@@ -17,14 +23,8 @@ import com.sensei.backend.repository.ParentQuizQuestionRepository;
 import com.sensei.backend.repository.ParentUserRepository;
 import com.sensei.backend.service.ChildLifeSkillService;
 import com.sensei.backend.service.ParentQuizService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.sensei.backend.enums.LifeSkillType;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

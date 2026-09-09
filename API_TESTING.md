@@ -2,6 +2,11 @@
 
 Below is a list of all active API endpoints available in the system for testing. (Note: Commented out endpoints are omitted).
 
+> [!IMPORTANT]
+> **General Testing Notes:**
+> - **Authentication:** Most of these endpoints (except `/api/auth/google` and `/api/auth/test-login`) are secured and require a valid JWT token. You must pass this in the header: `Authorization: Bearer <your_access_token>`.
+> - **POST/PUT Requests:** Endpoints that create or update data (`POST`, `PUT`, `PATCH`) typically require a JSON request body (`Content-Type: application/json`) with the necessary object fields.
+
 ## InteractiveProcessSubStep
 
 **Base Path:** `/api/interactive-process-substeps`
@@ -234,6 +239,7 @@ Below is a list of all active API endpoints available in the system for testing.
 |--------|----------|-------------|
 | `POST` | `/api/auth/google` | `googleLogin` |
 | `POST` | `/api/auth/test-login` | `testLogin` |
+| `POST` | `/api/auth/refresh` | `refreshAccessToken` |
 
 
 ## QuestionOption
@@ -317,4 +323,33 @@ Below is a list of all active API endpoints available in the system for testing.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/webhooks/razorpay` | `handleWebhook` |
+
+
+## ParentQuiz
+
+**Base Path:** `/api/v1/parent-quiz`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/parent-quiz` | `getQuizQuestions` |
+| `POST` | `/api/v1/parent-quiz` | `addQuizQuestions` |
+| `POST` | `/api/v1/parent-quiz/submit` | `submitQuiz` |
+
+
+## ChildLifeSkill
+
+**Base Path:** `/api/v1/child`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/child/{childId}/lifeskills` | `getChildLifeSkills` |
+
+
+## ReportCard
+
+**Base Path:** `/api/v1/report-card`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/report-card/child/{childId}` | `getMasterReportCard` |
 

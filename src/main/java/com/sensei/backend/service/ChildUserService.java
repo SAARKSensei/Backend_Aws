@@ -117,21 +117,25 @@
 //     }
 // }
 package com.sensei.backend.service;
-import java.util.List;
 import java.time.LocalDate;
-import java.util.Date;
-
-import com.sensei.backend.dto.ChildUserDTO;
-import com.sensei.backend.entity.*;
-import com.sensei.backend.exception.ResourceNotFoundException;
-import com.sensei.backend.repository.*;
-import lombok.RequiredArgsConstructor;
-import com.sensei.backend.mapper.ChildUserMapper;
-import org.springframework.stereotype.Service;
-import lombok.extern.slf4j.Slf4j;
-
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.sensei.backend.dto.ChildUserDTO;
+import com.sensei.backend.entity.ChildUser;
+import com.sensei.backend.entity.ParentUser;
+import com.sensei.backend.entity.PricingPlan;
+import com.sensei.backend.exception.ResourceNotFoundException;
+import com.sensei.backend.mapper.ChildUserMapper;
+import com.sensei.backend.repository.ChildUserRepository;
+import com.sensei.backend.repository.ParentUserRepository;
+import com.sensei.backend.repository.PricingPlanRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor

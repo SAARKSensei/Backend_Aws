@@ -1,10 +1,9 @@
 package com.sensei.backend.dto;
 
-import lombok.Data;
-
-import jakarta.persistence.Column;
-import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
 @Data
 public class InteractiveActivityDTO {

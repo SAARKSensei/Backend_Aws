@@ -1,14 +1,14 @@
 package com.sensei.backend.dto.report;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import com.sensei.backend.enums.LifeSkillType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 
 @Data
 @Builder

@@ -1,21 +1,22 @@
 package com.sensei.backend.service.impl;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.sensei.backend.dto.question.QuestionRequestDTO;
 import com.sensei.backend.dto.question.QuestionResponseDTO;
 import com.sensei.backend.dto.questionOption.QuestionOptionResponseDTO;
 import com.sensei.backend.entity.DigitalActivity;
 import com.sensei.backend.entity.Question;
-import com.sensei.backend.entity.QuestionOption;
 import com.sensei.backend.repository.DigitalActivityRepository;
 import com.sensei.backend.repository.QuestionOptionRepository;
 import com.sensei.backend.repository.QuestionRepository;
 import com.sensei.backend.service.QuestionService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
