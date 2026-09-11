@@ -181,9 +181,6 @@ public class ChildProgressServiceImpl implements ChildProgressService {
 
         subModuleCompletionRepo.save(completion);
         
-        if (subModule.getModule() != null && subModule.getModule().getAssociatedLifeSkill() != null) {
-            childLifeSkillService.addLifeSkillPoints(childId, subModule.getModule().getAssociatedLifeSkill(), 1);
-        }
     }
 
     // -----------------------------------------

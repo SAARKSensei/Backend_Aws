@@ -86,9 +86,8 @@ public class Module {
     @Builder.Default
     private Boolean isActive = true;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "associated_life_skill")
-    private LifeSkillType associatedLifeSkill;
+    @Column(name = "module_order")
+    private Integer moduleOrder;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

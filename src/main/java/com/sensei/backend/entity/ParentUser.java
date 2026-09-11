@@ -91,7 +91,6 @@ public class ParentUser {
     @Id
     @GeneratedValue
     @Column(name = "parent_id")
-    
     private UUID parentId;
 
     private String name;

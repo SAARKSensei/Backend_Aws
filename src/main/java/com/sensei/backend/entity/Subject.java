@@ -79,6 +79,9 @@ public class Subject {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "age_group", columnDefinition = "text")
+    private String ageGroup;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

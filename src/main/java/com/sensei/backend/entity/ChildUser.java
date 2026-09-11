@@ -75,8 +75,12 @@ import lombok.*;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import com.sensei.backend.enums.PlanStatus;
 
@@ -129,7 +133,6 @@ public class ChildUser {
 
     // 🔐 Active plan reference
     @Column(name = "active_plan_id")
-    
     private UUID activePlanId;
 
     @Column(name = "plan_start_date")
@@ -141,4 +144,12 @@ public class ChildUser {
     @Enumerated(EnumType.STRING)
     @Column(name = "plan_status")
     private PlanStatus planStatus;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

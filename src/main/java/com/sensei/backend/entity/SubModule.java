@@ -88,6 +88,9 @@ public class SubModule {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "submodule_order")
+    private Integer submoduleOrder;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
