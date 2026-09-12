@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS child_life_skill (
     updated_at timestamp(6) not null,
     child_id uuid not null,
     id uuid not null,
-    life_skill enum ('COPING_WITH_EMOTIONS','COPING_WITH_STRESS','CREATIVE_THINKING','CRITICAL_THINKING','DECISION_MAKING','EFFECTIVE_COMMUNICATION','EMPATHY','INTERPERSONAL_RELATIONSHIP','PROBLEM_SOLVING','SELF_AWARENESS') not null,
+    life_skill varchar(255) not null,
     primary key (id)
 );
 
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS child_user (
     grade varchar(255),
     phone_number varchar(255),
     school_id varchar(255),
-    plan_status enum ('ACTIVE','EXPIRED','NONE'),
+    plan_status varchar(255),
     primary key (child_id)
 );
 
@@ -177,7 +177,7 @@ CREATE TABLE IF NOT EXISTS interactive_process_tracking (
     child_id uuid not null,
     id uuid not null,
     interactive_process_id uuid not null,
-    status enum ('COMPLETED','IN_PROGRESS','NOT_STARTED') not null,
+    status varchar(255) not null,
     primary key (id),
     unique (child_id, interactive_process_id)
 );
@@ -192,8 +192,8 @@ CREATE TABLE IF NOT EXISTS master_transaction (
     pricing_plan_id uuid,
     currency varchar(255),
     remarks varchar(255),
-    transaction_status enum ('CANCELLED','DISPUTED','FAILED','PENDING','PROCESSING','REFUNDED','REVERSED','SUCCESS'),
-    transaction_type enum ('CAMPAIGN_REWARD','CASHBACK','COMMISSION','PLAN_PURCHASE','PURCHASE','REFERRAL_REWARD','REFUND','SCHOLARSHIP','SUBSCRIPTION','WALLET_TOPUP'),
+    transaction_status varchar(255),
+    transaction_type varchar(255),
     primary key (id)
 );
 
@@ -228,7 +228,7 @@ CREATE TABLE IF NOT EXISTS parent_quiz_option (
 
 CREATE TABLE IF NOT EXISTS parent_quiz_option_life_skills (
     option_id uuid not null,
-    life_skill enum ('COPING_WITH_EMOTIONS','COPING_WITH_STRESS','CREATIVE_THINKING','CRITICAL_THINKING','DECISION_MAKING','EFFECTIVE_COMMUNICATION','EMPATHY','INTERPERSONAL_RELATIONSHIP','PROBLEM_SOLVING','SELF_AWARENESS')
+    life_skill varchar(255)
 );
 
 CREATE TABLE IF NOT EXISTS parent_quiz_question (
@@ -282,10 +282,10 @@ CREATE TABLE IF NOT EXISTS payment_transaction (
     gateway_payment_id varchar(255),
     gateway_signature varchar(255),
     raw_response text,
-    gateway enum ('CASHFREE','GPAY','INTERNAL_WALLET','MANUAL','NONE','PAYTM','PAYU','PHONEPE','RAZORPAY','STRIPE'),
-    payment_method enum ('BANK_TRANSFER','CARD','CASH','EMI','NETBANKING','OTHER','UPI','WALLET'),
-    status enum ('CANCELLED','DISPUTED','FAILED','PENDING','PROCESSING','REFUNDED','REVERSED','SUCCESS'),
-    transaction_type enum ('CAMPAIGN_REWARD','CASHBACK','COMMISSION','PLAN_PURCHASE','PURCHASE','REFERRAL_REWARD','REFUND','SCHOLARSHIP','SUBSCRIPTION','WALLET_TOPUP') not null,
+    gateway varchar(255),
+    payment_method varchar(255),
+    status varchar(255),
+    transaction_type varchar(255) not null,
     primary key (id)
 );
 
