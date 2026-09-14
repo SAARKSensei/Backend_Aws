@@ -65,10 +65,14 @@ jobs:
     steps:
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DOCKER_USER,DOCKER_PASS
           script: |
             # 1. Navigate to where your docker-compose.yml is stored on the server
             cd /home/${{ secrets.EC2_USERNAME }}/Backend_Aws
@@ -76,8 +80,11 @@ jobs:
             # 2. Inject the environment variables from GitHub Secrets into a .env file
             echo "${{ secrets.PRODUCTION_ENV }}" > .env
             
-            # 3. Pull the newly pushed image
+            # 3. Log in to Docker Hub so we can pull private images
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            
+            # 4. Pull the newly pushed image
             docker pull ${{ secrets.DOCKER_USERNAME }}/sensei-backend:latest
             
-            # 4. Let Docker Compose magically swap the old container for the new one without touching Dozzle
-            docker-compose up -d
+            # 5. Let Docker Compose swap the old container for the new one (using docker compose plugin)
+            docker compose up -d
