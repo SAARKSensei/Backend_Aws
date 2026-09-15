@@ -1,0 +1,57 @@
+name: Update Release Notes
+
+# Trigger this workflow automatically whenever you manually publish a release on GitHub
+on:
+  release:
+    types: [published]
+
+jobs:
+  update_release:
+    name: Auto-Generate Notes from Commits
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to update the GitHub release
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required to fetch all commit history for the changelog
+
+      - name: Build Changelog from Commits
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        with:
+          commitMode: true # This tells the action to use direct commits instead of Pull Requests
+          configurationJson: |
+            {
+              "template": "## 🚀 Release Notes (${{ github.event.release.tag_name }})\n\n#{{UNCATEGORIZED}}\n\n### Contributors\n#{{CONTRIBUTORS}}",
+              "categories": [
+                {
+                  "title": "### ✨ Key Features",
+                  "labels": ["feat", "feature"]
+                },
+                {
+                  "title": "### 🐛 Bug Fixes & Deployment Hotfixes",
+                  "labels": ["fix", "bug"]
+                },
+                {
+                  "title": "### 🏗 Architecture & Refactoring",
+                  "labels": ["refactor", "perf"]
+                },
+                {
+                  "title": "### 📚 DevOps & Documentation",
+                  "labels": ["docs", "chore", "ci", "build", "test", "style"]
+                }
+              ]
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Update GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          body: ${{steps.build_changelog.outputs.changelog}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
