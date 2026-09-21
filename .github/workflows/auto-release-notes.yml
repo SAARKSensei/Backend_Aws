@@ -20,13 +20,14 @@ jobs:
 
       - name: Build Changelog from Commits
         id: build_changelog
-        uses: mikepenz/release-changelog-builder-action@v4
+        uses: mikepenz/release-changelog-builder-action@v5
         with:
-          commitMode: true # This tells the action to use direct commits instead of Pull Requests
+          mode: "HYBRID" # Processes both Pull Requests and direct commits
           configurationJson: |
             {
-              "template": "## 🚀 Release Notes (${{ github.event.release.tag_name }})\n\n#{{CATEGORIES}}\n\n### 📦 Other Changes\n#{{UNCATEGORIZED}}",
-              "commit_template": "- #{{TITLE}} (#{{URL}})",
+              "template": "## 🚀 Release Notes (${{ github.event.release.tag_name }})\n\n#{{CATEGORIES}}\n\n### 📦 Other Changes\n#{{UNCATEGORIZED}}\n\n### 👥 Contributors\n#{{CONTRIBUTORS}}",
+              "pr_template": "- #{{TITLE}} in ##{{NUMBER}} by @#{{AUTHOR}}",
+              "commit_template": "- #{{TITLE}} (#{{URL}}) by @#{{AUTHOR}}",
               "label_extractor": [
                 {
                   "pattern": "^(feat|fix|docs|chore|refactor|perf|ci|build|test|style)(\\(.*\\))?:",
