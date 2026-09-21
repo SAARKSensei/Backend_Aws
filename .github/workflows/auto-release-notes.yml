@@ -25,8 +25,14 @@ jobs:
           commitMode: true # This tells the action to use direct commits instead of Pull Requests
           configurationJson: |
             {
-              "template": "## 🚀 Release Notes (${{ github.event.release.tag_name }})\n\n#{{UNCATEGORIZED}}",
+              "template": "## 🚀 Release Notes (${{ github.event.release.tag_name }})\n\n#{{CATEGORIES}}\n\n### 📦 Other Changes\n#{{UNCATEGORIZED}}",
               "commit_template": "- #{{TITLE}} (#{{URL}})",
+              "label_extractor": [
+                {
+                  "pattern": "^(feat|fix|docs|chore|refactor|perf|ci|build|test|style)(\\(.*\\))?:",
+                  "target": "$1"
+                }
+              ],
               "categories": [
                 {
                   "title": "### ✨ Key Features",
