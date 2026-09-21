@@ -26,13 +26,14 @@ jobs:
           mode: "HYBRID" # Processes both Pull Requests and direct commits
           configurationJson: |
             {
-              "template": "## 🚀 Release Notes (${{ github.event.release.tag_name }})\n\n#{{CATEGORIES}}\n\n### 📦 Other Changes\n#{{UNCATEGORIZED}}\n\n### 👥 Contributors\n#{{CONTRIBUTORS}}",
+              "template": "## 🚀 Release Notes (${{ github.event.release.tag_name }})\n\n#{{CHANGELOG}}\n\n### 📦 Other Changes\n#{{UNCATEGORIZED}}\n\n### 👥 Contributors\n#{{CONTRIBUTORS}}",
               "pr_template": "- #{{TITLE}} in ##{{NUMBER}} by @#{{AUTHOR}}",
               "commit_template": "- #{{TITLE}} (#{{URL}}) by @#{{AUTHOR}}",
               "label_extractor": [
                 {
-                  "pattern": "^(feat|fix|docs|chore|refactor|perf|ci|build|test|style)(\\(.*\\))?:",
-                  "target": "$1"
+                  "pattern": "^(feat|fix|chore|docs|style|refactor|perf|test|ci|build)(\\([\\w\\-\\.]+\\))?(!)?: ([\\w ])+([\\s\\S]*)",
+                  "target": "$1",
+                  "on_property": "title"
                 }
               ],
               "categories": [
