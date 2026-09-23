@@ -142,23 +142,42 @@ Parents must register their children to start learning.
 To access subjects, a child must have an active plan.
 
 ### 4A. Wallet Top-Up
-* **Endpoint:** `POST /api/payments/razorpay/order/wallet`
-* **Request (JSON):** `{"parentId": "uuid", "amount": 1000}`
-* **Response:** Returns Razorpay `order_id` to initialize the frontend payment gateway SDK.
+* **Create Order Endpoint:** `POST /api/payments/razorpay/order/wallet`
+* **Request (Form Data / URL Params):**
+  ```text
+  amount=1000
+  parentId=<uuid>
+  ```
+* **Response:** Returns Razorpay `orderId` to initialize the frontend payment gateway SDK.
+
+* **Verify Endpoint:** `POST /api/payments/razorpay/verify/wallet`
+* **Request (Form Data / URL Params):**
+  ```text
+  orderId=order_P123456
+  paymentId=pay_P987654
+  signature=e2b...
+  ```
+* **Frontend Action:** Call this immediately after the Razorpay success callback to actually credit the wallet.
 
 ### 4B. Buy Pricing Plan
-* **Endpoint:** `POST /api/plan-purchases`
-* **Request (JSON):**
-  ```json
-  {
-      "parentId": "<parent_uuid>",
-      "childId": "<child_uuid>",
-      "pricingPlanId": "<plan_uuid>",
-      "couponCode": "WELCOME10", // Optional
-      "walletAmountUsed": 500    // Optional
-  }
+* **Create Order Endpoint:** `POST /api/payments/razorpay/order/plan`
+* **Request (Form Data / URL Params):**
+  ```text
+  amount=1000
+  parentId=<uuid>
+  childId=<uuid>
+  pricingPlanId=<uuid>
   ```
-* **Response:** Returns `PLAN_PURCHASE_INITIATED` (or creates a Razorpay order).
+* **Response:** Returns `orderId`.
+
+* **Verify Endpoint:** `POST /api/payments/razorpay/verify/plan`
+* **Request (Form Data / URL Params):**
+  ```text
+  orderId=order_P123456
+  paymentId=pay_P987654
+  signature=e2b...
+  ```
+* **Frontend Action:** Call this immediately after the Razorpay success callback to activate the plan for the child.
 
 ### 4C. How Plan Activation & Expiration Works (Backend Mechanics)
 When the frontend calls the plan purchase API, the backend resolves the payment through a waterfall calculation:
