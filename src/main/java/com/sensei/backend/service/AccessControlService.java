@@ -53,14 +53,17 @@ import com.sensei.backend.entity.InteractiveActivity;
 import com.sensei.backend.entity.InteractiveProcess;
 import com.sensei.backend.enums.PlanStatus;
 import com.sensei.backend.repository.*;
+import com.sensei.backend.exception.SubscriptionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AccessControlService {
 
     private final ChildUserRepository childUserRepository;
@@ -78,11 +81,11 @@ public class AccessControlService {
                 .orElseThrow(() -> new RuntimeException("Child not found"));
 
         if (child.getPlanStatus() != PlanStatus.ACTIVE) {
-            throw new RuntimeException("No active plan");
+            throw new SubscriptionException("No active plan");
         }
 
         if (child.getPlanExpiryDate().isBefore(LocalDate.now())) {
-            throw new RuntimeException("Plan expired");
+            throw new SubscriptionException("Plan expired");
         }
 
         boolean allowed =
@@ -92,7 +95,7 @@ public class AccessControlService {
                 );
 
         if (!allowed) {
-            throw new RuntimeException("Access denied to subject");
+            throw new SubscriptionException("Access denied to subject");
         }
     }
 

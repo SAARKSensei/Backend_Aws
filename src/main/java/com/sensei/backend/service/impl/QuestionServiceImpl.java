@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sensei.backend.dto.question.QuestionRequestDTO;
 import com.sensei.backend.dto.question.QuestionResponseDTO;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class QuestionServiceImpl implements QuestionService {
 
     private final QuestionRepository questionRepository;
@@ -73,6 +75,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    @Transactional
     public QuestionResponseDTO create(QuestionRequestDTO dto) {
         DigitalActivity activity = digitalActivityRepository.findById(dto.getDigitalActivityId())
                 .orElseThrow(() -> new RuntimeException("Digital Activity not found"));
@@ -90,6 +93,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    @Transactional
     public QuestionResponseDTO update(UUID id, QuestionRequestDTO dto) {
         Question q = questionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
@@ -109,6 +113,7 @@ public class QuestionServiceImpl implements QuestionService {
     // }
 
     @Override
+    @Transactional
     public void delete(UUID id) {
     Question q = questionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Question not found"));

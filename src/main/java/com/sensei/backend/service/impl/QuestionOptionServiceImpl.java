@@ -9,6 +9,7 @@ import com.sensei.backend.repository.QuestionRepository;
 import com.sensei.backend.service.QuestionOptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class QuestionOptionServiceImpl implements QuestionOptionService {
 
     private final QuestionOptionRepository repository;
@@ -34,6 +36,7 @@ public class QuestionOptionServiceImpl implements QuestionOptionService {
     }
 
     @Override
+    @Transactional
     public QuestionOptionResponseDTO create(QuestionOptionRequestDTO dto) {
         Question q = questionRepository.findById(dto.getQuestionId())
                 .orElseThrow(() -> new RuntimeException("Question not found"));
@@ -51,6 +54,7 @@ public class QuestionOptionServiceImpl implements QuestionOptionService {
     }
 
     @Override
+    @Transactional
     public QuestionOptionResponseDTO update(UUID id, QuestionOptionRequestDTO dto) {
         QuestionOption o = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Option not found"));
@@ -70,6 +74,7 @@ public class QuestionOptionServiceImpl implements QuestionOptionService {
     // }
 
     @Override
+    @Transactional
     public void delete(UUID id) {
     QuestionOption o = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Option not found"));

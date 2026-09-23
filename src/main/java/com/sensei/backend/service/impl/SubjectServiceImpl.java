@@ -70,22 +70,34 @@ package com.sensei.backend.service.impl;
 import com.sensei.backend.dto.subject.SubjectRequestDTO;
 import com.sensei.backend.dto.subject.SubjectResponseDTO;
 import com.sensei.backend.entity.Subject;
+import com.sensei.backend.entity.ChildUser;
+import com.sensei.backend.enums.PlanStatus;
+import com.sensei.backend.repository.ChildUserRepository;
+import com.sensei.backend.repository.PricingPlanSubjectRepository;
 import com.sensei.backend.repository.SubjectRepository;
 import com.sensei.backend.service.SubjectService;
+import com.sensei.backend.exception.SubscriptionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SubjectServiceImpl implements SubjectService {
 
     private final SubjectRepository subjectRepository;
+    private final ChildUserRepository childUserRepository;
+    private final PricingPlanSubjectRepository pricingPlanSubjectRepository;
 
     @Override
+    @Transactional
     public SubjectResponseDTO create(SubjectRequestDTO dto) {
         Subject subject = Subject.builder()
                 .name(dto.getName())
@@ -106,6 +118,26 @@ public class SubjectServiceImpl implements SubjectService {
     }
 
     @Override
+    public List<SubjectResponseDTO> getAllForChild(UUID childId) {
+        ChildUser child = childUserRepository.findById(childId)
+                .orElseThrow(() -> new RuntimeException("Child not found"));
+
+        if (child.getPlanStatus() != PlanStatus.ACTIVE) {
+            throw new SubscriptionException("No active plan");
+        }
+        
+        if (child.getPlanExpiryDate() != null && child.getPlanExpiryDate().isBefore(LocalDate.now())) {
+            throw new SubscriptionException("Plan expired");
+        }
+
+        return pricingPlanSubjectRepository.findByPricingPlan_Id(child.getActivePlanId())
+                .stream()
+                .map(pps -> mapToResponse(pps.getSubject()))
+                .filter(SubjectResponseDTO::getIsActive)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public SubjectResponseDTO getById(UUID id) {
         Subject subject = subjectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
@@ -113,6 +145,7 @@ public class SubjectServiceImpl implements SubjectService {
     }
 
     @Override
+    @Transactional
     public SubjectResponseDTO update(UUID id, SubjectRequestDTO dto) {
         Subject subject = subjectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
@@ -125,6 +158,7 @@ public class SubjectServiceImpl implements SubjectService {
     }
 
     @Override
+    @Transactional
     public void delete(UUID id) {
         Subject subject = subjectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Subject not found"));

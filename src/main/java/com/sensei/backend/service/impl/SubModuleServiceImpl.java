@@ -9,6 +9,7 @@ import com.sensei.backend.repository.SubModuleRepository;
 import com.sensei.backend.service.SubModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SubModuleServiceImpl implements SubModuleService {
 
     private final SubModuleRepository subModuleRepository;
@@ -36,6 +38,7 @@ public class SubModuleServiceImpl implements SubModuleService {
 
     // ---- create ----
     @Override
+    @Transactional
     public SubModuleResponseDTO create(SubModuleRequestDTO dto) {
         Module module = moduleRepository.findById(dto.getModuleId())
                 .orElseThrow(() -> new EntityNotFoundException("Module not found"));
@@ -79,6 +82,7 @@ public class SubModuleServiceImpl implements SubModuleService {
 
     // ---- update ----
     @Override
+    @Transactional
     public SubModuleResponseDTO update(UUID id, SubModuleRequestDTO dto) {
         SubModule s = subModuleRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("SubModule not found"));
@@ -92,6 +96,7 @@ public class SubModuleServiceImpl implements SubModuleService {
 
     // ---- soft delete ----
     @Override
+    @Transactional
     public void delete(UUID id) {
         SubModule s = subModuleRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("SubModule not found"));

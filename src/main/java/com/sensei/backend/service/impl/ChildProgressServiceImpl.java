@@ -9,6 +9,7 @@ import com.sensei.backend.service.ChildProgressService;
 import com.sensei.backend.service.ChildLifeSkillService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.math.BigDecimal;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ChildProgressServiceImpl implements ChildProgressService {
 
     private final ChildInteractiveActivityProgressRepository activityProgressRepo;
@@ -37,6 +39,7 @@ public class ChildProgressServiceImpl implements ChildProgressService {
     // START INTERACTIVE ACTIVITY
     // -----------------------------------------
     @Override
+    @Transactional
     public void startInteractiveActivity(StartActivityDTO dto) {
 
         InteractiveActivity activity = interactiveActivityRepository.findById(dto.getInteractiveActivityId())
@@ -187,6 +190,7 @@ public class ChildProgressServiceImpl implements ChildProgressService {
     // DIGITAL START
     // -----------------------------------------
     @Override
+    @Transactional
     public void startDigitalActivity(StartDigitalActivityDTO dto) {
 
         DigitalActivity digital = digitalActivityRepository.findById(dto.getDigitalActivityId())

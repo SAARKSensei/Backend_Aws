@@ -9,6 +9,7 @@ import com.sensei.backend.repository.SubModuleRepository;
 import com.sensei.backend.service.InteractiveActivityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class InteractiveActivityServiceImpl implements InteractiveActivityService {
 
     private final InteractiveActivityRepository repository;
@@ -38,6 +40,7 @@ public class InteractiveActivityServiceImpl implements InteractiveActivityServic
     }
 
     @Override
+    @Transactional
     public InteractiveActivityResponseDTO create(InteractiveActivityRequestDTO dto) {
 
         SubModule subModule = subModuleRepository.findById(dto.getSubModuleId())
@@ -74,6 +77,7 @@ public class InteractiveActivityServiceImpl implements InteractiveActivityServic
     }
 
     @Override
+    @Transactional
     public InteractiveActivityResponseDTO update(UUID id, InteractiveActivityRequestDTO dto) {
         InteractiveActivity a = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Activity not found"));
@@ -91,6 +95,7 @@ public class InteractiveActivityServiceImpl implements InteractiveActivityServic
     }
 
     @Override
+    @Transactional
     public void delete(UUID id) {
         InteractiveActivity a = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Activity not found"));

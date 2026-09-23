@@ -73,6 +73,7 @@ import com.sensei.backend.repository.SubjectRepository;
 import com.sensei.backend.service.ModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -80,12 +81,14 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ModuleServiceImpl implements ModuleService {
 
     private final ModuleRepository moduleRepository;
     private final SubjectRepository subjectRepository;
 
     @Override
+    @Transactional
     public ModuleResponseDTO createModule(ModuleRequestDTO dto) {
         Subject subject = subjectRepository.findById(dto.getSubjectId())
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
@@ -117,6 +120,7 @@ public class ModuleServiceImpl implements ModuleService {
     }
 
     @Override
+    @Transactional
     public ModuleResponseDTO update(UUID id, ModuleRequestDTO dto) {
         Module module = moduleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Module not found"));
@@ -129,6 +133,7 @@ public class ModuleServiceImpl implements ModuleService {
     }
 
     @Override
+    @Transactional
     public void delete(UUID id) {
         Module module = moduleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Module not found"));

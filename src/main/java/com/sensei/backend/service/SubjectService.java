@@ -20,6 +20,8 @@ public interface SubjectService {
 
     List<SubjectResponseDTO> getAll();
 
+    List<SubjectResponseDTO> getAllForChild(UUID childId);
+
     SubjectResponseDTO getById(UUID id);
 
     SubjectResponseDTO update(UUID id, SubjectRequestDTO dto);

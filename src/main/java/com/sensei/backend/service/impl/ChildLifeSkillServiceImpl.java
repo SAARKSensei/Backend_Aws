@@ -9,6 +9,7 @@ import com.sensei.backend.repository.ChildUserRepository;
 import com.sensei.backend.service.ChildLifeSkillService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ChildLifeSkillServiceImpl implements ChildLifeSkillService {
 
     private final ChildLifeSkillRepository childLifeSkillRepository;
@@ -43,6 +45,7 @@ public class ChildLifeSkillServiceImpl implements ChildLifeSkillService {
     }
 
     @Override
+    @Transactional
     public void addLifeSkillPoints(UUID childId, LifeSkillType lifeSkill, int points) {
         if (lifeSkill == null || points <= 0) return;
         

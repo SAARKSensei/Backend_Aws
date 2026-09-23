@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ReferralServiceImpl implements ReferralService {
 
     private final ReferralCodeRepository referralCodeRepository;
@@ -31,6 +32,7 @@ public class ReferralServiceImpl implements ReferralService {
     // GENERATE REFERRAL CODE
     // ---------------------------------------
     @Override
+    @Transactional
     public String generateReferralCode(UUID parentId) {
 
         return referralCodeRepository

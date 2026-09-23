@@ -15,13 +15,17 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RazorpayOrderService {
 
     private final RazorpayClient razorpayClient;
     private final PaymentTransactionRepository paymentRepo;
 
+    @Transactional
     public PaymentTransaction createOrder(
             Integer amount,
             UUID childId,

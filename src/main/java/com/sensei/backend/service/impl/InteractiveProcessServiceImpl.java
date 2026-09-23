@@ -9,6 +9,7 @@ import com.sensei.backend.repository.InteractiveProcessRepository;
 import com.sensei.backend.service.InteractiveProcessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class InteractiveProcessServiceImpl implements InteractiveProcessService {
 
     private final InteractiveProcessRepository processRepository;
@@ -25,6 +27,7 @@ public class InteractiveProcessServiceImpl implements InteractiveProcessService 
     // CREATE
     // -------------------------
     @Override
+    @Transactional
     public InteractiveProcessResponseDTO create(InteractiveProcessRequestDTO dto) {
 
         InteractiveActivity activity = activityRepository.findById(dto.getInteractiveActivityId())
@@ -68,6 +71,7 @@ public class InteractiveProcessServiceImpl implements InteractiveProcessService 
     // UPDATE
     // -------------------------
     @Override
+    @Transactional
     public InteractiveProcessResponseDTO update(UUID id, InteractiveProcessRequestDTO dto) {
 
         InteractiveProcess process = processRepository.findById(id)
@@ -86,6 +90,7 @@ public class InteractiveProcessServiceImpl implements InteractiveProcessService 
     // DELETE
     // -------------------------
     @Override
+    @Transactional
     public void delete(UUID id) {
         if (!processRepository.existsById(id)) {
             throw new RuntimeException("InteractiveProcess not found");

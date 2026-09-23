@@ -139,6 +139,11 @@ public class SubjectController {
         return subjectService.getAll();
     }
 
+    @GetMapping(params = "childId")
+    public List<SubjectResponseDTO> getAllForChild(@RequestParam UUID childId) {
+        return subjectService.getAllForChild(childId);
+    }
+
     @GetMapping("/{id}")
     public SubjectResponseDTO getById(
             @PathVariable UUID id,

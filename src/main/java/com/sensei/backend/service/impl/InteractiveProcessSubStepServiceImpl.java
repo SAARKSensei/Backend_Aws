@@ -8,6 +8,7 @@ import com.sensei.backend.repository.InteractiveProcessSubStepRepository;
 import com.sensei.backend.service.InteractiveProcessSubStepService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class InteractiveProcessSubStepServiceImpl
         implements InteractiveProcessSubStepService {
 
@@ -37,6 +39,7 @@ public class InteractiveProcessSubStepServiceImpl
     }
 
     @Override
+    @Transactional
     public InteractiveProcessSubStepResponseDTO create(
             InteractiveProcessSubStepRequestDTO dto
     ) {
@@ -58,6 +61,7 @@ public class InteractiveProcessSubStepServiceImpl
     }
 
     @Override
+    @Transactional
     public InteractiveProcessSubStepResponseDTO update(
             UUID subStepId,
             InteractiveProcessSubStepRequestDTO dto
@@ -75,6 +79,7 @@ public class InteractiveProcessSubStepServiceImpl
     }
 
     @Override
+    @Transactional
     public void delete(UUID subStepId) {
         subStepRepository.deleteById(subStepId);
     }

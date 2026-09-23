@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CouponServiceImpl implements CouponService {
 
     private final CouponRepository couponRepository;
@@ -27,6 +28,7 @@ public class CouponServiceImpl implements CouponService {
     // CREATE COUPON (ADMIN)
     // -------------------------------
     @Override
+    @Transactional
     public void createCoupon(CreateCouponRequestDTO dto) {
 
         Coupon coupon = Coupon.builder()

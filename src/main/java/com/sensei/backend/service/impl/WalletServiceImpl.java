@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class WalletServiceImpl implements WalletService {
 
     private final WalletRepository walletRepository;

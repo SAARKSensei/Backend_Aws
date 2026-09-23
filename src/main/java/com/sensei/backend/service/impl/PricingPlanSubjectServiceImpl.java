@@ -8,11 +8,13 @@ import com.sensei.backend.repository.*;
 import com.sensei.backend.service.PricingPlanSubjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PricingPlanSubjectServiceImpl implements PricingPlanSubjectService {
 
     private final PricingPlanSubjectRepository repo;
@@ -21,6 +23,7 @@ public class PricingPlanSubjectServiceImpl implements PricingPlanSubjectService 
 
     // ================= BULK ATTACH =================
     @Override
+    @Transactional
     public PricingPlanSubjectBulkResponseDTO attachMultipleSubjects(
             PricingPlanSubjectBulkRequestDTO dto) {
 
@@ -79,6 +82,7 @@ public class PricingPlanSubjectServiceImpl implements PricingPlanSubjectService 
 
     // ================= UPDATE =================
     @Override
+    @Transactional
     public PricingPlanSubjectResponseDTO update(UUID mappingId,
                                                 PricingPlanSubjectUpdateDTO dto) {
 
@@ -99,6 +103,7 @@ public class PricingPlanSubjectServiceImpl implements PricingPlanSubjectService 
 
     // ================= DELETE =================
     @Override
+    @Transactional
     public void delete(UUID mappingId) {
         repo.deleteById(mappingId);
     }

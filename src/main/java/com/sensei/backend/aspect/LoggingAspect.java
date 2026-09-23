@@ -10,6 +10,8 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import com.sensei.backend.exception.SubscriptionException;
+import com.sensei.backend.exception.ValidationException;
 
 /**
  * Aspect for centralized logging of all Controller and Service methods.
@@ -78,6 +80,14 @@ public class LoggingAspect {
      */
     @AfterThrowing(pointcut = "controllerPointcut() || servicePointcut()", throwing = "e")
     public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
+        if (e instanceof SubscriptionException || e instanceof ValidationException) {
+            log.warn("Business Exception in {}.{}() with message = '{}'",
+                    joinPoint.getSignature().getDeclaringTypeName(),
+                    joinPoint.getSignature().getName(),
+                    e.getMessage());
+            return;
+        }
+
         log.error("Exception in {}.{}() with cause = '{}' and message = '{}'",
                 joinPoint.getSignature().getDeclaringTypeName(),
                 joinPoint.getSignature().getName(),

@@ -8,6 +8,7 @@ import com.sensei.backend.repository.SubModuleRepository;
 import com.sensei.backend.service.DigitalActivityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DigitalActivityServiceImpl implements DigitalActivityService {
 
     private final DigitalActivityRepository repository;
@@ -36,6 +38,7 @@ public class DigitalActivityServiceImpl implements DigitalActivityService {
     }
 
     @Override
+    @Transactional
     public DigitalActivityResponseDTO create(DigitalActivityRequestDTO dto) {
         SubModule sm = subModuleRepository.findById(dto.getSubModuleId())
                 .orElseThrow(() -> new RuntimeException("SubModule not found"));
@@ -55,6 +58,7 @@ public class DigitalActivityServiceImpl implements DigitalActivityService {
     }
 
     @Override
+    @Transactional
     public DigitalActivityResponseDTO update(UUID id, DigitalActivityRequestDTO dto) {
         DigitalActivity d = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Digital Activity not found"));
@@ -74,6 +78,7 @@ public class DigitalActivityServiceImpl implements DigitalActivityService {
     //     repository.deleteById(id);
     // }
     @Override
+    @Transactional
     public void delete(UUID id) {
     DigitalActivity d = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Digital Activity not found"));

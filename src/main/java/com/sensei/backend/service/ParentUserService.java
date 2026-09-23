@@ -169,7 +169,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
 public class ParentUserService {
 
     private final ParentUserRepository parentUserRepository;
@@ -178,6 +178,7 @@ public class ParentUserService {
     private final MasterTransactionRepository masterTransactionRepository;
 
     // ================= CREATE =================
+    @Transactional
     public ParentUserDTO createParentUser(ParentUserDTO dto) {
         ParentUser parent = parentUserMapper.toEntity(dto);
         parent = parentUserRepository.save(parent);
@@ -198,6 +199,7 @@ public class ParentUserService {
     }
 
     // ================= UPDATE =================
+    @Transactional
     public ParentUserDTO updateParentUser(UUID parentId, ParentUserDTO dto) {
 
         ParentUser parent = parentUserRepository.findById(parentId)
@@ -226,6 +228,7 @@ public class ParentUserService {
     }
 
     // ================= DELETE =================
+    @Transactional
     public void deleteParentUser(UUID parentId) {
         ParentUser parent = parentUserRepository.findById(parentId)
                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));

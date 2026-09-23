@@ -48,6 +48,12 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(SubscriptionException.class)
+    public ProblemDetail handleSubscriptionException(SubscriptionException ex) {
+        log.warn("Access denied (Subscription): {}", ex.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGlobalException(Exception ex) {
         log.error("An error occurred: {}", ex.getMessage());

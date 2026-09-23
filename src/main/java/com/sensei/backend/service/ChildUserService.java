@@ -141,7 +141,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
 public class ChildUserService {
 
     private final ChildUserRepository childUserRepository;
@@ -149,6 +149,7 @@ public class ChildUserService {
     private final PricingPlanRepository pricingPlanRepository;
     private final ChildUserMapper childUserMapper;
 
+    @Transactional
     public ChildUserDTO createChild(ChildUserDTO dto) {
         ChildUser child = new ChildUser();
 
@@ -191,6 +192,7 @@ public ChildUserDTO getByChildId(UUID childId) {
             .orElseThrow(() -> new ResourceNotFoundException("Child not found"));
     return childUserMapper.toDto(child);
 }
+@Transactional
 public ChildUserDTO createChildUser(ChildUserDTO dto) {
     ChildUser child = childUserMapper.toEntity(dto);
 
@@ -203,6 +205,7 @@ public ChildUserDTO createChildUser(ChildUserDTO dto) {
     return childUserMapper.toDto(child);
 }
 
+@Transactional
 public ChildUserDTO update(UUID childId, ChildUserDTO dto) {
     ChildUser existing = childUserRepository.findById(childId)
             .orElseThrow(() -> new ResourceNotFoundException("Child not found"));
@@ -217,6 +220,7 @@ public ChildUserDTO update(UUID childId, ChildUserDTO dto) {
     return childUserMapper.toDto(childUserRepository.save(existing));
 }
 
+@Transactional
 public void delete(UUID childId) {
     childUserRepository.deleteById(childId);
     log.info("Deleted ChildUser with ID: {}", childId);
