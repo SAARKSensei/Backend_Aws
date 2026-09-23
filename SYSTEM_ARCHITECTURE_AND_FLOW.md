@@ -28,6 +28,8 @@ This document serves as the **Technical Implementation Guide** for both Frontend
 
 ## 1. Authentication Flow (Web vs App)
 
+*(For a deep-dive on how the stateless token rotation and interception specifically works, please see [AUTHENTICATION_FLOW.md](./AUTHENTICATION_FLOW.md))*
+
 ### 1A. Mobile App Login (Flutter)
 The app needs both an Access Token and a Refresh Token to maintain a stateless session without forcing the user to log in again.
 
