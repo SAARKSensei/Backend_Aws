@@ -20,15 +20,15 @@ We have several documentation files to help you navigate, test, and deploy the s
 | Document | Purpose |
 | :--- | :--- |
 | **[README.md](./README.md)** | Main project overview and Docker deployment guide |
-| **[RELEASE_PROCESS.md](./RELEASE_PROCESS.md)** | Guide on how to publish releases and auto-generate notes |
-| **[CONTRIBUTING.md](./CONTRIBUTING.md)** | Guidelines for developers contributing to the project |
-| **[SYSTEM_ARCHITECTURE_AND_FLOW.md](./SYSTEM_ARCHITECTURE_AND_FLOW.md)** | Detailed Technical Implementation Guide mapping out the exact sequence of API calls and architecture |
-| **[MAINTAINERS.md](./MAINTAINERS.md)** | Guidelines and responsibilities for code owners/maintainers |
-| **[API_TESTING.md](./API_TESTING.md)** | Comprehensive list of active API endpoints for testing via Postman/cURL |
-| **[AUTHENTICATION_FLOW.md](./AUTHENTICATION_FLOW.md)** | Documentation on how JWT and Google OAuth authentication works |
-| **[FRONTEND_API_MIGRATION.md](./FRONTEND_API_MIGRATION.md)** | Guide for frontend devs on integrating with backend API changes |
-| **[LOGGING_GUIDE.md](./LOGGING_GUIDE.md)** | Best practices and standards for application logging |
-| **[CI_CD_SETUP_GUIDE.md](.github/workflows/CI_CD_SETUP_GUIDE.md)** | Detailed guide on configuring GitHub Actions and Docker Hub for automated EC2 deployments |
+| **[RELEASE_PROCESS.md](./docs/RELEASE_PROCESS.md)** | Guide on how to publish releases and auto-generate notes |
+| **[DEVELOPERS.md](./docs/DEVELOPERS.md)** | Internal guide and workflow for developers developing the project |
+| **[SYSTEM_ARCHITECTURE_AND_FLOW.md](./docs/SYSTEM_ARCHITECTURE_AND_FLOW.md)** | Detailed Technical Implementation Guide mapping out the exact sequence of API calls and architecture |
+| **[MAINTAINERS.md](./docs/MAINTAINERS.md)** | Guidelines and responsibilities for code owners/maintainers |
+| **[API_TESTING.md](./docs/API_TESTING.md)** | Comprehensive list of active API endpoints for testing via Postman/cURL |
+| **[AUTHENTICATION_FLOW.md](./docs/AUTHENTICATION_FLOW.md)** | Documentation on how JWT and Google OAuth authentication works |
+| **[FRONTEND_API_MIGRATION.md](./docs/FRONTEND_API_MIGRATION.md)** | Guide for frontend devs on integrating with backend API changes |
+| **[LOGGING_GUIDE.md](./docs/LOGGING_GUIDE.md)** | Best practices and standards for application logging |
+| **[CI_CD_SETUP_GUIDE.md](./docs/CI_CD_SETUP_GUIDE.md)** | Detailed guide on configuring GitHub Actions and Docker Hub for automated EC2 deployments |
 
 ---
 
