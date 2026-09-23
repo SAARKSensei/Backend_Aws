@@ -54,6 +54,7 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
+import com.sensei.backend.enums.PlanStatus;
 
 @Data
 public class ChildUserDTO {
@@ -79,5 +80,7 @@ public class ChildUserDTO {
 
     private UUID activePlanId;
     private LocalDate planStartDate;
+    private LocalDate planExpiryDate;
+    private PlanStatus planStatus;
 }
 
