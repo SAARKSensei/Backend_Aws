@@ -148,6 +148,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sensei.backend.dto.ParentUserDTO;
 import com.sensei.backend.entity.ChildUser;
@@ -165,6 +166,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class ParentUserService {
 
     private final ParentUserRepository parentUserRepository;

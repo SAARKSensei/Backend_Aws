@@ -123,6 +123,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sensei.backend.dto.ChildUserDTO;
 import com.sensei.backend.entity.ChildUser;
@@ -140,6 +141,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class ChildUserService {
 
     private final ChildUserRepository childUserRepository;
