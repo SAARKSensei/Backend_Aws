@@ -113,6 +113,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sensei.backend.dto.ParentUserDTO;
 import com.sensei.backend.entity.ParentUser;
+import com.sensei.backend.entity.MasterTransaction;
+import java.util.List;
 import com.sensei.backend.service.ParentUserService;
 
 import jakarta.validation.Valid;
@@ -136,6 +138,11 @@ public class ParentUserController {
     @GetMapping("/{parentId}")
     public ResponseEntity<ParentUserDTO> getById(@PathVariable UUID parentId) {
         return ResponseEntity.ok(parentUserService.getParentUserById(parentId));
+    }
+
+    @GetMapping("/{parentId}/transactions")
+    public ResponseEntity<List<MasterTransaction>> getTransactions(@PathVariable UUID parentId) {
+        return ResponseEntity.ok(parentUserService.getTransactionsByParentId(parentId));
     }
 
     @GetMapping

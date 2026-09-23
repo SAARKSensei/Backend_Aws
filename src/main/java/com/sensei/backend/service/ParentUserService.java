@@ -159,6 +159,9 @@ import com.sensei.backend.exception.ResourceNotFoundException;
 import com.sensei.backend.mapper.ParentUserMapper;
 import com.sensei.backend.repository.ParentUserRepository;
 import com.sensei.backend.repository.PricingPlanRepository;
+import com.sensei.backend.repository.MasterTransactionRepository;
+import com.sensei.backend.entity.MasterTransaction;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -172,6 +175,7 @@ public class ParentUserService {
     private final ParentUserRepository parentUserRepository;
     private final PricingPlanRepository pricingPlanRepository;
     private final ParentUserMapper parentUserMapper;
+    private final MasterTransactionRepository masterTransactionRepository;
 
     // ================= CREATE =================
     public ParentUserDTO createParentUser(ParentUserDTO dto) {
@@ -249,7 +253,6 @@ public class ParentUserService {
 
     // ================= PRICING LOOKUP =================
     public Map<String, Object> getPricingPlanForParent(String email) {
-
         ParentUser parent = parentUserRepository.findByEmail(email).orElse(null);
         if (parent == null || parent.getChildUsers() == null) return null;
 
@@ -287,6 +290,11 @@ public class ParentUserService {
         }
 
         return null;
+    }
+
+    // ================= TRANSACTIONS =================
+    public List<MasterTransaction> getTransactionsByParentId(UUID parentId) {
+        return masterTransactionRepository.findByParentIdOrderByCreatedAtDesc(parentId);
     }
 }
 
