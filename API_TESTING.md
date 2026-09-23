@@ -301,6 +301,7 @@ Below is a list of all active API endpoints available in the system for testing.
 |--------|----------|-------------|
 | `POST` | `/api/subjects` | `create` |
 | `GET` | `/api/subjects` | `getAll` |
+| `GET` | `/api/subjects?childId={childId}` | `getAllForChild` (Access Control Enforced) |
 | `GET` | `/api/subjects/{id}` | `getById` |
 | `PUT` | `/api/subjects/{id}` | `update` |
 | `DELETE` | `/api/subjects/{id}` | `delete` |
