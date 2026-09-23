@@ -2,16 +2,16 @@
 
 This document serves as the **Technical Implementation Guide** for both Frontend and Backend Engineers. It maps out the exact sequence of API calls, distinguishing between Web and App clients, and providing payload/response structures for every step of the user journey.
 
-**IMPORTANT: Standard Response Format**
-Unless otherwise specified (like the Web Google Login), all REST endpoints return JSON wrapped in a standard `ApiResponse` format:
-```json
-{
-    "status": "SUCCESS", // or "ERROR"
-    "message": "Descriptive message",
-    "data": { ... }, // Payload goes here
-    "timestamp": "2026-09-23T10:00:00"
-}
-```
+> 💡 **IMPORTANT: Standard Response Format**
+> Unless otherwise specified (like the Web Google Login), all REST endpoints return JSON wrapped in a standard `ApiResponse` format:
+> ```json
+> {
+>     "status": "SUCCESS", // or "ERROR"
+>     "message": "Descriptive message",
+>     "data": { ... }, // Payload goes here
+>     "timestamp": "2026-09-23T10:00:00"
+> }
+> ```
 
 ---
 
@@ -216,8 +216,7 @@ The educational content in Sensei is strictly hierarchical. The frontend builds 
 
 ## 6. Learning Progress Execution
 
-**CAUTION: Frontend engineers MUST ensure these APIs are called sequentially to maintain data integrity for the child's Report Card.**
-
+> ⚠️ **CAUTION:** Frontend engineers MUST ensure these APIs are called sequentially to maintain data integrity for the child's Report Card.
 ### 6A. Start Activity
 * **Endpoint:** `POST /api/progress/digital/start`
 * **Request (JSON):**

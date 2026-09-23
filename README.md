@@ -22,6 +22,7 @@ We have several documentation files to help you navigate, test, and deploy the s
 | **[README.md](./README.md)** | Main project overview and Docker deployment guide |
 | **[RELEASE_PROCESS.md](./RELEASE_PROCESS.md)** | Guide on how to publish releases and auto-generate notes |
 | **[CONTRIBUTING.md](./CONTRIBUTING.md)** | Guidelines for developers contributing to the project |
+| **[SYSTEM_ARCHITECTURE_AND_FLOW.md](./SYSTEM_ARCHITECTURE_AND_FLOW.md)** | Detailed Technical Implementation Guide mapping out the exact sequence of API calls and architecture |
 | **[MAINTAINERS.md](./MAINTAINERS.md)** | Guidelines and responsibilities for code owners/maintainers |
 | **[API_TESTING.md](./API_TESTING.md)** | Comprehensive list of active API endpoints for testing via Postman/cURL |
 | **[AUTHENTICATION_FLOW.md](./AUTHENTICATION_FLOW.md)** | Documentation on how JWT and Google OAuth authentication works |
