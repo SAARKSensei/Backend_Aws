@@ -84,6 +84,10 @@ public class ParentQuizServiceImpl implements ParentQuizService {
                 .childUser(child)
                 .build();
         attemptRepository.save(attempt);
+
+        // Update parent user to indicate quiz is completed
+        parent.setIsQuizCompleted(true);
+        parentUserRepository.save(parent);
     }
 
     @Override

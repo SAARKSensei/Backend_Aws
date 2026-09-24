@@ -261,6 +261,7 @@ CREATE TABLE IF NOT EXISTS parent_user (
     spouse_phone varchar(255),
     spouse_relation_with_child varchar(255),
     user_name varchar(255) unique,
+    is_quiz_completed boolean default false,
     primary key (parent_id)
 );
 
@@ -433,3 +434,5 @@ ALTER TABLE IF EXISTS pricing_plan_subject ADD CONSTRAINT FKpshvv8jtpvmp9hop11v0
 ALTER TABLE IF EXISTS question ADD CONSTRAINT FKqo8btit89433v670xr46owgor FOREIGN KEY (digital_activity_id) REFERENCES digital_activity;
 ALTER TABLE IF EXISTS question_option ADD CONSTRAINT FKmmdv54rmm5hkgxbn1008ix87n FOREIGN KEY (question_id) REFERENCES question;
 ALTER TABLE IF EXISTS sub_module ADD CONSTRAINT FKsiy8j1vihx4qrh9ap5mdfkn13 FOREIGN KEY (module_id) REFERENCES module;
+
+ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS is_quiz_completed boolean default false;

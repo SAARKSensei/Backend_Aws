@@ -65,6 +65,7 @@ public class AuthController {
             AuthResponse authResponse = AuthResponse.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
+                    .isQuizCompleted(user.getIsQuizCompleted() != null ? user.getIsQuizCompleted() : false)
                     .build();
             return ResponseEntity.ok(authResponse);
         }
@@ -88,9 +89,13 @@ public class AuthController {
         
         if ("app".equalsIgnoreCase(client)) {
             String refreshToken = jwtUtil.generateRefreshToken(email);
+            Optional<ParentUser> existingUser = parentUserRepository.findByEmail(email);
+            Boolean isQuizCompleted = existingUser.map(ParentUser::getIsQuizCompleted).orElse(false);
+
             AuthResponse authResponse = AuthResponse.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
+                    .isQuizCompleted(isQuizCompleted != null ? isQuizCompleted : false)
                     .build();
             return ResponseEntity.ok(authResponse);
         }
@@ -108,9 +113,13 @@ public class AuthController {
             String newAccessToken = jwtUtil.generateToken(email);
             String newRefreshToken = jwtUtil.generateRefreshToken(email); // Issue a new refresh token (rotating)
             
+            Optional<ParentUser> existingUser = parentUserRepository.findByEmail(email);
+            Boolean isQuizCompleted = existingUser.map(ParentUser::getIsQuizCompleted).orElse(false);
+
             AuthResponse authResponse = AuthResponse.builder()
                     .accessToken(newAccessToken)
                     .refreshToken(newRefreshToken)
+                    .isQuizCompleted(isQuizCompleted != null ? isQuizCompleted : false)
                     .build();
                     
             return ResponseEntity.ok(authResponse);

@@ -62,5 +62,9 @@ public class ParentUser {
     // ✅ NEW FIELD
     @Column(name = "location")
     private String location;
+
+    @Builder.Default
+    @Column(name = "is_quiz_completed")
+    private Boolean isQuizCompleted = false;
 }
 

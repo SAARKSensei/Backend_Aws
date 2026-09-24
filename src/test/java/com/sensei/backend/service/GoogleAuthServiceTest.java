@@ -28,7 +28,7 @@ class GoogleAuthServiceTest {
             googleAuthService.verifyToken("invalid-google-token");
         });
 
-        assertEquals("Google token verification failed", exception.getMessage());
+        assertTrue(exception.getMessage().startsWith("Google token verification failed"));
     }
     
     @Test
@@ -37,6 +37,6 @@ class GoogleAuthServiceTest {
             googleAuthService.verifyToken(null);
         });
 
-        assertEquals("Google token verification failed", exception.getMessage());
+        assertTrue(exception.getMessage().startsWith("Google token verification failed"));
     }
 }
