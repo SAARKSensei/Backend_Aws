@@ -26,10 +26,12 @@ The Flutter app needs both tokens. We achieve this by passing the `client=app` p
       "message": "Request processed successfully",
       "data": {
           "accessToken": "eyJhbGci...",
-          "refreshToken": "eyJhbGci..."
+          "refreshToken": "eyJhbGci...",
+          "isQuizCompleted": false
       }
   }
   ```
+- **Note on `isQuizCompleted`:** This boolean flag indicates whether the parent has completed the initial onboarding quiz. The Flutter app should use this flag to decide whether to route the user to the Quiz screen (`false`) or the main Dashboard (`true`) immediately after login.
 
 ### C. Refreshing the Token
 When the `accessToken` expires (it throws a `401 Unauthorized`), the Flutter app must use the `refreshToken` to get a new pair of tokens.
@@ -48,7 +50,8 @@ When the `accessToken` expires (it throws a `401 Unauthorized`), the Flutter app
       "message": "Request processed successfully",
       "data": {
           "accessToken": "<NEW_ACCESS_TOKEN>",
-          "refreshToken": "<NEW_REFRESH_TOKEN>"
+          "refreshToken": "<NEW_REFRESH_TOKEN>",
+          "isQuizCompleted": true
       }
   }
   ```

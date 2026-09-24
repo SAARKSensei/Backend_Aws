@@ -41,11 +41,14 @@ The app needs both an Access Token and a Refresh Token to maintain a stateless s
       "status": "SUCCESS",
       "data": {
           "accessToken": "eyJhbGci...",
-          "refreshToken": "eyJhbGci..."
+          "refreshToken": "eyJhbGci...",
+          "isQuizCompleted": false
       }
   }
   ```
-* **Frontend Action:** Save BOTH tokens in secure storage. Attach `accessToken` to all subsequent API calls in the header: `Authorization: Bearer <accessToken>`.
+* **Frontend Action:** 
+  1. Save BOTH tokens in secure storage. Attach `accessToken` to all subsequent API calls in the header: `Authorization: Bearer <accessToken>`.
+  2. Read the `isQuizCompleted` flag. If `false`, route the user to the initial onboarding quiz. If `true`, route them directly to the main Dashboard.
 
 ### 1B. Web Login (React/Angular)
 The web client currently relies on a standard access token string for backward compatibility.
