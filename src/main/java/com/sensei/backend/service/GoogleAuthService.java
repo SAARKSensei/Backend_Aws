@@ -18,6 +18,12 @@ public class GoogleAuthService {
     @Value("${GOOGLE_CLIENT_ID}")
     private String clientId;
 
+    @Value("${GOOGLE_ANDROID_CLIENT_ID:}")
+    private String androidClientId;
+
+    @Value("${GOOGLE_IOS_CLIENT_ID:}")
+    private String iosClientId;
+
     public GoogleIdToken.Payload verifyToken(String idTokenString) {
 
         try {
@@ -25,18 +31,29 @@ public class GoogleAuthService {
             try {
                 GoogleIdToken unverifiedToken = GoogleIdToken.parse(JacksonFactory.getDefaultInstance(), idTokenString);
                 if (unverifiedToken != null && unverifiedToken.getPayload() != null) {
-                    log.debug("Received Google ID Token with audience: {}", unverifiedToken.getPayload().getAudience());
+                    log.debug("Received Google ID Token with audience: {}, azp: {}", 
+                            unverifiedToken.getPayload().getAudience(), 
+                            unverifiedToken.getPayload().getAuthorizedParty());
                     log.debug("Expected Google Client ID: {}", clientId);
                 }
             } catch (Exception e) {
                 log.warn("Failed to parse unverified token: {}", e.getMessage());
             }
 
+            java.util.List<String> allowedClientIds = new java.util.ArrayList<>();
+            allowedClientIds.add(clientId);
+            if (androidClientId != null && !androidClientId.trim().isEmpty()) {
+                allowedClientIds.add(androidClientId.trim());
+            }
+            if (iosClientId != null && !iosClientId.trim().isEmpty()) {
+                allowedClientIds.add(iosClientId.trim());
+            }
+
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(),
                     JacksonFactory.getDefaultInstance()
             )
-                    .setAudience(Collections.singletonList(clientId))
+                    .setAudience(allowedClientIds)
                     .build();
 
             GoogleIdToken idToken = verifier.verify(idTokenString);
@@ -44,7 +61,7 @@ public class GoogleAuthService {
             if (idToken != null) {
                 return idToken.getPayload();
             } else {
-                log.error("Google Token Verification Failed. Token might have an invalid signature, wrong audience, or be expired.");
+                log.error("Google Token Verification Failed. Token might have an invalid signature, wrong audience/azp, or be expired. Allowed Client IDs: {}", allowedClientIds);
                 throw new RuntimeException("Invalid Google token");
             }
 
