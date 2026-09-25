@@ -77,8 +77,8 @@ When the `accessToken` expires (Backend returns `401 Unauthorized`), the App mus
 
 After login, the frontend should fetch or create the Parent profile.
 
-### 2A. Update Parent Profile
-* **Endpoint:** `PUT /api/parent-users/{parentId}`
+### 2A. Create Parent User (With Auto Child Creation)
+* **Endpoint:** `POST /api/parent-users`
 * **Request (JSON):**
   ```json
   {
@@ -88,36 +88,60 @@ After login, the frontend should fetch or create the Parent profile.
       "location": "Mumbai"
   }
   ```
-* **Response:** Returns updated `ParentUserDTO`.
+* **Response (JSON):** Returns the created `ParentUserDTO`. Crucially, **the backend automatically generates an empty ChildUser** and attaches it to this response. Null values are excluded from the JSON to keep it clean.
+  ```json
+  {
+      "parentId": "<parent_uuid>",
+      "name": "John Doe",
+      ...
+      "childUsers": [
+          {
+              "childId": "<auto_generated_child_uuid>"
+          }
+      ]
+  }
+  ```
+* **Frontend Action:** Extract `parentId` and the auto-generated `childId` (`childUsers[0].childId`) and store them in state to proceed to the quiz screen.
 
-### 2B. Fetch Parent Transactions
+### 2B. Parent Quiz & Unlocking Baseline Life Skills
+Immediately following parent creation, parents take a baseline quiz that assigns initial life skills to the newly generated child.
+* **Fetch Questions:** `GET /api/v1/parent-quiz`
+* **Submit Answers:** `POST /api/v1/parent-quiz/submit`
+  * **Request (JSON):** 
+    ```json
+    {
+        "parentId": "<parent_uuid>",
+        "childId": "<child_uuid>",
+        "selectedOptionIds": ["<opt_uuid_1>", "<opt_uuid_2>"]
+    }
+    ```
+  * **Backend Processing:** Checks the associated life skills for the selected options and automatically unlocks them for the `childId` provided. Sets the parent's `isQuizCompleted` flag to true.
+
+### 2C. Child Life Skills Dashboard
+After the quiz, the frontend can fetch the initially unlocked life skills for the dashboard.
+* **Endpoint:** `GET /api/v1/child/{childId}/lifeskills`
+* **Response:** Returns a `ChildLifeSkillReportResponse` listing all skills the child currently possesses.
+
+### 2D. Update Parent Profile
+* **Endpoint:** `PUT /api/parent-users/{parentId}`
+
+### 2E. Fetch Parent Transactions
 Parents can view their history of wallet top-ups and plan purchases.
 * **Endpoint:** `GET /api/parent-users/{parentId}/transactions`
 * **Response:** Returns a list of `MasterTransaction` objects detailing amounts and dates.
 
-### 2C. Parent Quiz (Optional baseline test)
-* **Fetch Questions:** `GET /api/v1/parent-quiz`
-* **Submit Answers:** `POST /api/v1/parent-quiz/submit`
-  ```json
-  {
-      "answers": [
-          {"questionId": "uuid-1", "selectedOptionId": "opt-uuid"}
-      ]
-  }
-  ```
-
 ---
 
-## 3. Child Registration
+## 3. Child Registration & Management
 
-Parents must register their children to start learning. 
+While an empty child is automatically created upon parent registration, parents can fully update the child's profile or add additional children later.
 
-### 3A. Create a Child
-* **Endpoint:** `POST /api/children`
+### 3A. Update Child Profile
+Since the initial empty child is auto-created during parent registration, you only need to use the PUT endpoint to fill in the child's details.
+* **Endpoint:** `PUT /api/children/{childId}`
 * **Request (JSON):**
   ```json
   {
-      "parentId": "<parent_uuid>",
       "childName": "Jane Doe",
       "gender": "Female",
       "grade": "5th",
@@ -126,7 +150,7 @@ Parents must register their children to start learning.
       "schoolName": "Delhi Public School"
   }
   ```
-* **Response:** Returns the created `ChildUserDTO` with a new `childId`.
+* **Response:** Returns the updated/created `ChildUserDTO`.
 * **Frontend Action:** Store the active `childId` in state to use for subsequent content fetching.
 
 ### 3B. Fetch Children for a Parent
