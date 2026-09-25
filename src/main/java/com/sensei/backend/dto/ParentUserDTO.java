@@ -5,8 +5,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import jakarta.validation.constraints.*;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ParentUserDTO {
 
     private UUID parentId;   // was String

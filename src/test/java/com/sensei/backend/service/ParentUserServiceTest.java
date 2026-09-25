@@ -25,6 +25,8 @@ import com.sensei.backend.exception.ResourceNotFoundException;
 import com.sensei.backend.mapper.ParentUserMapper;
 import com.sensei.backend.repository.ParentUserRepository;
 import com.sensei.backend.repository.PricingPlanRepository;
+import com.sensei.backend.repository.ChildUserRepository;
+import com.sensei.backend.repository.MasterTransactionRepository;
 
 /**
  * @author vaishnav88sk
@@ -40,6 +42,12 @@ class ParentUserServiceTest {
 
     @Mock
     private ParentUserMapper parentUserMapper;
+
+    @Mock
+    private ChildUserRepository childUserRepository;
+
+    @Mock
+    private MasterTransactionRepository masterTransactionRepository;
 
     @InjectMocks
     private ParentUserService parentUserService;

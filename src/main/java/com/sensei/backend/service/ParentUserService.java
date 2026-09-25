@@ -160,6 +160,7 @@ import com.sensei.backend.mapper.ParentUserMapper;
 import com.sensei.backend.repository.ParentUserRepository;
 import com.sensei.backend.repository.PricingPlanRepository;
 import com.sensei.backend.repository.MasterTransactionRepository;
+import com.sensei.backend.repository.ChildUserRepository;
 import com.sensei.backend.entity.MasterTransaction;
 import java.util.List;
 
@@ -176,13 +177,23 @@ public class ParentUserService {
     private final PricingPlanRepository pricingPlanRepository;
     private final ParentUserMapper parentUserMapper;
     private final MasterTransactionRepository masterTransactionRepository;
+    private final ChildUserRepository childUserRepository;
 
     // ================= CREATE =================
     @Transactional
     public ParentUserDTO createParentUser(ParentUserDTO dto) {
         ParentUser parent = parentUserMapper.toEntity(dto);
         parent = parentUserRepository.save(parent);
-        log.info("Created ParentUser with email: {}", dto.getEmail());
+        
+        // Automatically create an empty child user associated with this parent
+        ChildUser emptyChild = new ChildUser();
+        emptyChild.setParentUser(parent);
+        emptyChild.setChildName(null);
+        
+        childUserRepository.save(emptyChild);
+        parent.getChildUsers().add(emptyChild);
+
+        log.info("Created ParentUser with email: {} and automatically created an empty ChildUser", dto.getEmail());
         return parentUserMapper.toDto(parent);
     }
 
