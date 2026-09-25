@@ -42,11 +42,20 @@ public class GoogleAuthService {
 
             java.util.List<String> allowedClientIds = new java.util.ArrayList<>();
             allowedClientIds.add(clientId);
+            
             if (androidClientId != null && !androidClientId.trim().isEmpty()) {
-                allowedClientIds.add(androidClientId.trim());
+                for (String id : androidClientId.split(",")) {
+                    if (!id.trim().isEmpty()) {
+                        allowedClientIds.add(id.trim());
+                    }
+                }
             }
             if (iosClientId != null && !iosClientId.trim().isEmpty()) {
-                allowedClientIds.add(iosClientId.trim());
+                for (String id : iosClientId.split(",")) {
+                    if (!id.trim().isEmpty()) {
+                        allowedClientIds.add(id.trim());
+                    }
+                }
             }
 
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
