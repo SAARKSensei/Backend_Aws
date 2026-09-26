@@ -4,6 +4,7 @@ import com.sensei.backend.dto.coupon.ValidateCouponRequestDTO;
 import com.sensei.backend.dto.coupon.ValidateCouponResponseDTO;
 import com.sensei.backend.dto.planpurchase.PlanPurchaseRequestDTO;
 import com.sensei.backend.dto.wallet.WalletDebitRequestDTO;
+import com.sensei.backend.entity.PaymentTransaction;
 import com.sensei.backend.entity.PricingPlan;
 import com.sensei.backend.repository.PricingPlanRepository;
 import com.sensei.backend.service.*;
@@ -25,7 +26,7 @@ public class PlanPurchaseServiceImpl implements PlanPurchaseService {
 
     @Override
     @Transactional
-    public void purchasePlan(PlanPurchaseRequestDTO dto) {
+    public PaymentTransaction purchasePlan(PlanPurchaseRequestDTO dto) {
 
         PricingPlan plan = pricingPlanRepository.findById(dto.getPricingPlanId())
                 .orElseThrow(() -> new RuntimeException("Pricing plan not found"));
@@ -77,7 +78,7 @@ public class PlanPurchaseServiceImpl implements PlanPurchaseService {
         // 3️⃣ RAZORPAY
         if (payableAmount > 0) {
             try {
-                razorpayOrderService.createOrder(
+                PaymentTransaction txn = razorpayOrderService.createOrder(
         payableAmount,
         dto.getChildId(),
         dto.getParentId(),
@@ -86,7 +87,7 @@ public class PlanPurchaseServiceImpl implements PlanPurchaseService {
         couponDiscount
 );
 
-                return; // verification callback will activate plan
+                return txn; // verification callback will activate plan
             } catch (Exception e) {
                 throw new RuntimeException("Razorpay order creation failed", e);
             }
@@ -107,5 +108,7 @@ public class PlanPurchaseServiceImpl implements PlanPurchaseService {
                     couponDiscount
             );
         }
+        
+        return null; // Indicates fully paid by wallet/coupon (no razorpay order needed)
     }
 }

@@ -1,8 +1,9 @@
 package com.sensei.backend.service;
 
 import com.sensei.backend.dto.planpurchase.PlanPurchaseRequestDTO;
+import com.sensei.backend.entity.PaymentTransaction;
 
 public interface PlanPurchaseService {
 
-    void purchasePlan(PlanPurchaseRequestDTO dto);
+    PaymentTransaction purchasePlan(PlanPurchaseRequestDTO dto);
 }

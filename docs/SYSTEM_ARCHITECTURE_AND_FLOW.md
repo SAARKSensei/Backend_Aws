@@ -188,15 +188,20 @@ To access subjects, a child must have an active plan.
 * **Frontend Action:** Call this immediately after the Razorpay success callback to actually credit the wallet.
 
 ### 4B. Buy Pricing Plan
-* **Create Order Endpoint:** `POST /api/payments/razorpay/order/plan`
-* **Request (Form Data / URL Params):**
-  ```text
-  amount=1000
-  parentId=<uuid>
-  childId=<uuid>
-  pricingPlanId=<uuid>
+* **Initiate Purchase Endpoint:** `POST /api/plan-purchases`
+* **Request (JSON):**
+  ```json
+  {
+      "parentId": "<uuid>",
+      "childId": "<uuid>",
+      "pricingPlanId": "<uuid>",
+      "couponCode": "SUMMER50",    // (Optional)
+      "walletAmountUsed": 100      // (Optional)
+  }
   ```
-* **Response:** Returns `orderId`.
+* **Response:**
+  * **If fully paid by wallet/coupon:** Returns `{ "status": "SUCCESS", "message": "PLAN_ACTIVATED_SUCCESSFULLY" }` (Plan is instantly activated, skip verification step).
+  * **If payment is required:** Returns `{ "status": "PAYMENT_REQUIRED", "orderId": "order_XYZ123", "amount": 50000, "currency": "INR" }`. Use this `orderId` to initialize the frontend Razorpay payment gateway.
 
 * **Verify Endpoint:** `POST /api/payments/razorpay/verify/plan`
 * **Request (Form Data / URL Params):**
