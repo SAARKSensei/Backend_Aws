@@ -99,6 +99,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChildPlanActivationService {
@@ -124,7 +127,11 @@ public class ChildPlanActivationService {
 
         // If already active, overwrite (renewal / upgrade)
         LocalDate startDate = LocalDate.now();
-        LocalDate expiryDate = startDate.plusMonths(plan.getDurationMonths());
+        int duration = plan.getDurationMonths() != null ? plan.getDurationMonths() : 1;
+        if (plan.getDurationMonths() == null) {
+            log.warn("PricingPlan ID {} has null durationMonths. Defaulting to 1 month.", plan.getId());
+        }
+        LocalDate expiryDate = startDate.plusMonths(duration);
 
         child.setActivePlanId(plan.getId());
         child.setPlanStartDate(startDate);
