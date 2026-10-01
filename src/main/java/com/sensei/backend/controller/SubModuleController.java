@@ -89,7 +89,7 @@ public class SubModuleController {
             accessControlService.validateSubjectAccess(childId, subjectId);
         }
 
-        return ResponseEntity.ok(subModuleService.getByModule(moduleId));
+        return ResponseEntity.ok(subModuleService.getByModule(moduleId, childId));
     }
 
     @GetMapping("/{id}")

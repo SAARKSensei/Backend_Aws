@@ -111,7 +111,7 @@ public class ModuleController {
         if (childId != null) {
             accessControlService.validateSubjectAccess(childId, subjectId);
         }
-        return moduleService.getModulesBySubject(subjectId);
+        return moduleService.getModulesBySubject(subjectId, childId);
     }
 
     @GetMapping("/{id}")

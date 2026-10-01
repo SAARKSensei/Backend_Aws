@@ -35,4 +35,7 @@ public class ChildQuestionAttempt {
     private Boolean isCorrect;
     private Integer attemptNumber;
     private LocalDateTime attemptedAt;
+    
+    @Column(name = "time_taken_seconds")
+    private Long timeTakenSeconds;
 }

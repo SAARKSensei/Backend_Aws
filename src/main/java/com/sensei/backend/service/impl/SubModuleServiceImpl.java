@@ -6,6 +6,8 @@ import com.sensei.backend.entity.Module;
 import com.sensei.backend.entity.SubModule;
 import com.sensei.backend.repository.ModuleRepository;
 import com.sensei.backend.repository.SubModuleRepository;
+import com.sensei.backend.repository.ChildSubModuleProgressRepository;
+import com.sensei.backend.dto.progress.HierarchicalProgressDTO;
 import com.sensei.backend.service.SubModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class SubModuleServiceImpl implements SubModuleService {
 
     private final SubModuleRepository subModuleRepository;
     private final ModuleRepository moduleRepository;
+    private final ChildSubModuleProgressRepository childSubModuleProgressRepository;
 
     // ---- mapper ----
     private SubModuleResponseDTO map(SubModule s) {
@@ -65,11 +68,23 @@ public class SubModuleServiceImpl implements SubModuleService {
 
     // ---- get by module ----
     @Override
-    public List<SubModuleResponseDTO> getByModule(UUID moduleId) {
+    public List<SubModuleResponseDTO> getByModule(UUID moduleId, UUID childId) {
         return subModuleRepository
                 .findByModule_IdAndIsActiveTrueOrderByOrderIndexAsc(moduleId)
                 .stream()
-                .map(this::map)
+                .map(s -> {
+                    SubModuleResponseDTO dto = map(s);
+                    if (childId != null) {
+                        childSubModuleProgressRepository.findByChildIdAndSubModuleId(childId, s.getId()).ifPresent(progress -> {
+                            dto.setProgress(HierarchicalProgressDTO.builder()
+                                    .completedCount(progress.getCompletedActivities())
+                                    .totalCount(progress.getTotalActivities())
+                                    .isCompleted(progress.getIsCompleted())
+                                    .build());
+                        });
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

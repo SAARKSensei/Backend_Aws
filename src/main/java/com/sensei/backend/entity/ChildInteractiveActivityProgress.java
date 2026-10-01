@@ -36,4 +36,13 @@ public class ChildInteractiveActivityProgress {
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    @Column(name = "time_taken_seconds")
+    private Long timeTakenSeconds;
+
+    @Column(name = "feedback_stars")
+    private Integer feedbackStars;
+
+    @Column(name = "feedback_message", length = 1000)
+    private String feedbackMessage;
 }

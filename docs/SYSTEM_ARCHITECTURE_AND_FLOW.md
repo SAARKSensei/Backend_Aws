@@ -269,41 +269,90 @@ The educational content in Sensei is strictly hierarchical. The frontend builds 
 
 ---
 
-## 6. Learning Progress Execution
+## 6. Learning Progress Execution & Tracking
 
-> ⚠️ **CAUTION:** Frontend engineers MUST ensure these APIs are called sequentially to maintain data integrity for the child's Report Card.
+> ⚠️ **CAUTION:** Frontend engineers MUST use the bulk-submission approach for Digital Activities to ensure offline resilience and robust AI micro-tracking.
+
 ### 6A. Start Activity
-* **Endpoint:** `POST /api/progress/digital/start`
+* **Digital:** `POST /api/progress/digital/start`
+* **Interactive:** `POST /api/progress/activity/start`
 * **Request (JSON):**
   ```json
   {
       "childId": "uuid",
-      "digitalActivityId": "uuid"
+      "digitalActivityId": "uuid" // or interactiveActivityId
   }
   ```
 
-### 6B. Attempt Questions
-During a Digital Activity, questions are fetched via `GET /api/questions/digital-activity/{digitalActivityId}`. As the child answers:
-* **Endpoint:** `POST /api/progress/question/attempt`
-* **Request (JSON):**
-  ```json
-  {
-      "childId": "uuid",
-      "questionId": "uuid",
-      "selectedOptionId": "uuid",
-      "timeTakenSeconds": 15
-  }
-  ```
-
-### 6C. Complete Activity
+### 6B. Complete Digital Activity (Bulk Micro-Tracking)
+Instead of hitting the server for every single question click, the frontend should maintain a local timer and log every attempt (including wrong answers and hesitations). Submit it all at once when the child hits "Finish".
 * **Endpoint:** `POST /api/progress/digital/complete`
 * **Request (JSON):**
   ```json
   {
       "childId": "uuid",
-      "digitalActivityId": "uuid"
+      "digitalActivityId": "uuid",
+      "timeTakenSeconds": 120,          
+      "feedbackStars": 5,               
+      "feedbackMessage": "I loved it!", 
+      "attempts": [                     
+          {
+              "questionId": "Q1_uuid",
+              "optionId": "Wrong_Option_A_uuid",
+              "timeTakenSeconds": 15
+          },
+          {
+              "questionId": "Q1_uuid",
+              "optionId": "Right_Option_uuid",
+              "timeTakenSeconds": 5
+          }
+      ]
   }
   ```
+* **Backend Processing:** The backend will automatically unpack the `attempts` array, increment attempt numbers, and record the distractor hesitation times. It will then instantly recalculate and cache the completed fractional progress for the SubModule, Module, and Subject levels!
+
+### 6C. Complete Interactive Activity
+* **Endpoint:** `POST /api/progress/activity/complete`
+* **Request (JSON):**
+  ```json
+  {
+      "childId": "uuid",
+      "interactiveActivityId": "uuid",
+      "timeTakenSeconds": 300,
+      "feedbackStars": 4,
+      "feedbackMessage": "Fun but a bit hard."
+  }
+  ```
+
+### 6D. Displaying Cached Progress (Frontend Integration)
+Because the backend instantly calculates the progress hierarchy upon activity completion, you don't need to call a separate tracking API! 
+Just pass `?childId=uuid` to the standard content endpoints, and the API will inject a `progress` object:
+* `GET /api/modules/by-subject/{subjectId}?childId={uuid}`
+* `GET /api/sub-modules/by-module/{moduleId}?childId={uuid}`
+
+**Example Response Injection (If wrapped in standard ApiResponse):**
+```json
+{
+  "status": "SUCCESS",
+  "message": "Fetched successfully",
+  "data": [
+    {
+      "id": "uuid",
+      "moduleId": "parent-module-uuid",
+      "name": "Exploring Feelings",
+      "description": "Learn to identify emotions.",
+      "orderIndex": 1,
+      "isActive": true,
+      "progress": {
+        "completedCount": 2,
+        "totalCount": 4,
+        "isCompleted": false
+      }
+    }
+  ],
+  "timestamp": "2026-10-01T10:00:00"
+}
+```
 
 ---
 

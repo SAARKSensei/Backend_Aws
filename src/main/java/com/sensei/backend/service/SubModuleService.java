@@ -62,7 +62,7 @@ public interface SubModuleService {
 
     List<SubModuleResponseDTO> getAll();
 
-    List<SubModuleResponseDTO> getByModule(UUID moduleId);
+    List<SubModuleResponseDTO> getByModule(UUID moduleId, UUID childId);
 
     SubModuleResponseDTO getById(UUID id);
 

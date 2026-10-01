@@ -3,10 +3,14 @@ package com.sensei.backend.service.impl;
 import com.sensei.backend.dto.ChildUserDTO;
 import com.sensei.backend.dto.progress.*;
 import com.sensei.backend.entity.*;
+import com.sensei.backend.entity.Module;
 import com.sensei.backend.exception.ResourceNotFoundException;
 import com.sensei.backend.repository.*;
 import com.sensei.backend.service.ChildProgressService;
 import com.sensei.backend.service.ChildLifeSkillService;
+import com.sensei.backend.repository.ChildSubModuleProgressRepository;
+import com.sensei.backend.repository.ChildModuleProgressRepository;
+import com.sensei.backend.repository.ChildSubjectProgressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +38,11 @@ public class ChildProgressServiceImpl implements ChildProgressService {
     private final ParentUserRepository parentUserRepository;
     private final ChildUserRepository childUserRepository;
     private final ChildLifeSkillService childLifeSkillService;
+
+    private final ChildSubModuleProgressRepository childSubModuleProgressRepo;
+    private final ChildModuleProgressRepository childModuleProgressRepo;
+    private final ChildSubjectProgressRepository childSubjectProgressRepo;
+    private final ModuleRepository moduleRepository;
 
     // -----------------------------------------
     // START INTERACTIVE ACTIVITY
@@ -75,9 +84,19 @@ public class ChildProgressServiceImpl implements ChildProgressService {
 
         progress.setStatus("COMPLETED");
         progress.setCompletedAt(LocalDateTime.now());
+        if (dto.getTimeTakenSeconds() != null) {
+            progress.setTimeTakenSeconds(dto.getTimeTakenSeconds());
+        }
+        if (dto.getFeedbackStars() != null) {
+            progress.setFeedbackStars(dto.getFeedbackStars());
+        }
+        if (dto.getFeedbackMessage() != null) {
+            progress.setFeedbackMessage(dto.getFeedbackMessage());
+        }
         activityProgressRepo.save(progress);
 
         tryAutoCompleteSubModule(dto.getChildId(), activity.getSubModule());
+        updateHierarchicalProgress(dto.getChildId(), activity.getSubModule());
     }
 
     // -----------------------------------------
@@ -104,6 +123,7 @@ public class ChildProgressServiceImpl implements ChildProgressService {
                 .isCorrect(isCorrect)
                 .attemptNumber((int) previousAttempts + 1)
                 .attemptedAt(LocalDateTime.now())
+                .timeTakenSeconds(dto.getTimeTakenSeconds())
                 .build();
 
         questionAttemptRepo.save(attempt);
@@ -226,12 +246,85 @@ public class ChildProgressServiceImpl implements ChildProgressService {
                         .findByChildIdAndDigitalActivity(dto.getChildId(), digital)
                         .orElseThrow(() -> new ResourceNotFoundException("Digital activity not started"));
 
+        if (dto.getAttempts() != null && !dto.getAttempts().isEmpty()) {
+            for (QuestionAttemptDTO attempt : dto.getAttempts()) {
+                if (attempt.getChildId() == null) {
+                    attempt.setChildId(dto.getChildId());
+                }
+                recordQuestionAttempt(attempt);
+            }
+        }
+
         progress.setStatus("COMPLETED");
         progress.setCompletedAt(LocalDateTime.now());
+        if (dto.getTimeTakenSeconds() != null) {
+            progress.setTimeTakenSeconds(dto.getTimeTakenSeconds());
+        }
+        if (dto.getFeedbackStars() != null) {
+            progress.setFeedbackStars(dto.getFeedbackStars());
+        }
+        if (dto.getFeedbackMessage() != null) {
+            progress.setFeedbackMessage(dto.getFeedbackMessage());
+        }
 
         digitalProgressRepo.save(progress);
 
         tryAutoCompleteSubModule(dto.getChildId(), digital.getSubModule());
+        updateHierarchicalProgress(dto.getChildId(), digital.getSubModule());
+    }
+
+    private void updateHierarchicalProgress(UUID childId, SubModule subModule) {
+        // SubModule Level
+        long totalActivities = interactiveActivityRepository.countBySubModuleId(subModule.getId()) +
+                               digitalActivityRepository.countBySubModule_Id(subModule.getId());
+        long completedActivities = activityProgressRepo.countByChildIdAndInteractiveActivity_SubModule_IdAndStatus(childId, subModule.getId(), "COMPLETED") +
+                                   digitalProgressRepo.countByChildIdAndDigitalActivity_SubModule_IdAndStatus(childId, subModule.getId(), "COMPLETED");
+        
+        ChildSubModuleProgress smProgress = childSubModuleProgressRepo.findByChildIdAndSubModuleId(childId, subModule.getId())
+                .orElse(ChildSubModuleProgress.builder().childId(childId).subModuleId(subModule.getId()).build());
+        smProgress.setTotalActivities((int) totalActivities);
+        smProgress.setCompletedActivities((int) completedActivities);
+        smProgress.setIsCompleted(totalActivities > 0 && completedActivities >= totalActivities);
+        smProgress.setUpdatedAt(LocalDateTime.now());
+        childSubModuleProgressRepo.save(smProgress);
+
+        // Module Level
+        if (subModule.getModule() != null) {
+            Module module = subModule.getModule();
+            List<SubModule> subModulesInModule = subModuleRepository.findByModule_IdAndIsActiveTrueOrderByOrderIndexAsc(module.getId());
+            long totalSubModules = subModulesInModule.size();
+            long completedSubModules = childSubModuleProgressRepo.countByChildIdAndSubModuleIdInAndIsCompletedTrue(
+                childId, 
+                subModulesInModule.stream().map(SubModule::getId).toList()
+            );
+
+            ChildModuleProgress mProgress = childModuleProgressRepo.findByChildIdAndModuleId(childId, module.getId())
+                    .orElse(ChildModuleProgress.builder().childId(childId).moduleId(module.getId()).build());
+            mProgress.setTotalSubmodules((int) totalSubModules);
+            mProgress.setCompletedSubmodules((int) completedSubModules);
+            mProgress.setIsCompleted(totalSubModules > 0 && completedSubModules >= totalSubModules);
+            mProgress.setUpdatedAt(LocalDateTime.now());
+            childModuleProgressRepo.save(mProgress);
+
+            // Subject Level
+            if (module.getSubject() != null) {
+                Subject subject = module.getSubject();
+                List<Module> modulesInSubject = moduleRepository.findBySubjectIdAndIsActiveTrueOrderByOrderIndexAsc(subject.getId());
+                long totalModules = modulesInSubject.size();
+                long completedModules = childModuleProgressRepo.countByChildIdAndModuleIdInAndIsCompletedTrue(
+                    childId,
+                    modulesInSubject.stream().map(Module::getId).toList()
+                );
+
+                ChildSubjectProgress sProgress = childSubjectProgressRepo.findByChildIdAndSubjectId(childId, subject.getId())
+                        .orElse(ChildSubjectProgress.builder().childId(childId).subjectId(subject.getId()).build());
+                sProgress.setTotalModules((int) totalModules);
+                sProgress.setCompletedModules((int) completedModules);
+                sProgress.setIsCompleted(totalModules > 0 && completedModules >= totalModules);
+                sProgress.setUpdatedAt(LocalDateTime.now());
+                childSubjectProgressRepo.save(sProgress);
+            }
+        }
     }
 
     // -----------------------------------------

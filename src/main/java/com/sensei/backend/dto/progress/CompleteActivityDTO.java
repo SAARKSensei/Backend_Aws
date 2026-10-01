@@ -7,4 +7,7 @@ import java.util.UUID;
 public class CompleteActivityDTO {
     private UUID childId;
     private UUID interactiveActivityId;
+    private Long timeTakenSeconds;
+    private Integer feedbackStars;
+    private String feedbackMessage;
 }

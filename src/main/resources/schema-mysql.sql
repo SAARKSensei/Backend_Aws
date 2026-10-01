@@ -437,3 +437,35 @@ ALTER TABLE sub_module ADD CONSTRAINT FKsiy8j1vihx4qrh9ap5mdfkn13 FOREIGN KEY (m
 
 -- This ensures the column is added if the schema was previously initialized
 ALTER TABLE parent_user ADD COLUMN is_quiz_completed boolean default false;
+
+-- Tracking and Analytics Implementation
+ALTER TABLE child_digital_activity_progress ADD COLUMN IF NOT EXISTS time_taken_seconds BIGINT;
+ALTER TABLE child_digital_activity_progress ADD COLUMN IF NOT EXISTS feedback_stars INT;
+ALTER TABLE child_digital_activity_progress ADD COLUMN IF NOT EXISTS feedback_message VARCHAR(1000);
+
+ALTER TABLE child_interactive_activity_progress ADD COLUMN IF NOT EXISTS time_taken_seconds BIGINT;
+ALTER TABLE child_interactive_activity_progress ADD COLUMN IF NOT EXISTS feedback_stars INT;
+ALTER TABLE child_interactive_activity_progress ADD COLUMN IF NOT EXISTS feedback_message VARCHAR(1000);
+
+ALTER TABLE child_question_attempt ADD COLUMN IF NOT EXISTS time_taken_seconds BIGINT;
+
+CREATE TABLE IF NOT EXISTS child_submodule_progress (
+    id BINARY(16) PRIMARY KEY, child_id BINARY(16) NOT NULL, sub_module_id BINARY(16) NOT NULL, 
+    completed_activities INT DEFAULT 0, total_activities INT DEFAULT 0, 
+    is_completed BOOLEAN DEFAULT FALSE, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY (child_id, sub_module_id)
+);
+
+CREATE TABLE IF NOT EXISTS child_module_progress (
+    id BINARY(16) PRIMARY KEY, child_id BINARY(16) NOT NULL, module_id BINARY(16) NOT NULL, 
+    completed_submodules INT DEFAULT 0, total_submodules INT DEFAULT 0, 
+    is_completed BOOLEAN DEFAULT FALSE, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY (child_id, module_id)
+);
+
+CREATE TABLE IF NOT EXISTS child_subject_progress (
+    id BINARY(16) PRIMARY KEY, child_id BINARY(16) NOT NULL, subject_id BINARY(16) NOT NULL, 
+    completed_modules INT DEFAULT 0, total_modules INT DEFAULT 0, 
+    is_completed BOOLEAN DEFAULT FALSE, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY (child_id, subject_id)
+);

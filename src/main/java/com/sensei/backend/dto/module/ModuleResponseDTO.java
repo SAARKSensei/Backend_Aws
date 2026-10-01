@@ -36,5 +36,6 @@ public class ModuleResponseDTO {
     private String description;
     private Integer orderIndex;
     private Boolean isActive;
+    private com.sensei.backend.dto.progress.HierarchicalProgressDTO progress;
 }
 

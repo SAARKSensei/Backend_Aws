@@ -17,4 +17,5 @@ public class SubModuleResponseDTO {
     private Integer orderIndex;
     private Boolean isActive;
     private UUID moduleId;
+    private com.sensei.backend.dto.progress.HierarchicalProgressDTO progress;
 }

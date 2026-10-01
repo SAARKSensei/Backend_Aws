@@ -8,4 +8,5 @@ public class QuestionAttemptDTO {
     private UUID childId;
     private UUID questionId;
     private UUID optionId;
+    private Long timeTakenSeconds;
 }

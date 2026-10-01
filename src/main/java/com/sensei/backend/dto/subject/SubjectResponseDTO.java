@@ -15,4 +15,5 @@ public class SubjectResponseDTO {
     private String iconUrl;
     private Boolean isActive;
     private LocalDateTime createdAt;
+    private com.sensei.backend.dto.progress.HierarchicalProgressDTO progress;
 }

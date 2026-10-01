@@ -70,6 +70,8 @@ import com.sensei.backend.entity.Module;
 import com.sensei.backend.entity.Subject;
 import com.sensei.backend.repository.ModuleRepository;
 import com.sensei.backend.repository.SubjectRepository;
+import com.sensei.backend.repository.ChildModuleProgressRepository;
+import com.sensei.backend.dto.progress.HierarchicalProgressDTO;
 import com.sensei.backend.service.ModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -86,6 +88,7 @@ public class ModuleServiceImpl implements ModuleService {
 
     private final ModuleRepository moduleRepository;
     private final SubjectRepository subjectRepository;
+    private final ChildModuleProgressRepository childModuleProgressRepository;
 
     @Override
     @Transactional
@@ -105,11 +108,23 @@ public class ModuleServiceImpl implements ModuleService {
     }
 
     @Override
-    public List<ModuleResponseDTO> getModulesBySubject(UUID subjectId) {
+    public List<ModuleResponseDTO> getModulesBySubject(UUID subjectId, UUID childId) {
         return moduleRepository
                 .findBySubjectIdAndIsActiveTrueOrderByOrderIndexAsc(subjectId)
                 .stream()
-                .map(this::map)
+                .map(m -> {
+                    ModuleResponseDTO dto = map(m);
+                    if (childId != null) {
+                        childModuleProgressRepository.findByChildIdAndModuleId(childId, m.getId()).ifPresent(progress -> {
+                            dto.setProgress(HierarchicalProgressDTO.builder()
+                                    .completedCount(progress.getCompletedSubmodules())
+                                    .totalCount(progress.getTotalSubmodules())
+                                    .isCompleted(progress.getIsCompleted())
+                                    .build());
+                        });
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

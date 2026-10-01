@@ -74,7 +74,7 @@ public interface ModuleService {
 
     ModuleResponseDTO createModule(ModuleRequestDTO dto);
 
-    List<ModuleResponseDTO> getModulesBySubject(UUID subjectId);
+    List<ModuleResponseDTO> getModulesBySubject(UUID subjectId, UUID childId);
 
     ModuleResponseDTO getById(UUID id);
 

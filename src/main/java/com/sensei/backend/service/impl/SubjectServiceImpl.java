@@ -75,6 +75,8 @@ import com.sensei.backend.enums.PlanStatus;
 import com.sensei.backend.repository.ChildUserRepository;
 import com.sensei.backend.repository.PricingPlanSubjectRepository;
 import com.sensei.backend.repository.SubjectRepository;
+import com.sensei.backend.repository.ChildSubjectProgressRepository;
+import com.sensei.backend.dto.progress.HierarchicalProgressDTO;
 import com.sensei.backend.service.SubjectService;
 import com.sensei.backend.exception.SubscriptionException;
 import lombok.RequiredArgsConstructor;
@@ -95,6 +97,7 @@ public class SubjectServiceImpl implements SubjectService {
     private final SubjectRepository subjectRepository;
     private final ChildUserRepository childUserRepository;
     private final PricingPlanSubjectRepository pricingPlanSubjectRepository;
+    private final ChildSubjectProgressRepository childSubjectProgressRepository;
 
     @Override
     @Transactional
@@ -132,7 +135,17 @@ public class SubjectServiceImpl implements SubjectService {
 
         return pricingPlanSubjectRepository.findByPricingPlan_Id(child.getActivePlanId())
                 .stream()
-                .map(pps -> mapToResponse(pps.getSubject()))
+                .map(pps -> {
+                    SubjectResponseDTO dto = mapToResponse(pps.getSubject());
+                    childSubjectProgressRepository.findByChildIdAndSubjectId(childId, pps.getSubject().getId()).ifPresent(progress -> {
+                        dto.setProgress(HierarchicalProgressDTO.builder()
+                                .completedCount(progress.getCompletedModules())
+                                .totalCount(progress.getTotalModules())
+                                .isCompleted(progress.getIsCompleted())
+                                .build());
+                    });
+                    return dto;
+                })
                 .filter(SubjectResponseDTO::getIsActive)
                 .collect(Collectors.toList());
     }
