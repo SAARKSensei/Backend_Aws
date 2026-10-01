@@ -126,7 +126,7 @@ public class DigitalActivityController {
             accessControlService.validateSubjectAccess(childId, subjectId);
         }
 
-        return service.getBySubModule(subModuleId);
+        return service.getBySubModule(subModuleId, childId);
     }
 }
 

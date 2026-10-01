@@ -60,7 +60,7 @@ public interface InteractiveActivityService {
 
     InteractiveActivityResponseDTO create(InteractiveActivityRequestDTO dto);
 
-    List<InteractiveActivityResponseDTO> getBySubModule(UUID subModuleId);
+    List<InteractiveActivityResponseDTO> getBySubModule(UUID subModuleId, UUID childId);
 
     InteractiveActivityResponseDTO getById(UUID id);
 

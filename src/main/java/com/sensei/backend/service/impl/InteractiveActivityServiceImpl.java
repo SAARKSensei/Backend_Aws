@@ -22,6 +22,7 @@ public class InteractiveActivityServiceImpl implements InteractiveActivityServic
 
     private final InteractiveActivityRepository repository;
     private final SubModuleRepository subModuleRepository;
+    private final com.sensei.backend.repository.ChildInteractiveActivityProgressRepository activityProgressRepo;
 
     private InteractiveActivityResponseDTO map(InteractiveActivity a) {
         InteractiveActivityResponseDTO dto = new InteractiveActivityResponseDTO();
@@ -63,10 +64,17 @@ public class InteractiveActivityServiceImpl implements InteractiveActivityServic
     }
 
     @Override
-    public List<InteractiveActivityResponseDTO> getBySubModule(UUID subModuleId) {
+    public List<InteractiveActivityResponseDTO> getBySubModule(UUID subModuleId, UUID childId) {
         return repository.findBySubModule_IdAndIsActiveTrueOrderByOrderIndexAsc(subModuleId)
                 .stream()
-                .map(this::map)
+                .map(a -> {
+                    InteractiveActivityResponseDTO dto = map(a);
+                    if (childId != null) {
+                        activityProgressRepo.findByChildIdAndInteractiveActivity(childId, a)
+                                .ifPresent(p -> dto.setStatus(p.getStatus()));
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

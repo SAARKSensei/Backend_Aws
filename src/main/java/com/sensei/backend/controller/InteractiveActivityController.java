@@ -108,7 +108,7 @@ public class InteractiveActivityController {
             accessControlService.validateSubjectAccess(childId, subjectId);
         }
 
-        return ResponseEntity.ok(service.getBySubModule(subModuleId));
+        return ResponseEntity.ok(service.getBySubModule(subModuleId, childId));
     }
 
     @GetMapping("/{id}")

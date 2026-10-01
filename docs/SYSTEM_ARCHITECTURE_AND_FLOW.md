@@ -257,15 +257,70 @@ The educational content in Sensei is strictly hierarchical. The frontend builds 
 
 ### 5A. Get Subjects for Child
 * **Endpoint:** `GET /api/subjects?childId={childId}`
-* **Response:** Array of `Subject` objects (access control enforced based on purchased plan).
+* **Response:** Array of `Subject` objects (access control enforced based on purchased plan). If `?childId=` is provided, each Subject will include a `progress` object (see Section 6D for schema).
 
 ### 5B. Get Modules & SubModules
-* **Modules:** `GET /api/modules/by-subject/{subjectId}`
-* **SubModules:** `GET /api/sub-modules/by-module/{moduleId}`
+* **Modules:** `GET /api/modules/by-subject/{subjectId}?childId={uuid}`
+* **SubModules:** `GET /api/sub-modules/by-module/{moduleId}?childId={uuid}`
+
+**Example Response Injection (If wrapped in standard ApiResponse):**
+```json
+{
+  "status": "SUCCESS",
+  "message": "Fetched successfully",
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Exploring Feelings",
+      "description": "Learn to identify emotions.",
+      "orderIndex": 1,
+      "isActive": true,
+      "progress": {
+        "completedCount": 2,
+        "totalCount": 4,
+        "isCompleted": false,
+        "status": "STARTED"
+      }
+    }
+  ],
+  "timestamp": "2026-10-01T10:00:00"
+}
+```
+**What the injected `progress` fields mean:**
+* `completedCount`: The number of nested items the child has finished. For a Subject, this is completed Modules. For a Module, this is completed SubModules. For a SubModule, this is completed Activities.
+* `totalCount`: The total number of active nested items available inside this parent.
+* `isCompleted`: A strict boolean (`true` or `false`). It only becomes `true` when `completedCount >= totalCount` (i.e., the child has 100% finished this entire section). The frontend can use this to display a "100% Mastered!" badge.
+* `status`: Automatically computed as `"COMPLETED"`, `"STARTED"`, or `"NOT_STARTED"`.
 
 ### 5C. Get Activities
-* **Interactive:** `GET /api/interactive-activities/by-submodule/{subModuleId}`
-* **Digital:** `GET /api/digital-activities/submodule/{subModuleId}`
+* **Interactive:** `GET /api/interactive-activities/by-submodule/{subModuleId}?childId={uuid}`
+* **Digital:** `GET /api/digital-activities/submodule/{subModuleId}?childId={uuid}`
+
+**Example Response Injection (If wrapped in standard ApiResponse):**
+```json
+{
+  "status": "SUCCESS",
+  "message": "Fetched successfully",
+  "data": [
+    {
+      "id": "uuid",
+      "subModuleId": "parent-submodule-uuid",
+      "title": "Drag the Colors",
+      "gameType": "DRAG_AND_DROP",
+      "difficulty": "EASY",
+      "orderIndex": 1,
+      "isActive": true,
+      "status": "STARTED" // <-- THIS IS INJECTED AUTOMATICALLY!
+    }
+  ],
+  "timestamp": "2026-10-01T10:00:00"
+}
+```
+*Note: The `status` field is only injected if the child has started or completed the activity and the `?childId=uuid` parameter is provided. Otherwise, it will be omitted or null.*
+
+**What the injected `status` means:**
+* `"STARTED"`: The child tapped the activity and began playing, but never formally finished it. The frontend should display a **"Resume"** or **"Jump Back In!"** badge.
+* `"COMPLETED"`: The child successfully finished the activity. The frontend should display a **"Completed"** badge (e.g., a green checkmark).
 
 ---
 
@@ -274,6 +329,8 @@ The educational content in Sensei is strictly hierarchical. The frontend builds 
 > ⚠️ **CAUTION:** Frontend engineers MUST use the bulk-submission approach for Digital Activities to ensure offline resilience and robust AI micro-tracking.
 
 ### 6A. Start Activity
+**When to call:** The frontend MUST trigger this endpoint the exact moment the child taps to open/start an activity. This registers the initial entry in the database and ensures we accurately track that the child has engaged with the content.
+
 * **Digital:** `POST /api/progress/digital/start`
 * **Interactive:** `POST /api/progress/activity/start`
 * **Request (JSON):**
@@ -326,11 +383,13 @@ Instead of hitting the server for every single question click, the frontend shou
 
 ### 6D. Displaying Cached Progress (Frontend Integration)
 Because the backend instantly calculates the progress hierarchy upon activity completion, you don't need to call a separate tracking API! 
-Just pass `?childId=uuid` to the standard content endpoints, and the API will inject a `progress` object:
+Just pass `?childId=uuid` to the standard content endpoints.
+
+**For Modules & SubModules:**
+The API will inject a `progress` object:
 * `GET /api/modules/by-subject/{subjectId}?childId={uuid}`
 * `GET /api/sub-modules/by-module/{moduleId}?childId={uuid}`
 
-**Example Response Injection (If wrapped in standard ApiResponse):**
 ```json
 {
   "status": "SUCCESS",
@@ -346,14 +405,48 @@ Just pass `?childId=uuid` to the standard content endpoints, and the API will in
       "progress": {
         "completedCount": 2,
         "totalCount": 4,
-        "isCompleted": false
+        "isCompleted": false,
+        "status": "STARTED"
       }
     }
   ],
   "timestamp": "2026-10-01T10:00:00"
 }
 ```
+**What the injected `progress` fields mean:**
+* `completedCount`: The number of nested items the child has finished. For a Subject, this is completed Modules. For a Module, this is completed SubModules. For a SubModule, this is completed Activities.
+* `totalCount`: The total number of active nested items available inside this parent.
+* `isCompleted`: A strict boolean (`true` or `false`). It only becomes `true` when `completedCount >= totalCount`. The frontend can use this to display a "100% Mastered!" badge.
+* `status`: Automatically computed as `"COMPLETED"` (if 100% finished), `"STARTED"` (if completedCount > 0), or `"NOT_STARTED"`. Used to show badges like "In Progress".
 
+**For Activities (Both Interactive and Digital):**
+The API will inject a `status` string into BOTH Interactive and Digital Activity objects:
+* `GET /api/digital-activities/submodule/{subModuleId}?childId={uuid}`
+* `GET /api/interactive-activities/by-submodule/{subModuleId}?childId={uuid}`
+
+**Example Digital Activity Response:**
+```json
+{
+  "status": "SUCCESS",
+  "message": "Fetched successfully",
+  "data": [
+    {
+      "id": "uuid",
+      "subModuleId": "parent-submodule-uuid",
+      "title": "Drag the Colors",
+      "gameType": "DRAG_AND_DROP",
+      "difficulty": "EASY",
+      "orderIndex": 1,
+      "isActive": true,
+      "status": "STARTED" 
+    }
+  ],
+  "timestamp": "2026-10-01T10:00:00"
+}
+```
+**What the injected `status` means:**
+* `"STARTED"`: The child tapped the activity and began playing, but never formally finished it. The frontend should display a **"Resume"** or **"Jump Back In!"** badge.
+* `"COMPLETED"`: The child successfully finished the activity. The frontend should display a **"Completed"** badge (e.g., a green checkmark).
 ---
 
 ## 7. Report Cards

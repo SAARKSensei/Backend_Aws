@@ -76,10 +76,12 @@ public class SubModuleServiceImpl implements SubModuleService {
                     SubModuleResponseDTO dto = map(s);
                     if (childId != null) {
                         childSubModuleProgressRepository.findByChildIdAndSubModuleId(childId, s.getId()).ifPresent(progress -> {
+                            String status = progress.getIsCompleted() ? "COMPLETED" : (progress.getCompletedActivities() > 0 ? "STARTED" : "NOT_STARTED");
                             dto.setProgress(HierarchicalProgressDTO.builder()
                                     .completedCount(progress.getCompletedActivities())
                                     .totalCount(progress.getTotalActivities())
                                     .isCompleted(progress.getIsCompleted())
+                                    .status(status)
                                     .build());
                         });
                     }

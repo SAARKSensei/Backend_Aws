@@ -14,4 +14,5 @@ public class DigitalActivityResponseDTO {
     private String difficulty;
     private Integer orderIndex;
     private Boolean isActive;
+    private String status;
 }

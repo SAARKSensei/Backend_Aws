@@ -116,10 +116,12 @@ public class ModuleServiceImpl implements ModuleService {
                     ModuleResponseDTO dto = map(m);
                     if (childId != null) {
                         childModuleProgressRepository.findByChildIdAndModuleId(childId, m.getId()).ifPresent(progress -> {
+                            String status = progress.getIsCompleted() ? "COMPLETED" : (progress.getCompletedSubmodules() > 0 ? "STARTED" : "NOT_STARTED");
                             dto.setProgress(HierarchicalProgressDTO.builder()
                                     .completedCount(progress.getCompletedSubmodules())
                                     .totalCount(progress.getTotalSubmodules())
                                     .isCompleted(progress.getIsCompleted())
+                                    .status(status)
                                     .build());
                         });
                     }

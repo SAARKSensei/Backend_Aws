@@ -17,4 +17,5 @@ public class InteractiveActivityResponseDTO {
     private String activityType;
     private Integer orderIndex;
     private Boolean isActive;
+    private String status;
 }

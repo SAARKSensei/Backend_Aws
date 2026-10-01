@@ -22,6 +22,7 @@ public class DigitalActivityServiceImpl implements DigitalActivityService {
 
     private final DigitalActivityRepository repository;
     private final SubModuleRepository subModuleRepository;
+    private final com.sensei.backend.repository.ChildDigitalActivityProgressRepository digitalProgressRepo;
 
     private DigitalActivityResponseDTO map(DigitalActivity d) {
         DigitalActivityResponseDTO dto = new DigitalActivityResponseDTO();
@@ -94,11 +95,18 @@ public class DigitalActivityServiceImpl implements DigitalActivityService {
     }
 
     @Override
-public List<DigitalActivityResponseDTO> getBySubModule(UUID subModuleId) {
+public List<DigitalActivityResponseDTO> getBySubModule(UUID subModuleId, UUID childId) {
     return repository
             .findBySubModule_IdAndIsActiveTrueOrderByOrderIndexAsc(subModuleId)
             .stream()
-            .map(this::map)
+            .map(a -> {
+                DigitalActivityResponseDTO dto = map(a);
+                if (childId != null) {
+                    digitalProgressRepo.findByChildIdAndDigitalActivity(childId, a)
+                            .ifPresent(p -> dto.setStatus(p.getStatus()));
+                }
+                return dto;
+            })
             .collect(Collectors.toList());
 }
 

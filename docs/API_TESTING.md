@@ -76,7 +76,7 @@ Below is a list of all active API endpoints available in the system for testing.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/modules` | `create` |
-| `GET` | `/api/modules/by-subject/{subjectId}` | `getBySubject` |
+| `GET` | `/api/modules/by-subject/{subjectId}?childId={uuid}` | `getBySubject` (Progress Injected if childId present) |
 | `GET` | `/api/modules/{id}` | `getById` |
 | `PUT` | `/api/modules/{id}` | `update` |
 | `DELETE` | `/api/modules/{id}` | `delete` |
@@ -93,7 +93,7 @@ Below is a list of all active API endpoints available in the system for testing.
 | `PUT` | `/api/digital-activities/{id}` | `update` |
 | `DELETE` | `/api/digital-activities/{id}` | `delete` |
 | `GET` | `/api/digital-activities/{id}` | `getById` |
-| `GET` | `/api/digital-activities/submodule/{subModuleId}` | `getBySubModule` |
+| `GET` | `/api/digital-activities/submodule/{subModuleId}?childId={uuid}` | `getBySubModule` (Status Injected if childId present) |
 
 
 ## Health
@@ -205,7 +205,7 @@ Below is a list of all active API endpoints available in the system for testing.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/interactive-activities` | `create` |
-| `GET` | `/api/interactive-activities/by-submodule/{subModuleId}` | `getBySubModule` |
+| `GET` | `/api/interactive-activities/by-submodule/{subModuleId}?childId={uuid}` | `getBySubModule` (Status Injected if childId present) |
 | `GET` | `/api/interactive-activities/{id}` | `getById` |
 | `PUT` | `/api/interactive-activities/{id}` | `update` |
 | `DELETE` | `/api/interactive-activities/{id}` | `delete` |
@@ -262,7 +262,7 @@ Below is a list of all active API endpoints available in the system for testing.
 |--------|----------|-------------|
 | `POST` | `/api/sub-modules` | `create` |
 | `GET` | `/api/sub-modules` | `getAll` |
-| `GET` | `/api/sub-modules/by-module/{moduleId}` | `getByModule` |
+| `GET` | `/api/sub-modules/by-module/{moduleId}?childId={uuid}` | `getByModule` (Progress Injected if childId present) |
 | `GET` | `/api/sub-modules/{id}` | `getById` |
 | `PUT` | `/api/sub-modules/{id}` | `update` |
 | `DELETE` | `/api/sub-modules/{id}` | `delete` |

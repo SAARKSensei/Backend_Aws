@@ -138,10 +138,12 @@ public class SubjectServiceImpl implements SubjectService {
                 .map(pps -> {
                     SubjectResponseDTO dto = mapToResponse(pps.getSubject());
                     childSubjectProgressRepository.findByChildIdAndSubjectId(childId, pps.getSubject().getId()).ifPresent(progress -> {
+                        String status = progress.getIsCompleted() ? "COMPLETED" : (progress.getCompletedModules() > 0 ? "STARTED" : "NOT_STARTED");
                         dto.setProgress(HierarchicalProgressDTO.builder()
                                 .completedCount(progress.getCompletedModules())
                                 .totalCount(progress.getTotalModules())
                                 .isCompleted(progress.getIsCompleted())
+                                .status(status)
                                 .build());
                     });
                     return dto;

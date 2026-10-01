@@ -213,7 +213,7 @@ public interface DigitalActivityService {
 
     DigitalActivityResponseDTO getById(UUID id);
 
-    List<DigitalActivityResponseDTO> getBySubModule(UUID subModuleId);
+    List<DigitalActivityResponseDTO> getBySubModule(UUID subModuleId, UUID childId);
 
     UUID getSubjectIdBySubModule(UUID subModuleId);
 

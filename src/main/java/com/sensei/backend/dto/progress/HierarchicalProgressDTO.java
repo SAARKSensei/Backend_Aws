@@ -13,4 +13,5 @@ public class HierarchicalProgressDTO {
     private Integer completedCount;
     private Integer totalCount;
     private Boolean isCompleted;
+    private String status;
 }
