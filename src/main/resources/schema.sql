@@ -449,22 +449,37 @@ ALTER TABLE child_interactive_activity_progress ADD COLUMN IF NOT EXISTS feedbac
 ALTER TABLE child_question_attempt ADD COLUMN IF NOT EXISTS time_taken_seconds BIGINT;
 
 CREATE TABLE IF NOT EXISTS child_submodule_progress (
-    id BINARY(16) PRIMARY KEY, child_id BINARY(16) NOT NULL, sub_module_id BINARY(16) NOT NULL, 
-    completed_activities INT DEFAULT 0, total_activities INT DEFAULT 0, 
-    is_completed BOOLEAN DEFAULT FALSE, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY (child_id, sub_module_id)
+    completed_activities integer,
+    total_activities integer,
+    is_completed boolean,
+    updated_at timestamp(6),
+    child_id uuid not null,
+    id uuid not null,
+    sub_module_id uuid not null,
+    primary key (id),
+    unique (child_id, sub_module_id)
 );
 
 CREATE TABLE IF NOT EXISTS child_module_progress (
-    id BINARY(16) PRIMARY KEY, child_id BINARY(16) NOT NULL, module_id BINARY(16) NOT NULL, 
-    completed_submodules INT DEFAULT 0, total_submodules INT DEFAULT 0, 
-    is_completed BOOLEAN DEFAULT FALSE, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY (child_id, module_id)
+    completed_submodules integer,
+    total_submodules integer,
+    is_completed boolean,
+    updated_at timestamp(6),
+    child_id uuid not null,
+    id uuid not null,
+    module_id uuid not null,
+    primary key (id),
+    unique (child_id, module_id)
 );
 
 CREATE TABLE IF NOT EXISTS child_subject_progress (
-    id BINARY(16) PRIMARY KEY, child_id BINARY(16) NOT NULL, subject_id BINARY(16) NOT NULL, 
-    completed_modules INT DEFAULT 0, total_modules INT DEFAULT 0, 
-    is_completed BOOLEAN DEFAULT FALSE, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY (child_id, subject_id)
+    completed_modules integer,
+    total_modules integer,
+    is_completed boolean,
+    updated_at timestamp(6),
+    child_id uuid not null,
+    id uuid not null,
+    subject_id uuid not null,
+    primary key (id),
+    unique (child_id, subject_id)
 );
