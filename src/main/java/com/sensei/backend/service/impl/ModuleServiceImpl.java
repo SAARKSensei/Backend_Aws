@@ -71,6 +71,7 @@ import com.sensei.backend.entity.Subject;
 import com.sensei.backend.repository.ModuleRepository;
 import com.sensei.backend.repository.SubjectRepository;
 import com.sensei.backend.repository.ChildModuleProgressRepository;
+import com.sensei.backend.repository.PricingPlanSubjectRepository;
 import com.sensei.backend.repository.SubModuleRepository;
 import com.sensei.backend.dto.progress.HierarchicalProgressDTO;
 import com.sensei.backend.service.ModuleService;
@@ -96,6 +97,7 @@ public class ModuleServiceImpl implements ModuleService {
     private final SubjectRepository subjectRepository;
     private final ChildModuleProgressRepository childModuleProgressRepository;
     private final ChildUserRepository childUserRepository;
+    private final PricingPlanSubjectRepository pricingPlanSubjectRepository;
     private final SubModuleRepository subModuleRepository;
 
     @Value("${app.freemium.module-ids:}")
@@ -120,16 +122,16 @@ public class ModuleServiceImpl implements ModuleService {
 
     @Override
     public List<ModuleResponseDTO> getModulesBySubject(UUID subjectId, UUID childId) {
-        boolean hasActivePlan = false;
+        boolean hasSubjectAccess = false;
         if (childId != null) {
             ChildUser child = childUserRepository.findById(childId).orElse(null);
-            if (child != null) {
-                hasActivePlan = child.getPlanStatus() == PlanStatus.ACTIVE &&
-                        (child.getPlanExpiryDate() == null || !child.getPlanExpiryDate().isBefore(LocalDate.now()));
+            if (child != null && child.getPlanStatus() == PlanStatus.ACTIVE &&
+                    (child.getPlanExpiryDate() == null || !child.getPlanExpiryDate().isBefore(LocalDate.now()))) {
+                hasSubjectAccess = pricingPlanSubjectRepository.existsByPricingPlan_IdAndSubject_Id(child.getActivePlanId(), subjectId);
             }
         }
         
-        final boolean activePlanFinal = hasActivePlan;
+        final boolean activePlanFinal = hasSubjectAccess;
 
         return moduleRepository
                 .findBySubjectIdAndIsActiveTrueOrderByOrderIndexAsc(subjectId)

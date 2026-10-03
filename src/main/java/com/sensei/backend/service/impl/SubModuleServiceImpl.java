@@ -9,6 +9,7 @@ import com.sensei.backend.repository.SubModuleRepository;
 import com.sensei.backend.repository.ChildSubModuleProgressRepository;
 import com.sensei.backend.repository.DigitalActivityRepository;
 import com.sensei.backend.repository.InteractiveActivityRepository;
+import com.sensei.backend.repository.PricingPlanSubjectRepository;
 import com.sensei.backend.dto.progress.HierarchicalProgressDTO;
 import com.sensei.backend.service.SubModuleService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class SubModuleServiceImpl implements SubModuleService {
     private final ChildUserRepository childUserRepository;
     private final DigitalActivityRepository digitalActivityRepository;
     private final InteractiveActivityRepository interactiveActivityRepository;
+    private final PricingPlanSubjectRepository pricingPlanSubjectRepository;
 
     @Value("${app.freemium.module-ids:}")
     private List<String> freemiumModuleIds;
@@ -88,13 +90,16 @@ public class SubModuleServiceImpl implements SubModuleService {
         if (childId != null) {
             ChildUser child = childUserRepository.findById(childId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Child not found"));
-            
-            boolean hasActivePlan = child.getPlanStatus() == PlanStatus.ACTIVE &&
-                    (child.getPlanExpiryDate() == null || !child.getPlanExpiryDate().isBefore(LocalDate.now()));
+            boolean hasSubjectAccess = false;
+            if (child.getPlanStatus() == PlanStatus.ACTIVE &&
+                    (child.getPlanExpiryDate() == null || !child.getPlanExpiryDate().isBefore(LocalDate.now()))) {
+                UUID subjectId = moduleRepository.findById(moduleId).orElseThrow(() -> new RuntimeException("Module not found")).getSubject().getId();
+                hasSubjectAccess = pricingPlanSubjectRepository.existsByPricingPlan_IdAndSubject_Id(child.getActivePlanId(), subjectId);
+            }
             
             boolean isFreeModule = freemiumModuleIds != null && freemiumModuleIds.contains(moduleId.toString());
 
-            if (!hasActivePlan && !isFreeModule) {
+            if (!hasSubjectAccess && !isFreeModule) {
                 throw new SubscriptionException("Active plan required to access this module.");
             }
         }
