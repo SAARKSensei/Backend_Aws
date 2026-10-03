@@ -28,6 +28,7 @@ public class InteractiveActivityDTO {
     private String bookRef;
     private String videoRef;
     private float progress;
+    private Boolean isLocked;
 
     private List<ProcessesDTO> processes;
 

@@ -18,4 +18,5 @@ public class SubModuleResponseDTO {
     private Boolean isActive;
     private UUID moduleId;
     private com.sensei.backend.dto.progress.HierarchicalProgressDTO progress;
+    private Boolean isLocked;
 }

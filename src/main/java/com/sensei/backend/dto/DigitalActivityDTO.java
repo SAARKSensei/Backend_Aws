@@ -20,6 +20,7 @@ public class DigitalActivityDTO {
     private String submoduleIdRef;
     private String firstQuestionIdRef;
     private Integer noOfQuestions; // ✅ Added field for number of questions
+    private Boolean isLocked;
 
     private List<QuestionsDTO> questions = new ArrayList<>();
 
@@ -111,6 +112,14 @@ public class DigitalActivityDTO {
 
     public void setNoOfQuestions(Integer noOfQuestions) {
         this.noOfQuestions = noOfQuestions;
+    }
+
+    public Boolean getIsLocked() {
+        return isLocked;
+    }
+
+    public void setIsLocked(Boolean isLocked) {
+        this.isLocked = isLocked;
     }
 
     public List<QuestionsDTO> getQuestions() {

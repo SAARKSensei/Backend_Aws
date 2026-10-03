@@ -82,6 +82,7 @@ import com.sensei.backend.exception.SubscriptionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -98,6 +99,9 @@ public class SubjectServiceImpl implements SubjectService {
     private final ChildUserRepository childUserRepository;
     private final PricingPlanSubjectRepository pricingPlanSubjectRepository;
     private final ChildSubjectProgressRepository childSubjectProgressRepository;
+
+    @Value("${app.freemium.subject-id:}")
+    private String freemiumSubjectId;
 
     @Override
     @Transactional
@@ -125,31 +129,60 @@ public class SubjectServiceImpl implements SubjectService {
         ChildUser child = childUserRepository.findById(childId)
                 .orElseThrow(() -> new RuntimeException("Child not found"));
 
-        if (child.getPlanStatus() != PlanStatus.ACTIVE) {
-            throw new SubscriptionException("No active plan");
-        }
-        
-        if (child.getPlanExpiryDate() != null && child.getPlanExpiryDate().isBefore(LocalDate.now())) {
-            throw new SubscriptionException("Plan expired");
+        boolean hasActivePlan = child.getPlanStatus() == PlanStatus.ACTIVE &&
+                (child.getPlanExpiryDate() == null || !child.getPlanExpiryDate().isBefore(LocalDate.now()));
+
+        List<SubjectResponseDTO> responseList = new java.util.ArrayList<>();
+
+        if (hasActivePlan) {
+            List<SubjectResponseDTO> planSubjects = pricingPlanSubjectRepository.findByPricingPlan_Id(child.getActivePlanId())
+                    .stream()
+                    .filter(pps -> pps.getSubject().getIsActive())
+                    .map(pps -> {
+                        SubjectResponseDTO dto = mapToResponse(pps.getSubject());
+                        dto.setIsLocked(false);
+
+                        childSubjectProgressRepository.findByChildIdAndSubjectId(childId, pps.getSubject().getId()).ifPresent(progress -> {
+                            String status = progress.getIsCompleted() ? "COMPLETED" : (progress.getCompletedModules() > 0 ? "STARTED" : "NOT_STARTED");
+                            dto.setProgress(HierarchicalProgressDTO.builder()
+                                    .completedCount(progress.getCompletedModules())
+                                    .totalCount(progress.getTotalModules())
+                                    .isCompleted(progress.getIsCompleted())
+                                    .status(status)
+                                    .build());
+                        });
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+            
+            responseList.addAll(planSubjects);
         }
 
-        return pricingPlanSubjectRepository.findByPricingPlan_Id(child.getActivePlanId())
-                .stream()
-                .map(pps -> {
-                    SubjectResponseDTO dto = mapToResponse(pps.getSubject());
-                    childSubjectProgressRepository.findByChildIdAndSubjectId(childId, pps.getSubject().getId()).ifPresent(progress -> {
-                        String status = progress.getIsCompleted() ? "COMPLETED" : (progress.getCompletedModules() > 0 ? "STARTED" : "NOT_STARTED");
-                        dto.setProgress(HierarchicalProgressDTO.builder()
-                                .completedCount(progress.getCompletedModules())
-                                .totalCount(progress.getTotalModules())
-                                .isCompleted(progress.getIsCompleted())
-                                .status(status)
-                                .build());
-                    });
-                    return dto;
-                })
-                .filter(SubjectResponseDTO::getIsActive)
-                .collect(Collectors.toList());
+        // Always ensure the freemium subject is included (for all users, plan or no plan)
+        if (freemiumSubjectId != null && !freemiumSubjectId.isEmpty()) {
+            boolean alreadyIncluded = responseList.stream().anyMatch(s -> s.getId().toString().equals(freemiumSubjectId));
+            if (!alreadyIncluded) {
+                subjectRepository.findById(UUID.fromString(freemiumSubjectId)).ifPresent(subject -> {
+                    if (subject.getIsActive()) {
+                        SubjectResponseDTO dto = mapToResponse(subject);
+                        dto.setIsLocked(false); // The free subject itself is accessible
+
+                        childSubjectProgressRepository.findByChildIdAndSubjectId(childId, subject.getId()).ifPresent(progress -> {
+                            String status = progress.getIsCompleted() ? "COMPLETED" : (progress.getCompletedModules() > 0 ? "STARTED" : "NOT_STARTED");
+                            dto.setProgress(HierarchicalProgressDTO.builder()
+                                    .completedCount(progress.getCompletedModules())
+                                    .totalCount(progress.getTotalModules())
+                                    .isCompleted(progress.getIsCompleted())
+                                    .status(status)
+                                    .build());
+                        });
+                        responseList.add(dto);
+                    }
+                });
+            }
+        }
+
+        return responseList;
     }
 
     @Override

@@ -73,9 +73,14 @@ import com.sensei.backend.repository.SubjectRepository;
 import com.sensei.backend.repository.ChildModuleProgressRepository;
 import com.sensei.backend.dto.progress.HierarchicalProgressDTO;
 import com.sensei.backend.service.ModuleService;
+import com.sensei.backend.entity.ChildUser;
+import com.sensei.backend.enums.PlanStatus;
+import com.sensei.backend.repository.ChildUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import java.time.LocalDate;
 
 import java.util.List;
 import java.util.UUID;
@@ -89,6 +94,10 @@ public class ModuleServiceImpl implements ModuleService {
     private final ModuleRepository moduleRepository;
     private final SubjectRepository subjectRepository;
     private final ChildModuleProgressRepository childModuleProgressRepository;
+    private final ChildUserRepository childUserRepository;
+
+    @Value("${app.freemium.module-ids:}")
+    private List<String> freemiumModuleIds;
 
     @Override
     @Transactional
@@ -109,11 +118,26 @@ public class ModuleServiceImpl implements ModuleService {
 
     @Override
     public List<ModuleResponseDTO> getModulesBySubject(UUID subjectId, UUID childId) {
+        boolean hasActivePlan = false;
+        if (childId != null) {
+            ChildUser child = childUserRepository.findById(childId).orElse(null);
+            if (child != null) {
+                hasActivePlan = child.getPlanStatus() == PlanStatus.ACTIVE &&
+                        (child.getPlanExpiryDate() == null || !child.getPlanExpiryDate().isBefore(LocalDate.now()));
+            }
+        }
+        
+        final boolean activePlanFinal = hasActivePlan;
+
         return moduleRepository
                 .findBySubjectIdAndIsActiveTrueOrderByOrderIndexAsc(subjectId)
                 .stream()
                 .map(m -> {
                     ModuleResponseDTO dto = map(m);
+                    
+                    boolean isFreeModule = freemiumModuleIds != null && freemiumModuleIds.contains(m.getId().toString());
+                    dto.setIsLocked(!activePlanFinal && !isFreeModule);
+
                     if (childId != null) {
                         childModuleProgressRepository.findByChildIdAndModuleId(childId, m.getId()).ifPresent(progress -> {
                             String status = progress.getIsCompleted() ? "COMPLETED" : (progress.getCompletedSubmodules() > 0 ? "STARTED" : "NOT_STARTED");

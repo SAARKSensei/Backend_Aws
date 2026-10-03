@@ -257,7 +257,7 @@ The educational content in Sensei is strictly hierarchical. The frontend builds 
 
 ### 5A. Get Subjects for Child
 * **Endpoint:** `GET /api/subjects?childId={childId}`
-* **Response:** Array of `Subject` objects (access control enforced based on purchased plan). If `?childId=` is provided, each Subject will include a `progress` object (see Section 6D for schema).
+* **Response:** Array of `Subject` objects (access control enforced based on purchased plan, **plus any globally configured Freemium Subjects**). If `?childId=` is provided, each Subject will include a `progress` object (see Section 6D for schema) and an `isLocked` boolean.
 
 ### 5B. Get Modules & SubModules
 * **Modules:** `GET /api/modules/by-subject/{subjectId}?childId={uuid}`
@@ -275,6 +275,7 @@ The educational content in Sensei is strictly hierarchical. The frontend builds 
       "description": "Learn to identify emotions.",
       "orderIndex": 1,
       "isActive": true,
+      "isLocked": false, // <-- NEW: Indicates if the frontend should draw a padlock!
       "progress": {
         "completedCount": 2,
         "totalCount": 4,
@@ -291,6 +292,7 @@ The educational content in Sensei is strictly hierarchical. The frontend builds 
 * `totalCount`: The total number of active nested items available inside this parent.
 * `isCompleted`: A strict boolean (`true` or `false`). It only becomes `true` when `completedCount >= totalCount` (i.e., the child has 100% finished this entire section). The frontend can use this to display a "100% Mastered!" badge.
 * `status`: Automatically computed as `"COMPLETED"`, `"STARTED"`, or `"NOT_STARTED"`.
+* `isLocked`: Determines if the child has access to this content. If `true`, the frontend should display a padlock, and any API requests to fetch its children will return a `403 Forbidden` error.
 
 ### 5C. Get Activities
 * **Interactive:** `GET /api/interactive-activities/by-submodule/{subModuleId}?childId={uuid}`
@@ -402,6 +404,7 @@ The API will inject a `progress` object:
       "description": "Learn to identify emotions.",
       "orderIndex": 1,
       "isActive": true,
+      "isLocked": false,
       "progress": {
         "completedCount": 2,
         "totalCount": 4,

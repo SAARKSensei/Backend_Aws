@@ -12,11 +12,19 @@ import com.sensei.backend.service.SubModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import com.sensei.backend.entity.ChildUser;
+import com.sensei.backend.enums.PlanStatus;
+import com.sensei.backend.repository.ChildUserRepository;
+import java.time.LocalDate;
 
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import com.sensei.backend.exception.SubscriptionException;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +34,10 @@ public class SubModuleServiceImpl implements SubModuleService {
     private final SubModuleRepository subModuleRepository;
     private final ModuleRepository moduleRepository;
     private final ChildSubModuleProgressRepository childSubModuleProgressRepository;
+    private final ChildUserRepository childUserRepository;
+
+    @Value("${app.freemium.module-ids:}")
+    private List<String> freemiumModuleIds;
 
     // ---- mapper ----
     private SubModuleResponseDTO map(SubModule s) {
@@ -66,9 +78,23 @@ public class SubModuleServiceImpl implements SubModuleService {
                 .collect(Collectors.toList());
     }
 
-    // ---- get by module ----
     @Override
     public List<SubModuleResponseDTO> getByModule(UUID moduleId, UUID childId) {
+        
+        if (childId != null) {
+            ChildUser child = childUserRepository.findById(childId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Child not found"));
+            
+            boolean hasActivePlan = child.getPlanStatus() == PlanStatus.ACTIVE &&
+                    (child.getPlanExpiryDate() == null || !child.getPlanExpiryDate().isBefore(LocalDate.now()));
+            
+            boolean isFreeModule = freemiumModuleIds != null && freemiumModuleIds.contains(moduleId.toString());
+
+            if (!hasActivePlan && !isFreeModule) {
+                throw new SubscriptionException("Active plan required to access this module.");
+            }
+        }
+
         return subModuleRepository
                 .findByModule_IdAndIsActiveTrueOrderByOrderIndexAsc(moduleId)
                 .stream()

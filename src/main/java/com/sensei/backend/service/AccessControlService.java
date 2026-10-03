@@ -60,6 +60,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 @RequiredArgsConstructor
@@ -72,10 +73,17 @@ public class AccessControlService {
     private final InteractiveProcessRepository interactiveProcessRepository;
     private final InteractiveProcessSubStepRepository interactiveProcessSubStepRepository;
 
+    @Value("${app.freemium.subject-id:}")
+    private String freemiumSubjectId;
+
     // ----------------------------------------
     // MAIN ACCESS CHECK
     // ----------------------------------------
     public void validateSubjectAccess(UUID childId, UUID subjectId) {
+
+        if (freemiumSubjectId != null && !freemiumSubjectId.trim().isEmpty() && subjectId.toString().equals(freemiumSubjectId.trim())) {
+            return; // Free subject is always allowed
+        }
 
         ChildUser child = childUserRepository.findById(childId)
                 .orElseThrow(() -> new RuntimeException("Child not found"));

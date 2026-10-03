@@ -16,4 +16,5 @@ public class SubjectResponseDTO {
     private Boolean isActive;
     private LocalDateTime createdAt;
     private com.sensei.backend.dto.progress.HierarchicalProgressDTO progress;
+    private Boolean isLocked;
 }
