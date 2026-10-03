@@ -20,4 +20,6 @@ public interface SubModuleRepository extends JpaRepository<SubModule, UUID> {
     List<SubModule> findByModule_IdAndIsActiveTrueOrderByOrderIndexAsc(UUID moduleId);
 
     List<SubModule> findByIsActiveTrueOrderByCreatedAtDesc();
+
+    long countByModuleIdAndIsActiveTrue(UUID moduleId);
 }

@@ -76,6 +76,7 @@ import com.sensei.backend.repository.ChildUserRepository;
 import com.sensei.backend.repository.PricingPlanSubjectRepository;
 import com.sensei.backend.repository.SubjectRepository;
 import com.sensei.backend.repository.ChildSubjectProgressRepository;
+import com.sensei.backend.repository.ModuleRepository;
 import com.sensei.backend.dto.progress.HierarchicalProgressDTO;
 import com.sensei.backend.service.SubjectService;
 import com.sensei.backend.exception.SubscriptionException;
@@ -99,6 +100,7 @@ public class SubjectServiceImpl implements SubjectService {
     private final ChildUserRepository childUserRepository;
     private final PricingPlanSubjectRepository pricingPlanSubjectRepository;
     private final ChildSubjectProgressRepository childSubjectProgressRepository;
+    private final ModuleRepository moduleRepository;
 
     @Value("${app.freemium.subject-id:}")
     private String freemiumSubjectId;
@@ -142,13 +144,21 @@ public class SubjectServiceImpl implements SubjectService {
                         SubjectResponseDTO dto = mapToResponse(pps.getSubject());
                         dto.setIsLocked(false);
 
-                        childSubjectProgressRepository.findByChildIdAndSubjectId(childId, pps.getSubject().getId()).ifPresent(progress -> {
+                        childSubjectProgressRepository.findByChildIdAndSubjectId(childId, pps.getSubject().getId()).ifPresentOrElse(progress -> {
                             String status = progress.getIsCompleted() ? "COMPLETED" : (progress.getCompletedModules() > 0 ? "STARTED" : "NOT_STARTED");
                             dto.setProgress(HierarchicalProgressDTO.builder()
                                     .completedCount(progress.getCompletedModules())
                                     .totalCount(progress.getTotalModules())
                                     .isCompleted(progress.getIsCompleted())
                                     .status(status)
+                                    .build());
+                        }, () -> {
+                            long totalModules = moduleRepository.countBySubjectIdAndIsActiveTrue(pps.getSubject().getId());
+                            dto.setProgress(HierarchicalProgressDTO.builder()
+                                    .completedCount(0)
+                                    .totalCount((int) totalModules)
+                                    .isCompleted(false)
+                                    .status("NOT_STARTED")
                                     .build());
                         });
                         return dto;
@@ -167,13 +177,21 @@ public class SubjectServiceImpl implements SubjectService {
                         SubjectResponseDTO dto = mapToResponse(subject);
                         dto.setIsLocked(false); // The free subject itself is accessible
 
-                        childSubjectProgressRepository.findByChildIdAndSubjectId(childId, subject.getId()).ifPresent(progress -> {
+                        childSubjectProgressRepository.findByChildIdAndSubjectId(childId, subject.getId()).ifPresentOrElse(progress -> {
                             String status = progress.getIsCompleted() ? "COMPLETED" : (progress.getCompletedModules() > 0 ? "STARTED" : "NOT_STARTED");
                             dto.setProgress(HierarchicalProgressDTO.builder()
                                     .completedCount(progress.getCompletedModules())
                                     .totalCount(progress.getTotalModules())
                                     .isCompleted(progress.getIsCompleted())
                                     .status(status)
+                                    .build());
+                        }, () -> {
+                            long totalModules = moduleRepository.countBySubjectIdAndIsActiveTrue(subject.getId());
+                            dto.setProgress(HierarchicalProgressDTO.builder()
+                                    .completedCount(0)
+                                    .totalCount((int) totalModules)
+                                    .isCompleted(false)
+                                    .status("NOT_STARTED")
                                     .build());
                         });
                         responseList.add(dto);

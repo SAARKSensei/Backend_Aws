@@ -47,4 +47,6 @@ public interface InteractiveActivityRepository extends JpaRepository<Interactive
     List<InteractiveActivity> findBySubModule(SubModule subModule);
 
     long countBySubModuleId(UUID subModuleId);
+
+    long countBySubModuleIdAndIsActiveTrue(UUID subModuleId);
 }

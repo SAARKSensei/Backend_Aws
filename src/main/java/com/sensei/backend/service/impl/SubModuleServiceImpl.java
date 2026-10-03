@@ -7,6 +7,8 @@ import com.sensei.backend.entity.SubModule;
 import com.sensei.backend.repository.ModuleRepository;
 import com.sensei.backend.repository.SubModuleRepository;
 import com.sensei.backend.repository.ChildSubModuleProgressRepository;
+import com.sensei.backend.repository.DigitalActivityRepository;
+import com.sensei.backend.repository.InteractiveActivityRepository;
 import com.sensei.backend.dto.progress.HierarchicalProgressDTO;
 import com.sensei.backend.service.SubModuleService;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,8 @@ public class SubModuleServiceImpl implements SubModuleService {
     private final ModuleRepository moduleRepository;
     private final ChildSubModuleProgressRepository childSubModuleProgressRepository;
     private final ChildUserRepository childUserRepository;
+    private final DigitalActivityRepository digitalActivityRepository;
+    private final InteractiveActivityRepository interactiveActivityRepository;
 
     @Value("${app.freemium.module-ids:}")
     private List<String> freemiumModuleIds;
@@ -100,14 +104,24 @@ public class SubModuleServiceImpl implements SubModuleService {
                 .stream()
                 .map(s -> {
                     SubModuleResponseDTO dto = map(s);
+                    dto.setIsLocked(false);
                     if (childId != null) {
-                        childSubModuleProgressRepository.findByChildIdAndSubModuleId(childId, s.getId()).ifPresent(progress -> {
+                        childSubModuleProgressRepository.findByChildIdAndSubModuleId(childId, s.getId()).ifPresentOrElse(progress -> {
                             String status = progress.getIsCompleted() ? "COMPLETED" : (progress.getCompletedActivities() > 0 ? "STARTED" : "NOT_STARTED");
                             dto.setProgress(HierarchicalProgressDTO.builder()
                                     .completedCount(progress.getCompletedActivities())
                                     .totalCount(progress.getTotalActivities())
                                     .isCompleted(progress.getIsCompleted())
                                     .status(status)
+                                    .build());
+                        }, () -> {
+                            long totalDigital = digitalActivityRepository.countBySubModuleIdAndIsActiveTrue(s.getId());
+                            long totalInteractive = interactiveActivityRepository.countBySubModuleIdAndIsActiveTrue(s.getId());
+                            dto.setProgress(HierarchicalProgressDTO.builder()
+                                    .completedCount(0)
+                                    .totalCount((int) (totalDigital + totalInteractive))
+                                    .isCompleted(false)
+                                    .status("NOT_STARTED")
                                     .build());
                         });
                     }

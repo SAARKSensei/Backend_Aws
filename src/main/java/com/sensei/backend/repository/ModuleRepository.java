@@ -23,6 +23,8 @@ public interface ModuleRepository extends JpaRepository<Module, UUID> {
     
     @EntityGraph(attributePaths = {"subject"})
     List<Module> findByIsActiveTrueOrderByCreatedAtDesc();
+
+    long countBySubjectIdAndIsActiveTrue(UUID subjectId);
 }
 
 

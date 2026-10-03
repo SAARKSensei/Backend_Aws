@@ -71,6 +71,7 @@ import com.sensei.backend.entity.Subject;
 import com.sensei.backend.repository.ModuleRepository;
 import com.sensei.backend.repository.SubjectRepository;
 import com.sensei.backend.repository.ChildModuleProgressRepository;
+import com.sensei.backend.repository.SubModuleRepository;
 import com.sensei.backend.dto.progress.HierarchicalProgressDTO;
 import com.sensei.backend.service.ModuleService;
 import com.sensei.backend.entity.ChildUser;
@@ -95,6 +96,7 @@ public class ModuleServiceImpl implements ModuleService {
     private final SubjectRepository subjectRepository;
     private final ChildModuleProgressRepository childModuleProgressRepository;
     private final ChildUserRepository childUserRepository;
+    private final SubModuleRepository subModuleRepository;
 
     @Value("${app.freemium.module-ids:}")
     private List<String> freemiumModuleIds;
@@ -139,13 +141,21 @@ public class ModuleServiceImpl implements ModuleService {
                     dto.setIsLocked(!activePlanFinal && !isFreeModule);
 
                     if (childId != null) {
-                        childModuleProgressRepository.findByChildIdAndModuleId(childId, m.getId()).ifPresent(progress -> {
+                        childModuleProgressRepository.findByChildIdAndModuleId(childId, m.getId()).ifPresentOrElse(progress -> {
                             String status = progress.getIsCompleted() ? "COMPLETED" : (progress.getCompletedSubmodules() > 0 ? "STARTED" : "NOT_STARTED");
                             dto.setProgress(HierarchicalProgressDTO.builder()
                                     .completedCount(progress.getCompletedSubmodules())
                                     .totalCount(progress.getTotalSubmodules())
                                     .isCompleted(progress.getIsCompleted())
                                     .status(status)
+                                    .build());
+                        }, () -> {
+                            long totalSubmodules = subModuleRepository.countByModuleIdAndIsActiveTrue(m.getId());
+                            dto.setProgress(HierarchicalProgressDTO.builder()
+                                    .completedCount(0)
+                                    .totalCount((int) totalSubmodules)
+                                    .isCompleted(false)
+                                    .status("NOT_STARTED")
                                     .build());
                         });
                     }
