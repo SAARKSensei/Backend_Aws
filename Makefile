@@ -1,4 +1,4 @@
-.PHONY: help build compile test run clean docker-build docker-up docker-down docker-logs
+.PHONY: help build compile test verify run clean docker-build docker-up docker-down docker-logs
 
 help: ## Show this help message
 	@echo "Usage: make [target]"
@@ -14,6 +14,9 @@ compile: ## Compile the source code
 
 test: ## Run unit tests
 	mvn clean test
+
+verify: ## Run integration tests and verify package
+	mvn clean verify
 
 run: ## Run the Spring Boot application locally
 	mvn spring-boot:run
