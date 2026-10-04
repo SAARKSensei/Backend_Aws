@@ -227,6 +227,7 @@ public class ParentUserService {
         parent.setRelationWithChildren(dto.getRelationWithChildren());
          // ✅ NEW
         parent.setLocation(dto.getLocation());
+        parent.setAddress(dto.getAddress());
         parent.setSpouseName(dto.getSpouseName());
         parent.setSpouseGender(dto.getSpouseGender());
         parent.setSpouseEmail(dto.getSpouseEmail());

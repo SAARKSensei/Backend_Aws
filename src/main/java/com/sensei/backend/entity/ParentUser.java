@@ -63,6 +63,8 @@ public class ParentUser {
     @Column(name = "location")
     private String location;
 
+    private String address;
+
     @Builder.Default
     @Column(name = "is_quiz_completed")
     private Boolean isQuizCompleted = false;

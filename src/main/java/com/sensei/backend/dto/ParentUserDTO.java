@@ -44,4 +44,6 @@ public class ParentUserDTO {
     // ✅ NEW FIELD
     @NotBlank(message = "Location is required")
     private String location;
+
+    private String address;
 }

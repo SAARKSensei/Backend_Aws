@@ -248,6 +248,7 @@ CREATE TABLE IF NOT EXISTS parent_user (
     parent_id char(36) not null,
     email varchar(255) unique,
     location varchar(255),
+    address varchar(255),
     marital_status varchar(255),
     name varchar(255),
     occupation varchar(255),
@@ -469,3 +470,5 @@ CREATE TABLE IF NOT EXISTS child_subject_progress (
     is_completed BOOLEAN DEFAULT FALSE, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY (child_id, subject_id)
 );
+
+ALTER TABLE parent_user ADD COLUMN address varchar(255);

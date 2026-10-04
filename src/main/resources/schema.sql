@@ -248,6 +248,7 @@ CREATE TABLE IF NOT EXISTS parent_user (
     parent_id uuid not null,
     email varchar(255) unique,
     location varchar(255),
+    address varchar(255),
     marital_status varchar(255),
     name varchar(255),
     occupation varchar(255),
@@ -483,3 +484,5 @@ CREATE TABLE IF NOT EXISTS child_subject_progress (
     primary key (id),
     unique (child_id, subject_id)
 );
+
+ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS address varchar(255);
