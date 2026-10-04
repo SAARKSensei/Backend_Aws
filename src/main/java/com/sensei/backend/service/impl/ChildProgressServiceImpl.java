@@ -54,10 +54,9 @@ public class ChildProgressServiceImpl implements ChildProgressService {
         InteractiveActivity activity = interactiveActivityRepository.findById(dto.getInteractiveActivityId())
                 .orElseThrow(() -> new ResourceNotFoundException("Interactive Activity not found"));
 
-        activityProgressRepo.findByChildIdAndInteractiveActivity(dto.getChildId(), activity)
-                .ifPresent(p -> {
-                    throw new RuntimeException("Activity already started");
-                });
+        if (activityProgressRepo.findByChildIdAndInteractiveActivity(dto.getChildId(), activity).isPresent()) {
+            return; // Idempotent: already started
+        }
 
         ChildInteractiveActivityProgress progress = ChildInteractiveActivityProgress.builder()
                 .childId(dto.getChildId())
@@ -216,11 +215,9 @@ public class ChildProgressServiceImpl implements ChildProgressService {
         DigitalActivity digital = digitalActivityRepository.findById(dto.getDigitalActivityId())
                 .orElseThrow(() -> new ResourceNotFoundException("Digital Activity not found"));
 
-        digitalProgressRepo
-                .findByChildIdAndDigitalActivity(dto.getChildId(), digital)
-                .ifPresent(p -> {
-                    throw new RuntimeException("Digital activity already started");
-                });
+        if (digitalProgressRepo.findByChildIdAndDigitalActivity(dto.getChildId(), digital).isPresent()) {
+            return; // Idempotent: already started
+        }
 
         ChildDigitalActivityProgress progress = ChildDigitalActivityProgress.builder()
                 .childId(dto.getChildId())
