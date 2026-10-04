@@ -22,6 +22,7 @@ public class InteractiveProcessServiceImpl implements InteractiveProcessService 
 
     private final InteractiveProcessRepository processRepository;
     private final InteractiveActivityRepository activityRepository;
+    private final jakarta.persistence.EntityManager entityManager;
 
     // -------------------------
     // CREATE
@@ -95,6 +96,12 @@ public class InteractiveProcessServiceImpl implements InteractiveProcessService 
         if (!processRepository.existsById(id)) {
             throw new RuntimeException("InteractiveProcess not found");
         }
+
+        entityManager.createNativeQuery("DELETE FROM interactive_process_tracking WHERE interactive_process_id = :id")
+                .setParameter("id", id).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM interactive_process_substep WHERE process_id = :id")
+                .setParameter("id", id).executeUpdate();
+
         processRepository.deleteById(id);
     }
 

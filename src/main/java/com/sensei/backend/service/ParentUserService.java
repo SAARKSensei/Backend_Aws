@@ -178,6 +178,7 @@ public class ParentUserService {
     private final ParentUserMapper parentUserMapper;
     private final MasterTransactionRepository masterTransactionRepository;
     private final ChildUserRepository childUserRepository;
+    private final jakarta.persistence.EntityManager entityManager;
 
     // ================= CREATE =================
     @Transactional
@@ -243,6 +244,51 @@ public class ParentUserService {
     public void deleteParentUser(UUID parentId) {
         ParentUser parent = parentUserRepository.findById(parentId)
                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+
+        List<UUID> childIds = parent.getChildUsers().stream()
+                .map(ChildUser::getChildId)
+                .toList();
+
+        if (!childIds.isEmpty()) {
+            entityManager.createNativeQuery("DELETE FROM child_digital_activity_progress WHERE child_id IN :childIds")
+                    .setParameter("childIds", childIds).executeUpdate();
+            entityManager.createNativeQuery("DELETE FROM child_interactive_activity_progress WHERE child_id IN :childIds")
+                    .setParameter("childIds", childIds).executeUpdate();
+            entityManager.createNativeQuery("DELETE FROM child_life_skill WHERE child_id IN :childIds")
+                    .setParameter("childIds", childIds).executeUpdate();
+            entityManager.createNativeQuery("DELETE FROM child_question_attempt WHERE child_id IN :childIds")
+                    .setParameter("childIds", childIds).executeUpdate();
+            entityManager.createNativeQuery("DELETE FROM child_submodule_completion WHERE child_id IN :childIds")
+                    .setParameter("childIds", childIds).executeUpdate();
+            entityManager.createNativeQuery("DELETE FROM interactive_process_tracking WHERE child_id IN :childIds")
+                    .setParameter("childIds", childIds).executeUpdate();
+            entityManager.createNativeQuery("DELETE FROM parent_quiz_attempt WHERE child_id IN :childIds")
+                    .setParameter("childIds", childIds).executeUpdate();
+            entityManager.createNativeQuery("DELETE FROM child_submodule_progress WHERE child_id IN :childIds")
+                    .setParameter("childIds", childIds).executeUpdate();
+            entityManager.createNativeQuery("DELETE FROM child_module_progress WHERE child_id IN :childIds")
+                    .setParameter("childIds", childIds).executeUpdate();
+            entityManager.createNativeQuery("DELETE FROM child_subject_progress WHERE child_id IN :childIds")
+                    .setParameter("childIds", childIds).executeUpdate();
+        }
+
+        entityManager.createNativeQuery("DELETE FROM parent_quiz_attempt WHERE parent_id = :parentId")
+                .setParameter("parentId", parentId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM coupon_usage WHERE parent_id = :parentId")
+                .setParameter("parentId", parentId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM wallet_transaction WHERE parent_id = :parentId")
+                .setParameter("parentId", parentId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM wallet WHERE parent_id = :parentId")
+                .setParameter("parentId", parentId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM master_transaction WHERE parent_id = :parentId")
+                .setParameter("parentId", parentId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM payment_transaction WHERE parent_id = :parentId")
+                .setParameter("parentId", parentId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM referral_usage WHERE referred_parent_id = :parentId OR referrer_parent_id = :parentId")
+                .setParameter("parentId", parentId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM referral_code WHERE parent_id = :parentId")
+                .setParameter("parentId", parentId).executeUpdate();
+
         parentUserRepository.delete(parent);
         log.info("Deleted ParentUser with ID: {}", parentId);
     }

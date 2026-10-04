@@ -148,6 +148,7 @@ public class ChildUserService {
     private final ParentUserRepository parentUserRepository;
     private final PricingPlanRepository pricingPlanRepository;
     private final ChildUserMapper childUserMapper;
+    private final jakarta.persistence.EntityManager entityManager;
 
     @Transactional
     public ChildUserDTO createChild(ChildUserDTO dto) {
@@ -222,6 +223,27 @@ public ChildUserDTO update(UUID childId, ChildUserDTO dto) {
 
 @Transactional
 public void delete(UUID childId) {
+    entityManager.createNativeQuery("DELETE FROM child_digital_activity_progress WHERE child_id = :childId")
+            .setParameter("childId", childId).executeUpdate();
+    entityManager.createNativeQuery("DELETE FROM child_interactive_activity_progress WHERE child_id = :childId")
+            .setParameter("childId", childId).executeUpdate();
+    entityManager.createNativeQuery("DELETE FROM child_life_skill WHERE child_id = :childId")
+            .setParameter("childId", childId).executeUpdate();
+    entityManager.createNativeQuery("DELETE FROM child_question_attempt WHERE child_id = :childId")
+            .setParameter("childId", childId).executeUpdate();
+    entityManager.createNativeQuery("DELETE FROM child_submodule_completion WHERE child_id = :childId")
+            .setParameter("childId", childId).executeUpdate();
+    entityManager.createNativeQuery("DELETE FROM interactive_process_tracking WHERE child_id = :childId")
+            .setParameter("childId", childId).executeUpdate();
+    entityManager.createNativeQuery("DELETE FROM parent_quiz_attempt WHERE child_id = :childId")
+            .setParameter("childId", childId).executeUpdate();
+    entityManager.createNativeQuery("DELETE FROM child_submodule_progress WHERE child_id = :childId")
+            .setParameter("childId", childId).executeUpdate();
+    entityManager.createNativeQuery("DELETE FROM child_module_progress WHERE child_id = :childId")
+            .setParameter("childId", childId).executeUpdate();
+    entityManager.createNativeQuery("DELETE FROM child_subject_progress WHERE child_id = :childId")
+            .setParameter("childId", childId).executeUpdate();
+
     childUserRepository.deleteById(childId);
     log.info("Deleted ChildUser with ID: {}", childId);
 }

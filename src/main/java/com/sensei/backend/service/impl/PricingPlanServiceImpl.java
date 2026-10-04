@@ -51,6 +51,9 @@ public class PricingPlanServiceImpl implements PricingPlanService {
     @Override
     @Transactional
     public void delete(UUID id) {
-        pricingPlanRepository.deleteById(id);
+        PricingPlan plan = pricingPlanRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("PricingPlan not found"));
+        plan.setStatus("INACTIVE");
+        pricingPlanRepository.save(plan);
     }
 }
