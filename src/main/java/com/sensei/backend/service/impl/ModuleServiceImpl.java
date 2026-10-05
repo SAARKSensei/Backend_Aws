@@ -103,6 +103,9 @@ public class ModuleServiceImpl implements ModuleService {
     @Value("${app.freemium.module-ids:}")
     private List<String> freemiumModuleIds;
 
+    @Value("${app.freemium.subject-id:}")
+    private String freemiumSubjectId;
+
     @Override
     @Transactional
     public ModuleResponseDTO createModule(ModuleRequestDTO dto) {
@@ -128,6 +131,11 @@ public class ModuleServiceImpl implements ModuleService {
             if (child != null && child.getPlanStatus() == PlanStatus.ACTIVE &&
                     (child.getPlanExpiryDate() == null || !child.getPlanExpiryDate().isBefore(LocalDate.now()))) {
                 hasSubjectAccess = pricingPlanSubjectRepository.existsByPricingPlan_IdAndSubject_Id(child.getActivePlanId(), subjectId);
+                
+                // If they have an active plan, they automatically get full access to the freemium subject
+                if (!hasSubjectAccess && freemiumSubjectId != null && subjectId.toString().equals(freemiumSubjectId.trim())) {
+                    hasSubjectAccess = true;
+                }
             }
         }
         
@@ -139,7 +147,7 @@ public class ModuleServiceImpl implements ModuleService {
                 .map(m -> {
                     ModuleResponseDTO dto = map(m);
                     
-                    boolean isFreeModule = freemiumModuleIds != null && freemiumModuleIds.contains(m.getId().toString());
+                    boolean isFreeModule = freemiumModuleIds != null && freemiumModuleIds.stream().map(String::trim).anyMatch(id -> id.equals(m.getId().toString()));
                     dto.setIsLocked(!activePlanFinal && !isFreeModule);
 
                     if (childId != null) {

@@ -45,6 +45,9 @@ public class SubModuleServiceImpl implements SubModuleService {
     @Value("${app.freemium.module-ids:}")
     private List<String> freemiumModuleIds;
 
+    @Value("${app.freemium.subject-id:}")
+    private String freemiumSubjectId;
+
     // ---- mapper ----
     private SubModuleResponseDTO map(SubModule s) {
         SubModuleResponseDTO dto = new SubModuleResponseDTO();
@@ -95,9 +98,14 @@ public class SubModuleServiceImpl implements SubModuleService {
                     (child.getPlanExpiryDate() == null || !child.getPlanExpiryDate().isBefore(LocalDate.now()))) {
                 UUID subjectId = moduleRepository.findById(moduleId).orElseThrow(() -> new RuntimeException("Module not found")).getSubject().getId();
                 hasSubjectAccess = pricingPlanSubjectRepository.existsByPricingPlan_IdAndSubject_Id(child.getActivePlanId(), subjectId);
+                
+                // If they have an active plan, they automatically get full access to the freemium subject
+                if (!hasSubjectAccess && freemiumSubjectId != null && subjectId.toString().equals(freemiumSubjectId.trim())) {
+                    hasSubjectAccess = true;
+                }
             }
             
-            boolean isFreeModule = freemiumModuleIds != null && freemiumModuleIds.contains(moduleId.toString());
+            boolean isFreeModule = freemiumModuleIds != null && freemiumModuleIds.stream().map(String::trim).anyMatch(id -> id.equals(moduleId.toString()));
 
             if (!hasSubjectAccess && !isFreeModule) {
                 throw new SubscriptionException("Active plan required to access this module.");
