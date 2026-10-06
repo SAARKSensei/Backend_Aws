@@ -20,5 +20,12 @@ public interface ChildInteractiveActivityProgressRepository
     UUID subModuleId,
     String status
 );        
+
+    long countByChildIdAndInteractiveActivity_SubModule_IdAndInteractiveActivity_IsActiveTrueAndStatus(
+            UUID childId,
+            UUID subModuleId,
+            String status
+    );
+
 List<ChildInteractiveActivityProgress> findByChildId(UUID childId);
 }

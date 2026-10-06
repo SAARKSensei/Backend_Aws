@@ -72,6 +72,7 @@ public class ChildProgressServiceImpl implements ChildProgressService {
     // COMPLETE INTERACTIVE ACTIVITY
     // -----------------------------------------
     @Override
+    @Transactional
     public void completeInteractiveActivity(CompleteActivityDTO dto) {
 
         InteractiveActivity activity = interactiveActivityRepository.findById(dto.getInteractiveActivityId())
@@ -80,6 +81,12 @@ public class ChildProgressServiceImpl implements ChildProgressService {
         ChildInteractiveActivityProgress progress =
                 activityProgressRepo.findByChildIdAndInteractiveActivity(dto.getChildId(), activity)
                         .orElseThrow(() -> new ResourceNotFoundException("Activity not started"));
+
+        if ("COMPLETED".equals(progress.getStatus())) {
+            tryAutoCompleteSubModule(dto.getChildId(), activity.getSubModule());
+            updateHierarchicalProgress(dto.getChildId(), activity.getSubModule());
+            return;
+        }
 
         progress.setStatus("COMPLETED");
         progress.setCompletedAt(LocalDateTime.now());
@@ -102,6 +109,7 @@ public class ChildProgressServiceImpl implements ChildProgressService {
     // QUESTION ATTEMPT
     // -----------------------------------------
     @Override
+    @Transactional
     public void recordQuestionAttempt(QuestionAttemptDTO dto) {
 
         Question question = questionRepository.findById(dto.getQuestionId())
@@ -110,10 +118,14 @@ public class ChildProgressServiceImpl implements ChildProgressService {
         QuestionOption option = questionOptionRepository.findById(dto.getOptionId())
                 .orElseThrow(() -> new ResourceNotFoundException("Option not found"));
 
+        if (!option.getQuestion().getId().equals(question.getId())) {
+            throw new IllegalArgumentException("Option does not belong to the given question");
+        }
+
         long previousAttempts =
                 questionAttemptRepo.countByChildIdAndQuestion(dto.getChildId(), question);
 
-        boolean isCorrect = "CORRECT".equalsIgnoreCase(option.getStatus());
+        boolean isCorrect = Boolean.TRUE.equals(option.getIsCorrect());
 
         ChildQuestionAttempt attempt = ChildQuestionAttempt.builder()
                 .childId(dto.getChildId())
@@ -129,6 +141,7 @@ public class ChildProgressServiceImpl implements ChildProgressService {
 
         if (isCorrect) {
             tryAutoCompleteSubModule(dto.getChildId(), question.getDigitalActivity().getSubModule());
+            updateHierarchicalProgress(dto.getChildId(), question.getDigitalActivity().getSubModule());
         }
     }
 
@@ -141,57 +154,57 @@ public class ChildProgressServiceImpl implements ChildProgressService {
             return;
         }
 
-        long totalActivities = interactiveActivityRepository.countBySubModuleId(subModule.getId());
-
+        long totalActivities = interactiveActivityRepository.countBySubModuleIdAndIsActiveTrue(subModule.getId());
         long completedActivities =
                 activityProgressRepo
-                        .countByChildIdAndInteractiveActivity_SubModule_IdAndStatus(
+                        .countByChildIdAndInteractiveActivity_SubModule_IdAndInteractiveActivity_IsActiveTrueAndStatus(
                                 childId,
                                 subModule.getId(),
                                 "COMPLETED"
                         );
 
-        if (completedActivities < totalActivities) return;
+        if (totalActivities > 0 && completedActivities < totalActivities) return;
 
-        long totalDigitals = digitalActivityRepository.countBySubModule_Id(subModule.getId());
-
+        long totalDigitals = digitalActivityRepository.countBySubModuleIdAndIsActiveTrue(subModule.getId());
         long completedDigitals =
                 digitalProgressRepo
-                        .countByChildIdAndDigitalActivity_SubModule_IdAndStatus(
+                        .countByChildIdAndDigitalActivity_SubModule_IdAndDigitalActivity_IsActiveTrueAndStatus(
                                 childId,
                                 subModule.getId(),
                                 "COMPLETED"
                         );
 
-        if (completedDigitals < totalDigitals) return;
+        if (totalDigitals > 0 && completedDigitals < totalDigitals) return;
+
+        if (totalActivities == 0 && totalDigitals == 0) return;
 
         List<DigitalActivity> digitals =
                 digitalActivityRepository.findBySubModule_IdAndIsActiveTrueOrderByOrderIndexAsc(
                         subModule.getId()
                 );
 
-        if (digitals.isEmpty()) return;
+        long totalQuestions = 0;
+        long correctQuestions = 0;
 
-        DigitalActivity digital = digitals.get(0);
+        for (DigitalActivity digital : digitals) {
+            List<Question> questions =
+                    questionRepository.findByDigitalActivity_IdAndIsActiveTrueOrderByOrderIndexAsc(
+                            digital.getId()
+                    );
+            totalQuestions += questions.size();
+            for (Question q : questions) {
+                if (questionAttemptRepo.countByChildIdAndQuestionAndIsCorrect(childId, q, true) > 0) {
+                    correctQuestions++;
+                } else {
+                    return; // All questions must be passed
+                }
+            }
+        }
 
-        List<Question> questions =
-                questionRepository.findByDigitalActivity_IdAndIsActiveTrueOrderByOrderIndexAsc(
-                        digital.getId()
-                );
-
-        boolean allPassed = questions.stream().allMatch(q ->
-                questionAttemptRepo.countByChildIdAndQuestionAndIsCorrect(childId, q, true) > 0
-        );
-
-        if (!allPassed) return;
-
-        long totalQuestions = questions.size();
-
-        long correctQuestions = questions.stream()
-                .filter(q -> questionAttemptRepo.countByChildIdAndQuestionAndIsCorrect(childId, q, true) > 0)
-                .count();
-
-        double score = (correctQuestions * 100.0) / totalQuestions;
+        double score = 100.0;
+        if (totalQuestions > 0) {
+            score = (correctQuestions * 100.0) / totalQuestions;
+        }
 
         ChildSubModuleCompletion completion = ChildSubModuleCompletion.builder()
                 .childId(childId)
@@ -233,6 +246,7 @@ public class ChildProgressServiceImpl implements ChildProgressService {
     // DIGITAL COMPLETE
     // -----------------------------------------
     @Override
+    @Transactional
     public void completeDigitalActivity(CompleteDigitalActivityDTO dto) {
 
         DigitalActivity digital = digitalActivityRepository.findById(dto.getDigitalActivityId())
@@ -248,8 +262,19 @@ public class ChildProgressServiceImpl implements ChildProgressService {
                 if (attempt.getChildId() == null) {
                     attempt.setChildId(dto.getChildId());
                 }
+                Question q = questionRepository.findById(attempt.getQuestionId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Question not found"));
+                if (q.getDigitalActivity() == null || !q.getDigitalActivity().getId().equals(digital.getId())) {
+                    throw new IllegalArgumentException("Question does not belong to the submitted digital activity");
+                }
                 recordQuestionAttempt(attempt);
             }
+        }
+
+        if ("COMPLETED".equals(progress.getStatus())) {
+            tryAutoCompleteSubModule(dto.getChildId(), digital.getSubModule());
+            updateHierarchicalProgress(dto.getChildId(), digital.getSubModule());
+            return;
         }
 
         progress.setStatus("COMPLETED");
@@ -272,16 +297,19 @@ public class ChildProgressServiceImpl implements ChildProgressService {
 
     private void updateHierarchicalProgress(UUID childId, SubModule subModule) {
         // SubModule Level
-        long totalActivities = interactiveActivityRepository.countBySubModuleId(subModule.getId()) +
-                               digitalActivityRepository.countBySubModule_Id(subModule.getId());
-        long completedActivities = activityProgressRepo.countByChildIdAndInteractiveActivity_SubModule_IdAndStatus(childId, subModule.getId(), "COMPLETED") +
-                                   digitalProgressRepo.countByChildIdAndDigitalActivity_SubModule_IdAndStatus(childId, subModule.getId(), "COMPLETED");
+        long totalActivities = interactiveActivityRepository.countBySubModuleIdAndIsActiveTrue(subModule.getId()) +
+                               digitalActivityRepository.countBySubModuleIdAndIsActiveTrue(subModule.getId());
+        long completedActivities = activityProgressRepo.countByChildIdAndInteractiveActivity_SubModule_IdAndInteractiveActivity_IsActiveTrueAndStatus(childId, subModule.getId(), "COMPLETED") +
+                                   digitalProgressRepo.countByChildIdAndDigitalActivity_SubModule_IdAndDigitalActivity_IsActiveTrueAndStatus(childId, subModule.getId(), "COMPLETED");
         
         ChildSubModuleProgress smProgress = childSubModuleProgressRepo.findByChildIdAndSubModuleId(childId, subModule.getId())
                 .orElse(ChildSubModuleProgress.builder().childId(childId).subModuleId(subModule.getId()).build());
         smProgress.setTotalActivities((int) totalActivities);
         smProgress.setCompletedActivities((int) completedActivities);
-        smProgress.setIsCompleted(totalActivities > 0 && completedActivities >= totalActivities);
+        
+        boolean isMastered = subModuleCompletionRepo.existsByChildIdAndSubModule(childId, subModule);
+        smProgress.setIsCompleted(isMastered);
+        
         smProgress.setUpdatedAt(LocalDateTime.now());
         childSubModuleProgressRepo.save(smProgress);
 
@@ -290,10 +318,13 @@ public class ChildProgressServiceImpl implements ChildProgressService {
             Module module = subModule.getModule();
             List<SubModule> subModulesInModule = subModuleRepository.findByModule_IdAndIsActiveTrueOrderByOrderIndexAsc(module.getId());
             long totalSubModules = subModulesInModule.size();
-            long completedSubModules = childSubModuleProgressRepo.countByChildIdAndSubModuleIdInAndIsCompletedTrue(
-                childId, 
-                subModulesInModule.stream().map(SubModule::getId).toList()
-            );
+            long completedSubModules = 0;
+            if (!subModulesInModule.isEmpty()) {
+                completedSubModules = childSubModuleProgressRepo.countByChildIdAndSubModuleIdInAndIsCompletedTrue(
+                    childId, 
+                    subModulesInModule.stream().map(SubModule::getId).toList()
+                );
+            }
 
             ChildModuleProgress mProgress = childModuleProgressRepo.findByChildIdAndModuleId(childId, module.getId())
                     .orElse(ChildModuleProgress.builder().childId(childId).moduleId(module.getId()).build());
@@ -308,10 +339,13 @@ public class ChildProgressServiceImpl implements ChildProgressService {
                 Subject subject = module.getSubject();
                 List<Module> modulesInSubject = moduleRepository.findBySubjectIdAndIsActiveTrueOrderByOrderIndexAsc(subject.getId());
                 long totalModules = modulesInSubject.size();
-                long completedModules = childModuleProgressRepo.countByChildIdAndModuleIdInAndIsCompletedTrue(
-                    childId,
-                    modulesInSubject.stream().map(Module::getId).toList()
-                );
+                long completedModules = 0;
+                if (!modulesInSubject.isEmpty()) {
+                    completedModules = childModuleProgressRepo.countByChildIdAndModuleIdInAndIsCompletedTrue(
+                        childId,
+                        modulesInSubject.stream().map(Module::getId).toList()
+                    );
+                }
 
                 ChildSubjectProgress sProgress = childSubjectProgressRepo.findByChildIdAndSubjectId(childId, subject.getId())
                         .orElse(ChildSubjectProgress.builder().childId(childId).subjectId(subject.getId()).build());

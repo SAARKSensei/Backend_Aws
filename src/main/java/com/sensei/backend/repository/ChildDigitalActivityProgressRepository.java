@@ -20,6 +20,12 @@ public interface ChildDigitalActivityProgressRepository
             String status
     );
 
+    long countByChildIdAndDigitalActivity_SubModule_IdAndDigitalActivity_IsActiveTrueAndStatus(
+            UUID childId,
+            UUID subModuleId,
+            String status
+    );
+
     long countByChildIdAndStatus(UUID childId, String status);
     List<ChildDigitalActivityProgress> findByChildId(UUID childId);
 
