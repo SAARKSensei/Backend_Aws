@@ -81,6 +81,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: DOCKER_USER,DOCKER_PASS
           script: |
+            set -e # CRITICAL: Stop the script immediately if ANY command fails
+            
             # 1. Navigate to where your docker-compose.yml is stored on the server
             cd /home/${{ secrets.EC2_USERNAME }}/Backend_Aws_updated
             
@@ -95,3 +97,6 @@ jobs:
             
             # 5. Let Docker Compose swap the old container for the new one (using docker compose plugin)
             docker compose up -d
+            
+            # 6. Clean up old dangling images so the server never runs out of space again
+            docker image prune -f
