@@ -152,4 +152,9 @@ public class ChildUser {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // Cascading for quiz attempts if a child is deleted
+    @OneToMany(mappedBy = "childUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<ParentQuizAttempt> quizAttempts = new java.util.ArrayList<>();
 }

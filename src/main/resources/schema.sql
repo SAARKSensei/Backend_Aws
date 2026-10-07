@@ -486,3 +486,11 @@ CREATE TABLE IF NOT EXISTS child_subject_progress (
 );
 
 ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS address varchar(255);
+
+CREATE TABLE IF NOT EXISTS parent_quiz_attempt_options (
+    attempt_id uuid not null,
+    option_id uuid not null,
+    primary key (attempt_id, option_id),
+    CONSTRAINT fk_attempt_options_attempt FOREIGN KEY (attempt_id) REFERENCES parent_quiz_attempt(id),
+    CONSTRAINT fk_attempt_options_option FOREIGN KEY (option_id) REFERENCES parent_quiz_option(id)
+);

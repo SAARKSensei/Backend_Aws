@@ -335,6 +335,8 @@ Below is a list of all active API endpoints available in the system for testing.
 | `GET` | `/api/v1/parent-quiz` | `getQuizQuestions` |
 | `POST` | `/api/v1/parent-quiz` | `addQuizQuestions` |
 | `POST` | `/api/v1/parent-quiz/submit` | `submitQuiz` |
+| `PUT` | `/api/v1/parent-quiz/update` | `updateQuiz` (Supports Partial/Full updates) |
+| `GET` | `/api/v1/parent-quiz/attempt/{parentId}/{childId}` | `getQuizAttempt` |
 
 
 ## ChildLifeSkill

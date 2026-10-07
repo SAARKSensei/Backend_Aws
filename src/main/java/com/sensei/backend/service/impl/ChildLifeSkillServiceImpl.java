@@ -67,4 +67,19 @@ public class ChildLifeSkillServiceImpl implements ChildLifeSkillService {
             childLifeSkillRepository.save(newSkill);
         }
     }
+
+    @Override
+    @Transactional
+    public void removeLifeSkillPoints(UUID childId, LifeSkillType lifeSkill, int points) {
+        if (lifeSkill == null || points <= 0) return;
+        
+        Optional<ChildLifeSkill> existingSkillOpt = childLifeSkillRepository.findByChildUser_ChildIdAndLifeSkill(childId, lifeSkill);
+        
+        if (existingSkillOpt.isPresent()) {
+            ChildLifeSkill existingSkill = existingSkillOpt.get();
+            int currentScore = existingSkill.getScore() == null ? 0 : existingSkill.getScore();
+            existingSkill.setScore(Math.max(0, currentScore - points));
+            childLifeSkillRepository.save(existingSkill);
+        }
+    }
 }

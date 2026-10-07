@@ -59,6 +59,11 @@ public class ParentUser {
     @Builder.Default
     private List<ChildUser> childUsers = new ArrayList<>();
 
+    // Cascading for quiz attempts
+    @OneToMany(mappedBy = "parentUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ParentQuizAttempt> quizAttempts = new ArrayList<>();
+
     // ✅ NEW FIELD
     @Column(name = "location")
     private String location;

@@ -66,7 +66,9 @@ public class ParentQuizServiceImpl implements ParentQuizService {
         ChildUser child = childUserRepository.findById(request.getChildId())
                 .orElseThrow(() -> new RuntimeException("Child not found"));
 
-
+        if (attemptRepository.findByParentUser_ParentIdAndChildUser_ChildId(parent.getParentId(), child.getChildId()).isPresent()) {
+            throw new RuntimeException("Quiz attempt already exists for this child. Use the update API instead.");
+        }
 
         // Process options and unlock lifeskills
         List<ParentQuizOption> selectedOptions = optionRepository.findAllById(request.getSelectedOptionIds());
@@ -82,12 +84,69 @@ public class ParentQuizServiceImpl implements ParentQuizService {
         ParentQuizAttempt attempt = ParentQuizAttempt.builder()
                 .parentUser(parent)
                 .childUser(child)
+                .selectedOptions(selectedOptions)
                 .build();
         attemptRepository.save(attempt);
 
         // Update parent user to indicate quiz is completed
         parent.setIsQuizCompleted(true);
         parentUserRepository.save(parent);
+    }
+
+    @Override
+    @Transactional
+    public void updateQuiz(SubmitQuizRequest request) {
+        ParentUser parent = parentUserRepository.findById(request.getParentId())
+                .orElseThrow(() -> new RuntimeException("Parent not found"));
+        ChildUser child = childUserRepository.findById(request.getChildId())
+                .orElseThrow(() -> new RuntimeException("Child not found"));
+
+        ParentQuizAttempt attempt = attemptRepository.findByParentUser_ParentIdAndChildUser_ChildId(request.getParentId(), request.getChildId())
+                .orElseThrow(() -> new RuntimeException("Previous quiz attempt not found"));
+
+        List<ParentQuizOption> currentSelectedOptions = new java.util.ArrayList<>(
+                attempt.getSelectedOptions() != null ? attempt.getSelectedOptions() : java.util.Collections.emptyList()
+        );
+        List<ParentQuizOption> newOptions = optionRepository.findAllById(request.getSelectedOptionIds());
+
+        for (ParentQuizOption newOption : newOptions) {
+            java.util.UUID questionId = newOption.getQuestion().getId();
+
+            // Find the old option for this specific question
+            ParentQuizOption oldOptionForQuestion = currentSelectedOptions.stream()
+                    .filter(opt -> opt.getQuestion().getId().equals(questionId))
+                    .findFirst()
+                    .orElse(null);
+
+            // If the option hasn't changed for this question, skip to the next
+            if (oldOptionForQuestion != null && oldOptionForQuestion.getId().equals(newOption.getId())) {
+                continue;
+            }
+
+            // Revert old option's life skills if it exists
+            if (oldOptionForQuestion != null) {
+                if (oldOptionForQuestion.getAssociatedLifeSkills() != null) {
+                    for (var skill : oldOptionForQuestion.getAssociatedLifeSkills()) {
+                        childLifeSkillService.removeLifeSkillPoints(child.getChildId(), skill, 1);
+                    }
+                }
+                currentSelectedOptions.remove(oldOptionForQuestion);
+            }
+
+            // Apply new option's life skills
+            if (newOption.getAssociatedLifeSkills() != null) {
+                for (var skill : newOption.getAssociatedLifeSkills()) {
+                    childLifeSkillService.addLifeSkillPoints(child.getChildId(), skill, 1);
+                }
+            }
+            
+            // Add the newly selected option
+            currentSelectedOptions.add(newOption);
+        }
+
+        // Update the attempt with the merged list
+        attempt.setSelectedOptions(currentSelectedOptions);
+        attemptRepository.save(attempt);
     }
 
     @Override
@@ -113,5 +172,22 @@ public class ParentQuizServiceImpl implements ParentQuizService {
                 }
             }
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.sensei.backend.dto.parentquiz.ParentQuizAttemptResponse getQuizAttempt(java.util.UUID parentId, java.util.UUID childId) {
+        ParentQuizAttempt attempt = attemptRepository.findByParentUser_ParentIdAndChildUser_ChildId(parentId, childId)
+                .orElseThrow(() -> new RuntimeException("Quiz attempt not found"));
+
+        java.util.List<java.util.UUID> selectedOptionIds = attempt.getSelectedOptions() != null
+                ? attempt.getSelectedOptions().stream().map(ParentQuizOption::getId).collect(Collectors.toList())
+                : java.util.Collections.emptyList();
+
+        return com.sensei.backend.dto.parentquiz.ParentQuizAttemptResponse.builder()
+                .parentId(parentId)
+                .childId(childId)
+                .selectedOptionIds(selectedOptionIds)
+                .build();
     }
 }

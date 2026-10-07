@@ -32,4 +32,12 @@ public class ParentQuizAttempt {
     @CreationTimestamp
     @Column(name = "completed_at", updatable = false)
     private LocalDateTime completedAt;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "parent_quiz_attempt_options",
+        joinColumns = @JoinColumn(name = "attempt_id"),
+        inverseJoinColumns = @JoinColumn(name = "option_id")
+    )
+    private java.util.List<ParentQuizOption> selectedOptions;
 }

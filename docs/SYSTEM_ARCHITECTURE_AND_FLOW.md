@@ -116,7 +116,24 @@ Immediately following parent creation, parents take a baseline quiz that assigns
     }
     ```
   * **Backend Processing:** Checks the associated life skills for the selected options and automatically unlocks them for the `childId` provided. Sets the parent's `isQuizCompleted` flag to true.
-
+* **Fetch Attempt:** `GET /api/v1/parent-quiz/attempt/{parentId}/{childId}` (Retrieves previous options to pre-fill UI)
+  * **Response (JSON):**
+    ```json
+    {
+        "parentId": "<parent_uuid>",
+        "childId": "<child_uuid>",
+        "selectedOptionIds": ["<opt_uuid_1>", "<opt_uuid_2>"]
+    }
+    ```
+* **Update Answers:** `PUT /api/v1/parent-quiz/update` (Dynamically supports partial and full updates by calculating the difference, reverting removed life skills, and adding new ones).
+  * **Request (JSON):**
+    ```json
+    {
+        "parentId": "<parent_uuid>",
+        "childId": "<child_uuid>",
+        "selectedOptionIds": ["<new_opt_uuid_1>"] 
+    }
+    ```
 ### 2C. Child Life Skills Dashboard
 After the quiz, the frontend can fetch the initially unlocked life skills for the dashboard.
 * **Endpoint:** `GET /api/v1/child/{childId}/lifeskills`

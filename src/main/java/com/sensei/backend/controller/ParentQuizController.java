@@ -28,9 +28,22 @@ public class ParentQuizController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/update")
+    public ResponseEntity<Void> updateQuiz(@RequestBody SubmitQuizRequest request) {
+        parentQuizService.updateQuiz(request);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping
     public ResponseEntity<String> addQuizQuestions(@RequestBody List<CreateQuizQuestionRequest> requestList) {
         parentQuizService.addQuizQuestions(requestList);
         return ResponseEntity.ok("Quiz questions added successfully!");
+    }
+
+    @GetMapping("/attempt/{parentId}/{childId}")
+    public ResponseEntity<com.sensei.backend.dto.parentquiz.ParentQuizAttemptResponse> getQuizAttempt(
+            @PathVariable java.util.UUID parentId,
+            @PathVariable java.util.UUID childId) {
+        return ResponseEntity.ok(parentQuizService.getQuizAttempt(parentId, childId));
     }
 }

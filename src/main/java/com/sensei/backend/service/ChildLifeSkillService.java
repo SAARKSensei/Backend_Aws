@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface ChildLifeSkillService {
     ChildLifeSkillReportResponse getChildLifeSkills(UUID childId);
     void addLifeSkillPoints(UUID childId, LifeSkillType lifeSkill, int points);
+    void removeLifeSkillPoints(UUID childId, LifeSkillType lifeSkill, int points);
 }
