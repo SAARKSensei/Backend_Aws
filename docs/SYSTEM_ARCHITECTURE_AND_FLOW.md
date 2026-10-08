@@ -147,6 +147,16 @@ Parents can view their history of wallet top-ups and plan purchases.
 * **Endpoint:** `GET /api/parent-users/{parentId}/transactions`
 * **Response:** Returns a list of `MasterTransaction` objects detailing amounts and dates.
 
+### 2F. Account Deletion (Soft Delete)
+When a parent requests account deletion, the system performs a **Soft Delete** to preserve data integrity and prevent foreign key crashes, while physically revoking their login access.
+* **Endpoint:** `DELETE /api/parent-users/{parentId}`
+* **Backend Processing:**
+  1. The user's account is permanently deleted from **Firebase Auth**.
+  2. The database updates the `ParentUser` and all associated `ChildUser` profiles by setting `is_deleted = true` and `deleted_at = NOW()`.
+  3. The user's `email` and `user_name` are prefixed with `del-` and suffixed with a timestamp to free up those identifiers for future re-registration and avoid `UNIQUE` constraint errors.
+  4. Global `@SQLRestriction` automatically hides these users from all standard application APIs.
+* **Admin Fetch (Graveyard API):** Because of the `@SQLRestriction`, deleted users are hidden. To view them, admins must use the native query projection endpoint (e.g., `GET /admin/deleted-users`).
+
 ---
 
 ## 3. Child Registration & Management
