@@ -147,6 +147,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.UserRecord;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -245,6 +249,16 @@ public class ParentUserService {
     public void deleteParentUser(UUID parentId) {
         ParentUser parent = parentUserRepository.findById(parentId)
                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+
+        if (parent.getEmail() != null) {
+            try {
+                UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmail(parent.getEmail());
+                FirebaseAuth.getInstance().deleteUser(userRecord.getUid());
+                log.info("Deleted user from Firebase Auth: {}", parent.getEmail());
+            } catch (FirebaseAuthException e) {
+                log.warn("Failed to delete user from Firebase Auth: {} - {}", parent.getEmail(), e.getMessage());
+            }
+        }
 
         List<UUID> childIds = parent.getChildUsers().stream()
                 .map(ChildUser::getChildId)
