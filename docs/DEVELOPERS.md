@@ -74,6 +74,16 @@ If this is your first time setting up and you want to test the APIs quickly, you
 mysql -u root -p sensei_db < scripts/dummy_data.sql
 ```
 
+### 3. Firebase Admin SDK Setup (Required for Auth APIs)
+For local development, you need the Firebase Admin Service Account key to test user deletion and other Firebase APIs.
+1. Download the `sensei-firebase-adminsdk.json` file from the [Firebase Console](https://console.firebase.google.com/) (Project Settings -> Service Accounts -> Generate new private key).
+2. Save this file somewhere secure on your local machine (Do **not** commit it to the repository).
+3. Update your local `.env` file to point to it:
+   ```env
+   GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/sensei-firebase-adminsdk.json
+   ```
+*(Note: For production deployments on AWS, we use the `FIREBASE_CREDENTIALS_BASE64` GitHub Secret instead of physical files).*
+
 ---
 
 ## Internal Git Workflow
