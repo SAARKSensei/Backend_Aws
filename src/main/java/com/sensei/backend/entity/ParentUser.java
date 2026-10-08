@@ -11,6 +11,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "parent_user")
+@org.hibernate.annotations.SQLRestriction("is_deleted = false")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -73,5 +74,12 @@ public class ParentUser {
     @Builder.Default
     @Column(name = "is_quiz_completed")
     private Boolean isQuizCompleted = false;
+
+    @Column(name = "is_deleted", nullable = false)
+    @Builder.Default
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }
 

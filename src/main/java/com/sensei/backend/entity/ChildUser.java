@@ -86,6 +86,7 @@ import com.sensei.backend.enums.PlanStatus;
 
 @Entity
 @Table(name = "child_user")
+@org.hibernate.annotations.SQLRestriction("is_deleted = false")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -157,4 +158,11 @@ public class ChildUser {
     @OneToMany(mappedBy = "childUser", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private java.util.List<ParentQuizAttempt> quizAttempts = new java.util.ArrayList<>();
+
+    @Column(name = "is_deleted", nullable = false)
+    @Builder.Default
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

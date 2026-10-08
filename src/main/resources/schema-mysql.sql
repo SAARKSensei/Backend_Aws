@@ -472,6 +472,10 @@ CREATE TABLE IF NOT EXISTS child_subject_progress (
 );
 
 ALTER TABLE parent_user ADD COLUMN address varchar(255);
+ALTER TABLE parent_user ADD COLUMN is_deleted boolean default false;
+ALTER TABLE parent_user ADD COLUMN deleted_at timestamp;
+ALTER TABLE child_user ADD COLUMN is_deleted boolean default false;
+ALTER TABLE child_user ADD COLUMN deleted_at timestamp;
 
 CREATE TABLE IF NOT EXISTS parent_quiz_attempt_options (
     attempt_id CHAR(36) NOT NULL,

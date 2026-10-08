@@ -486,6 +486,10 @@ CREATE TABLE IF NOT EXISTS child_subject_progress (
 );
 
 ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS address varchar(255);
+ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS is_deleted boolean default false;
+ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS deleted_at timestamp;
+ALTER TABLE IF EXISTS child_user ADD COLUMN IF NOT EXISTS is_deleted boolean default false;
+ALTER TABLE IF EXISTS child_user ADD COLUMN IF NOT EXISTS deleted_at timestamp;
 
 CREATE TABLE IF NOT EXISTS parent_quiz_attempt_options (
     attempt_id uuid not null,

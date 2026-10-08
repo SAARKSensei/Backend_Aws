@@ -260,52 +260,27 @@ public class ParentUserService {
             }
         }
 
-        List<UUID> childIds = parent.getChildUsers().stream()
-                .map(ChildUser::getChildId)
-                .toList();
-
-        if (!childIds.isEmpty()) {
-            entityManager.createNativeQuery("DELETE FROM child_digital_activity_progress WHERE child_id IN :childIds")
-                    .setParameter("childIds", childIds).executeUpdate();
-            entityManager.createNativeQuery("DELETE FROM child_interactive_activity_progress WHERE child_id IN :childIds")
-                    .setParameter("childIds", childIds).executeUpdate();
-            entityManager.createNativeQuery("DELETE FROM child_life_skill WHERE child_id IN :childIds")
-                    .setParameter("childIds", childIds).executeUpdate();
-            entityManager.createNativeQuery("DELETE FROM child_question_attempt WHERE child_id IN :childIds")
-                    .setParameter("childIds", childIds).executeUpdate();
-            entityManager.createNativeQuery("DELETE FROM child_submodule_completion WHERE child_id IN :childIds")
-                    .setParameter("childIds", childIds).executeUpdate();
-            entityManager.createNativeQuery("DELETE FROM interactive_process_tracking WHERE child_id IN :childIds")
-                    .setParameter("childIds", childIds).executeUpdate();
-            entityManager.createNativeQuery("DELETE FROM parent_quiz_attempt WHERE child_id IN :childIds")
-                    .setParameter("childIds", childIds).executeUpdate();
-            entityManager.createNativeQuery("DELETE FROM child_submodule_progress WHERE child_id IN :childIds")
-                    .setParameter("childIds", childIds).executeUpdate();
-            entityManager.createNativeQuery("DELETE FROM child_module_progress WHERE child_id IN :childIds")
-                    .setParameter("childIds", childIds).executeUpdate();
-            entityManager.createNativeQuery("DELETE FROM child_subject_progress WHERE child_id IN :childIds")
-                    .setParameter("childIds", childIds).executeUpdate();
+        // Soft delete the parent
+        parent.setIsDeleted(true);
+        parent.setDeletedAt(java.time.LocalDateTime.now());
+        
+        // Prefix email and username and append timestamp to free up original strings and prevent unique constraint violations
+        long timestamp = System.currentTimeMillis();
+        if (parent.getEmail() != null) {
+            parent.setEmail("del-" + parent.getEmail() + "-" + timestamp);
+        }
+        if (parent.getUserName() != null) {
+            parent.setUserName("del-" + parent.getUserName() + "-" + timestamp);
         }
 
-        entityManager.createNativeQuery("DELETE FROM parent_quiz_attempt WHERE parent_id = :parentId")
-                .setParameter("parentId", parentId).executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM coupon_usage WHERE parent_id = :parentId")
-                .setParameter("parentId", parentId).executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM wallet_transaction WHERE parent_id = :parentId")
-                .setParameter("parentId", parentId).executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM wallet WHERE parent_id = :parentId")
-                .setParameter("parentId", parentId).executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM master_transaction WHERE parent_id = :parentId")
-                .setParameter("parentId", parentId).executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM payment_transaction WHERE parent_id = :parentId")
-                .setParameter("parentId", parentId).executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM referral_usage WHERE referred_parent_id = :parentId OR referrer_parent_id = :parentId")
-                .setParameter("parentId", parentId).executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM referral_code WHERE parent_id = :parentId")
-                .setParameter("parentId", parentId).executeUpdate();
+        // Soft delete all child users
+        for (ChildUser child : parent.getChildUsers()) {
+            child.setIsDeleted(true);
+            child.setDeletedAt(java.time.LocalDateTime.now());
+        }
 
-        parentUserRepository.delete(parent);
-        log.info("Deleted ParentUser with ID: {}", parentId);
+        parentUserRepository.save(parent);
+        log.info("Soft-Deleted ParentUser with ID: {}", parentId);
     }
 
     // ================= FILTERS =================
