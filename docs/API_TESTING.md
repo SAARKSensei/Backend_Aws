@@ -196,6 +196,7 @@ Below is a list of all active API endpoints available in the system for testing.
 | `GET` | `/api/parent-users/phone` | `byPhone` |
 | `GET` | `/api/parent-users/email` | `byEmail` |
 | `GET` | `/api/parent-users/getPricingPlan` | `getPricingPlan` |
+| `GET` | `/api/parent-users/admin/deleted` | `getAllDeletedUsers` |
 
 
 ## InteractiveActivity
