@@ -62,9 +62,9 @@ public class ParentQuizServiceImpl implements ParentQuizService {
     public void submitQuiz(SubmitQuizRequest request) {
         // Ensure the parent and child exist
         ParentUser parent = parentUserRepository.findById(request.getParentId())
-                .orElseThrow(() -> new RuntimeException("Parent not found"));
+                .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Parent not found"));
         ChildUser child = childUserRepository.findById(request.getChildId())
-                .orElseThrow(() -> new RuntimeException("Child not found"));
+                .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Child not found"));
 
         if (attemptRepository.findByParentUser_ParentIdAndChildUser_ChildId(parent.getParentId(), child.getChildId()).isPresent()) {
             throw new RuntimeException("Quiz attempt already exists for this child. Use the update API instead.");
@@ -97,12 +97,12 @@ public class ParentQuizServiceImpl implements ParentQuizService {
     @Transactional
     public void updateQuiz(SubmitQuizRequest request) {
         ParentUser parent = parentUserRepository.findById(request.getParentId())
-                .orElseThrow(() -> new RuntimeException("Parent not found"));
+                .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Parent not found"));
         ChildUser child = childUserRepository.findById(request.getChildId())
-                .orElseThrow(() -> new RuntimeException("Child not found"));
+                .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Child not found"));
 
         ParentQuizAttempt attempt = attemptRepository.findByParentUser_ParentIdAndChildUser_ChildId(request.getParentId(), request.getChildId())
-                .orElseThrow(() -> new RuntimeException("Previous quiz attempt not found"));
+                .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Previous quiz attempt not found"));
 
         List<ParentQuizOption> currentSelectedOptions = new java.util.ArrayList<>(
                 attempt.getSelectedOptions() != null ? attempt.getSelectedOptions() : java.util.Collections.emptyList()
@@ -178,7 +178,7 @@ public class ParentQuizServiceImpl implements ParentQuizService {
     @Transactional(readOnly = true)
     public com.sensei.backend.dto.parentquiz.ParentQuizAttemptResponse getQuizAttempt(java.util.UUID parentId, java.util.UUID childId) {
         ParentQuizAttempt attempt = attemptRepository.findByParentUser_ParentIdAndChildUser_ChildId(parentId, childId)
-                .orElseThrow(() -> new RuntimeException("Quiz attempt not found"));
+                .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Quiz attempt not found"));
 
         java.util.List<java.util.UUID> selectedOptionIds = attempt.getSelectedOptions() != null
                 ? attempt.getSelectedOptions().stream().map(ParentQuizOption::getId).collect(Collectors.toList())
