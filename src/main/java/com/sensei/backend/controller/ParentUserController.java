@@ -190,4 +190,9 @@ public class ParentUserController {
         }
         return ResponseEntity.ok(pricingPlan);
     }
+    @GetMapping("/admin/deleted")
+    public ResponseEntity<List<com.sensei.backend.dto.DeletedUserProjection>> getAllDeletedUsers() {
+        log.info("Request to fetch all deleted ParentUsers (Admin API)");
+        return ResponseEntity.ok(parentUserService.getAllDeletedUsers());
+    }
 }

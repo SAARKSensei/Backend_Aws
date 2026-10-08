@@ -301,6 +301,10 @@ public class ParentUserService {
         return parentUserRepository.findByEmail(email);
     }
 
+    public List<com.sensei.backend.dto.DeletedUserProjection> getAllDeletedUsers() {
+        return parentUserRepository.findAllDeletedUsers();
+    }
+
     // ================= PRICING LOOKUP =================
     public Map<String, Object> getPricingPlanForParent(String email) {
         ParentUser parent = parentUserRepository.findByEmail(email).orElse(null);

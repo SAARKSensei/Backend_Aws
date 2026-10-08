@@ -33,4 +33,7 @@ public interface ParentUserRepository extends JpaRepository<ParentUser, UUID> {
 Optional<ParentUser> findByPhoneNumberWithChildUsers(@Param("phone") String phone);
 
 List<ParentUser> findByLocation(String location);
+
+    @Query(value = "SELECT parent_id as parentId, name, email, user_name as userName, deleted_at as deletedAt FROM parent_user WHERE is_deleted = true", nativeQuery = true)
+    List<com.sensei.backend.dto.DeletedUserProjection> findAllDeletedUsers();
 }
