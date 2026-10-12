@@ -30,8 +30,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // 1. Allow auth endpoints
-        if (path.startsWith("/api/auth")) {
+        // 1. Allow OPTIONS preflight, auth endpoints, and actuator monitoring
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod()) || path.startsWith("/api/auth") || path.startsWith("/actuator")) {
             chain.doFilter(request, response);
             return;
         }

@@ -53,6 +53,27 @@ class JwtFilterTest {
     }
 
     @Test
+    void testActuatorEndpointsAreAllowedWithoutToken() throws ServletException, IOException {
+        request.setRequestURI("/actuator/health");
+
+        jwtFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain, times(1)).doFilter(request, response);
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    void testOptionsPreflightRequestsAreAllowedWithoutToken() throws ServletException, IOException {
+        request.setRequestURI("/api/parent-user/me");
+        request.setMethod("OPTIONS");
+
+        jwtFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain, times(1)).doFilter(request, response);
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
     void testMissingTokenReturnsUnauthorized() throws ServletException, IOException {
         request.setRequestURI("/api/some-protected-route");
 

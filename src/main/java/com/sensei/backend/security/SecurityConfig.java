@@ -34,7 +34,7 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ✅ CRITICAL
-                .requestMatchers("/api/auth/**", "/actuator/health", "/actuator/info").permitAll()
+                .requestMatchers("/api/auth/**", "/actuator/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
