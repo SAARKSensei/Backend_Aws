@@ -189,14 +189,17 @@ Below is a list of all active API endpoints available in the system for testing.
 |--------|----------|-------------|
 | `POST` | `/api/parent-users` | `create` |
 | `GET` | `/api/parent-users/{parentId}` | `getById` |
-| `GET` | `/api/parent-users` | `unknown` |
+| `GET` | `/api/parent-users` | `getAllParentUsers` (Paginated) |
 | `PUT` | `/api/parent-users/{parentId}` | `update` |
-| `DELETE` | `/api/parent-users/{parentId}` | `delete` |
+| `DELETE` | `/api/parent-users/{parentId}` | `delete` (Soft-deletes DB, cascades to children, deletes from Firebase Auth) |
 | `GET` | `/api/parent-users/filter` | `byUserName` |
 | `GET` | `/api/parent-users/phone` | `byPhone` |
 | `GET` | `/api/parent-users/email` | `byEmail` |
 | `GET` | `/api/parent-users/getPricingPlan` | `getPricingPlan` |
-| `GET` | `/api/parent-users/admin/deleted` | `getAllDeletedUsers` |
+| `GET` | `/api/parent-users/admin/deleted` | `getAllDeletedUsers` (Admin Graveyard API) |
+| `GET` | `/api/parent-users/admin/firebase-user?email={email}` | `getFirebaseUserByEmail` (Inspect user in Firebase Auth) |
+| `GET` | `/api/parent-users/admin/firebase-users` | `listFirebaseUsers` (List active users in Firebase Auth) |
+| `POST` | `/api/parent-users/admin/firebase-sync` | `syncAllUsersToFirebase` (Bulk sync active DB users to Firebase Auth) |
 
 
 ## InteractiveActivity

@@ -107,12 +107,6 @@
             <version>20260719</version>
         </dependency>
 
-        <!-- Apache HTTP (Java 17+ compatible) -->
-        <dependency>
-            <groupId>org.apache.httpcomponents.client5</groupId>
-            <artifactId>httpclient5</artifactId>
-            <version>5.2.1</version>
-        </dependency>
 
         <!-- Tests -->
         <dependency>

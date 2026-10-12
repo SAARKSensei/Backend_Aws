@@ -157,3 +157,34 @@ If you want to test this locally without the app:
      { "refreshToken": "YOUR_COPIED_TOKEN_HERE" }
      ```
 4. **Verify:** You will receive a brand new pair of tokens!
+
+---
+
+## 4. Firebase Authentication Sync & Account Deletion Flow
+
+### A. Automatic Provisioning on Google Login
+Whenever a user logs in via `POST /api/auth/google`, the backend verifies their Google ID token and:
+1. Provisions or updates their parent profile in PostgreSQL (`parent_user`).
+2. Checks Firebase Authentication (`sensei-97eef`).
+3. If the user does not exist in Firebase Auth yet, it automatically registers them via the Firebase Admin SDK (`emailVerified = true`, display name set).
+4. Issues application JWT tokens as normal.
+
+### B. Account Deletion Lifecycle (`DELETE /api/parent-users/{parentId}`)
+When a parent deletes their account:
+1. **Firebase Permanent Deletion:** The user record is looked up by email and deleted from Firebase Authentication (`FirebaseAuth.getInstance().deleteUser(uid)`). If the user does not exist in Firebase, it safely logs a warning and proceeds.
+2. **PostgreSQL Soft-Deletion:**
+   - `is_deleted = true`, `deleted_at = NOW()`.
+   - `email` renamed to `del-{email}-{timestamp}`.
+   - `user_name` renamed to `del-{user_name}-{timestamp}`.
+   - Cascades `is_deleted = true` to all linked `child_user` rows.
+3. **Database Constraints & Re-Registration:**
+   - Renaming `email` and `user_name` frees up their original identifiers in PostgreSQL `UNIQUE` constraints.
+   - If the deleted user signs in again via Google OAuth later, Firebase treats them as a **brand new account** and the backend provisions a **brand new `parentId`**.
+   - Their previous quiz submissions and history remain preserved in the admin graveyard without any data collision.
+
+### C. Admin Firebase Inspection & Sync APIs
+Admins can inspect or sync Firebase Auth state directly via Postman without needing the Firebase Console website:
+* **Check single user:** `GET /api/parent-users/admin/firebase-user?email={email}`
+* **List all Firebase users:** `GET /api/parent-users/admin/firebase-users`
+* **Bulk sync active DB users:** `POST /api/parent-users/admin/firebase-sync`
+* **List soft-deleted users:** `GET /api/parent-users/admin/deleted`

@@ -74,15 +74,25 @@ If this is your first time setting up and you want to test the APIs quickly, you
 mysql -u root -p sensei_db < scripts/dummy_data.sql
 ```
 
-### 3. Firebase Admin SDK Setup (Required for Auth APIs)
-For local development, you need the Firebase Admin Service Account key to test user deletion and other Firebase APIs.
-1. Download the `sensei-firebase-adminsdk.json` file from the [Firebase Console](https://console.firebase.google.com/) (Project Settings -> Service Accounts -> Generate new private key).
-2. Save this file somewhere secure on your local machine (Do **not** commit it to the repository).
-3. Update your local `.env` file to point to it:
+### 3. Firebase Admin SDK Setup (Required for Auth & Deletion APIs)
+The backend integrates with Firebase Admin SDK for user synchronization and deletion:
+1. **Local Development (File Path):**
+   Set the absolute path to your downloaded service account JSON file in `.env`:
    ```env
-   GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/sensei-firebase-adminsdk.json
+   GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/sensei-97eef-firebase-adminsdk.json
    ```
-*(Note: For production deployments on AWS, we use the `FIREBASE_CREDENTIALS_BASE64` GitHub Secret instead of physical files).*
+2. **Production / Container (Base64 Encoded):**
+   Provide the base64-encoded string of the service account JSON in `.env` (or AWS Secrets / ECS Environment):
+   ```env
+   FIREBASE_CREDENTIALS_BASE64=ewogICJ0eXBlIjogInNlcnZpY2VfYWN...
+   ```
+   *(Generate base64 via terminal: `base64 -w 0 <path_to_json_file>`)*
+
+3. **Verify Firebase Setup Locally:**
+   Run the automated Firebase integration test suite anytime:
+   ```bash
+   mvn test -Dtest=FirebaseAuthIntegrationTest
+   ```
 
 ---
 

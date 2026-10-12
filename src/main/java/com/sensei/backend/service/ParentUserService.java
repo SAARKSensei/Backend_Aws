@@ -147,6 +147,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
@@ -250,13 +251,19 @@ public class ParentUserService {
         ParentUser parent = parentUserRepository.findById(parentId)
                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
 
-        if (parent.getEmail() != null) {
+        if (parent.getEmail() != null && !parent.getEmail().trim().isEmpty()) {
             try {
-                UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmail(parent.getEmail());
-                FirebaseAuth.getInstance().deleteUser(userRecord.getUid());
-                log.info("Deleted user from Firebase Auth: {}", parent.getEmail());
+                if (!FirebaseApp.getApps().isEmpty()) {
+                    UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmail(parent.getEmail());
+                    FirebaseAuth.getInstance().deleteUser(userRecord.getUid());
+                    log.info("Deleted user from Firebase Auth: {}", parent.getEmail());
+                } else {
+                    log.warn("FirebaseApp not initialized, skipping Firebase user deletion for: {}", parent.getEmail());
+                }
             } catch (FirebaseAuthException e) {
-                log.warn("Failed to delete user from Firebase Auth: {} - {}", parent.getEmail(), e.getMessage());
+                log.warn("User {} not found or failed to delete from Firebase Auth: {}", parent.getEmail(), e.getMessage());
+            } catch (Exception e) {
+                log.warn("Unexpected error deleting user from Firebase Auth for {}: {}", parent.getEmail(), e.getMessage());
             }
         }
 
@@ -349,6 +356,50 @@ public class ParentUserService {
     // ================= TRANSACTIONS =================
     public List<MasterTransaction> getTransactionsByParentId(UUID parentId) {
         return masterTransactionRepository.findByParentIdOrderByCreatedAtDesc(parentId);
+    }
+
+    // ================= FIREBASE SYNC =================
+    public Map<String, Object> syncAllUsersToFirebase() {
+        log.info("Admin request to sync all active DB users to Firebase Auth");
+        if (FirebaseApp.getApps().isEmpty()) {
+            return Map.of("error", "FirebaseApp not initialized");
+        }
+        List<ParentUser> parents = parentUserRepository.findAll();
+        int created = 0;
+        int alreadyExists = 0;
+        int failed = 0;
+        for (ParentUser parent : parents) {
+            String email = parent.getEmail();
+            if (email == null || email.trim().isEmpty() || email.startsWith("del-")) {
+                continue;
+            }
+            try {
+                try {
+                    FirebaseAuth.getInstance().getUserByEmail(email);
+                    alreadyExists++;
+                } catch (FirebaseAuthException e) {
+                    if ("USER_NOT_FOUND".equals(e.getAuthErrorCode().name())) {
+                        UserRecord.CreateRequest request = new UserRecord.CreateRequest()
+                                .setEmail(email)
+                                .setEmailVerified(true)
+                                .setDisplayName(parent.getName() != null ? parent.getName() : parent.getUserName());
+                        FirebaseAuth.getInstance().createUser(request);
+                        created++;
+                        log.info("Synced parent {} to Firebase Auth", email);
+                    } else {
+                        failed++;
+                    }
+                }
+            } catch (Exception ex) {
+                failed++;
+            }
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalActiveParentsInDb", parents.size());
+        result.put("createdInFirebase", created);
+        result.put("alreadyExistedInFirebase", alreadyExists);
+        result.put("failed", failed);
+        return result;
     }
 }
 

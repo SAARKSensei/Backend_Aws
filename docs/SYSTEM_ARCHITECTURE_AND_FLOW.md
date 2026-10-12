@@ -147,15 +147,23 @@ Parents can view their history of wallet top-ups and plan purchases.
 * **Endpoint:** `GET /api/parent-users/{parentId}/transactions`
 * **Response:** Returns a list of `MasterTransaction` objects detailing amounts and dates.
 
-### 2F. Account Deletion (Soft Delete)
-When a parent requests account deletion, the system performs a **Soft Delete** to preserve data integrity and prevent foreign key crashes, while physically revoking their login access.
+### 2F. Account Deletion & Firebase Lifecycle
+When a parent requests account deletion, the system performs a dual-action operation: permanent deletion from Firebase Auth, and **Soft Delete** in PostgreSQL to preserve transactional integrity and prevent foreign key crashes.
 * **Endpoint:** `DELETE /api/parent-users/{parentId}`
 * **Backend Processing:**
-  1. The user's account is permanently deleted from **Firebase Auth**.
-  2. The database updates the `ParentUser` and all associated `ChildUser` profiles by setting `is_deleted = true` and `deleted_at = NOW()`.
-  3. The user's `email` and `user_name` are prefixed with `del-` and suffixed with a timestamp to free up those identifiers for future re-registration and avoid `UNIQUE` constraint errors.
-  4. Global `@SQLRestriction` automatically hides these users from all standard application APIs.
-* **Admin Fetch (Graveyard API):** Because of the `@SQLRestriction`, deleted users are hidden. To view them, admins must use the native query projection endpoint (e.g., `GET /api/parent-users/admin/deleted`).
+  1. **Firebase Permanent Deletion:** The user's account is permanently deleted from **Firebase Auth** (`FirebaseAuth.getInstance().deleteUser(uid)`). If the user does not exist in Firebase, it safely logs a warning and continues without failing.
+  2. **Database Soft-Delete:** The database updates the `ParentUser` and all associated `ChildUser` profiles by setting `is_deleted = true` and `deleted_at = NOW()`.
+  3. **Identifier Freeing:** The user's `email` and `user_name` are prefixed with `del-` and suffixed with a timestamp (`del-{email}-{timestamp}`) to free up those original strings from `UNIQUE` constraints and prevent collision on re-registration.
+  4. **Active Filter:** Global `@SQLRestriction("is_deleted = false")` automatically hides these users from all standard application APIs.
+* **Re-Login Isolation:** If a deleted user signs in again via Google OAuth using the same email:
+  - Firebase Auth provisions a brand new authentication record with a new Google UID.
+  - The backend searches for active users with their original email and finds none, so it registers a **fresh `ParentUser` with a new `parentId`**.
+  - Historical quiz submissions and child data stay safely archived in the graveyard and are never merged into the new account.
+* **Admin APIs for Firebase & Graveyard:**
+  - `GET /api/parent-users/admin/deleted`: List all soft-deleted users (Admin Graveyard API).
+  - `GET /api/parent-users/admin/firebase-user?email={email}`: Inspect single user presence and UID in Firebase Auth.
+  - `GET /api/parent-users/admin/firebase-users`: List all active users currently in Firebase Auth.
+  - `POST /api/parent-users/admin/firebase-sync`: Bulk sync all active database parent users into Firebase Auth.
 
 ---
 
