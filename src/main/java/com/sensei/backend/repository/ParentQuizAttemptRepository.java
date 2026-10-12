@@ -9,6 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface ParentQuizAttemptRepository extends JpaRepository<ParentQuizAttempt, UUID> {
-    Optional<ParentQuizAttempt> findByParentUser_ParentIdAndChildUser_ChildId(UUID parentId, UUID childId);
+    Optional<ParentQuizAttempt> findFirstByParentUser_ParentIdAndChildUser_ChildIdOrderByCompletedAtDesc(UUID parentId, UUID childId);
     boolean existsByParentUser_ParentIdAndChildUser_ChildId(UUID parentId, UUID childId);
 }

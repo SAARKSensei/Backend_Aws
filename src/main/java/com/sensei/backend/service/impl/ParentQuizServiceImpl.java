@@ -66,7 +66,7 @@ public class ParentQuizServiceImpl implements ParentQuizService {
         ChildUser child = childUserRepository.findById(request.getChildId())
                 .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Child not found"));
 
-        if (attemptRepository.findByParentUser_ParentIdAndChildUser_ChildId(parent.getParentId(), child.getChildId()).isPresent()) {
+        if (attemptRepository.existsByParentUser_ParentIdAndChildUser_ChildId(parent.getParentId(), child.getChildId())) {
             throw new RuntimeException("Quiz attempt already exists for this child. Use the update API instead.");
         }
 
@@ -101,7 +101,7 @@ public class ParentQuizServiceImpl implements ParentQuizService {
         ChildUser child = childUserRepository.findById(request.getChildId())
                 .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Child not found"));
 
-        ParentQuizAttempt attempt = attemptRepository.findByParentUser_ParentIdAndChildUser_ChildId(request.getParentId(), request.getChildId())
+        ParentQuizAttempt attempt = attemptRepository.findFirstByParentUser_ParentIdAndChildUser_ChildIdOrderByCompletedAtDesc(request.getParentId(), request.getChildId())
                 .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Previous quiz attempt not found"));
 
         List<ParentQuizOption> currentSelectedOptions = new java.util.ArrayList<>(
@@ -177,7 +177,7 @@ public class ParentQuizServiceImpl implements ParentQuizService {
     @Override
     @Transactional(readOnly = true)
     public com.sensei.backend.dto.parentquiz.ParentQuizAttemptResponse getQuizAttempt(java.util.UUID parentId, java.util.UUID childId) {
-        ParentQuizAttempt attempt = attemptRepository.findByParentUser_ParentIdAndChildUser_ChildId(parentId, childId)
+        ParentQuizAttempt attempt = attemptRepository.findFirstByParentUser_ParentIdAndChildUser_ChildIdOrderByCompletedAtDesc(parentId, childId)
                 .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Quiz attempt not found"));
 
         java.util.List<java.util.UUID> selectedOptionIds = attempt.getSelectedOptions() != null
