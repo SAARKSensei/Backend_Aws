@@ -81,10 +81,12 @@ public class LoggingAspect {
     @AfterThrowing(pointcut = "controllerPointcut() || servicePointcut()", throwing = "e")
     public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
         if (e instanceof SubscriptionException || e instanceof ValidationException) {
-            log.warn("Business Exception in {}.{}() with message = '{}'",
-                    joinPoint.getSignature().getDeclaringTypeName(),
-                    joinPoint.getSignature().getName(),
-                    e.getMessage());
+            if (log.isDebugEnabled()) {
+                log.debug("Business Exception in {}.{}() with message = '{}'",
+                        joinPoint.getSignature().getDeclaringTypeName(),
+                        joinPoint.getSignature().getName(),
+                        e.getMessage());
+            }
             return;
         }
 
