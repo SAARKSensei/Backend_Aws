@@ -49,6 +49,9 @@ class ParentUserServiceTest {
     @Mock
     private MasterTransactionRepository masterTransactionRepository;
 
+    @Mock
+    private FirebaseAuthService firebaseAuthService;
+
     @InjectMocks
     private ParentUserService parentUserService;
 
@@ -63,10 +66,13 @@ class ParentUserServiceTest {
         parentUser = new ParentUser();
         parentUser.setParentId(testId);
         parentUser.setEmail("test@example.com");
+        parentUser.setUserName("testuser");
+        parentUser.setChildUsers(new java.util.ArrayList<>());
 
         parentUserDTO = new ParentUserDTO();
         parentUserDTO.setParentId(testId);
         parentUserDTO.setEmail("test@example.com");
+        parentUserDTO.setName("Test User");
     }
 
     @Test
@@ -80,6 +86,8 @@ class ParentUserServiceTest {
         assertNotNull(result);
         assertEquals("test@example.com", result.getEmail());
         verify(parentUserRepository, times(1)).save(parentUser);
+        verify(childUserRepository, times(1)).save(any());
+        verify(firebaseAuthService, times(1)).ensureUser("test@example.com", "Test User");
     }
 
     @Test
@@ -110,5 +118,42 @@ class ParentUserServiceTest {
 
         assertTrue(result.isPresent());
         assertEquals("test@example.com", result.get().getEmail());
+    }
+
+    @Test
+    void testDeleteParentUser_Success() {
+        when(parentUserRepository.findById(testId)).thenReturn(Optional.of(parentUser));
+
+        parentUserService.deleteParentUser(testId);
+
+        assertTrue(parentUser.getIsDeleted());
+        assertNotNull(parentUser.getDeletedAt());
+        assertTrue(parentUser.getEmail().startsWith("del-test@example.com-"));
+        assertTrue(parentUser.getUserName().startsWith("del-testuser-"));
+
+        verify(firebaseAuthService, times(1)).deleteUserByEmail("test@example.com");
+        verify(parentUserRepository, times(1)).save(parentUser);
+    }
+
+    @Test
+    void testDeleteParentUser_NotFound() {
+        when(parentUserRepository.findById(testId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            parentUserService.deleteParentUser(testId);
+        });
+    }
+
+    @Test
+    void testSyncAllUsersToFirebase() {
+        java.util.List<ParentUser> users = java.util.List.of(parentUser);
+        when(parentUserRepository.findAll()).thenReturn(users);
+        when(firebaseAuthService.syncUsers(users)).thenReturn(java.util.Map.of("createdInFirebase", 1));
+
+        java.util.Map<String, Object> result = parentUserService.syncAllUsersToFirebase();
+
+        assertNotNull(result);
+        assertEquals(1, result.get("createdInFirebase"));
+        verify(firebaseAuthService, times(1)).syncUsers(users);
     }
 }

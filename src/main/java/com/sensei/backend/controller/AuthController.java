@@ -12,12 +12,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.UserRecord;
+import com.sensei.backend.service.FirebaseAuthService;
+import com.sensei.backend.repository.ChildUserRepository;
+import com.sensei.backend.entity.ChildUser;
 
 /**
  * @author vaishnav88sk
@@ -30,6 +30,8 @@ public class AuthController {
 
     private final GoogleAuthService googleAuthService;
     private final ParentUserRepository parentUserRepository;
+    private final ChildUserRepository childUserRepository;
+    private final FirebaseAuthService firebaseAuthService;
     private final JwtUtil jwtUtil;
 
     // GOOGLE LOGIN (UNCHANGED)
@@ -55,14 +57,23 @@ public class AuthController {
                     .email(email)
                     .name(name)
                     .userName(email)
+                    .childUsers(new ArrayList<>())
                     .build();
 
             user = parentUserRepository.save(user);
+
+            // Automatically create an empty child user for new Google users
+            ChildUser emptyChild = new ChildUser();
+            emptyChild.setParentUser(user);
+            emptyChild.setChildName(null);
+            childUserRepository.save(emptyChild);
+            user.getChildUsers().add(emptyChild);
+
             log.info("New parent user created from Google login: {}", email);
         }
 
         // Ensure user is also registered in Firebase Auth
-        ensureFirebaseUser(email, name);
+        firebaseAuthService.ensureUser(email, name);
 
         // Generate JWT
         String accessToken = jwtUtil.generateToken(email);
@@ -132,30 +143,6 @@ public class AuthController {
             return ResponseEntity.ok(authResponse);
         } else {
             return ResponseEntity.status(403).body("Invalid or expired refresh token");
-        }
-    }
-
-    private void ensureFirebaseUser(String email, String displayName) {
-        if (email == null || email.trim().isEmpty() || FirebaseApp.getApps().isEmpty()) {
-            return;
-        }
-        try {
-            try {
-                FirebaseAuth.getInstance().getUserByEmail(email);
-            } catch (FirebaseAuthException e) {
-                if ("USER_NOT_FOUND".equals(e.getAuthErrorCode().name())) {
-                    UserRecord.CreateRequest request = new UserRecord.CreateRequest()
-                            .setEmail(email)
-                            .setEmailVerified(true)
-                            .setDisplayName(displayName != null ? displayName : email);
-                    FirebaseAuth.getInstance().createUser(request);
-                    log.info("Registered user in Firebase Auth: {}", email);
-                } else {
-                    log.warn("Firebase Auth error for {}: {}", email, e.getMessage());
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Could not sync user {} to Firebase Auth: {}", email, e.getMessage());
         }
     }
 }

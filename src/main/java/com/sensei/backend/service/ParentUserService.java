@@ -147,11 +147,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.UserRecord;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -183,6 +178,7 @@ public class ParentUserService {
     private final ParentUserMapper parentUserMapper;
     private final MasterTransactionRepository masterTransactionRepository;
     private final ChildUserRepository childUserRepository;
+    private final FirebaseAuthService firebaseAuthService;
     private final jakarta.persistence.EntityManager entityManager;
 
     // ================= CREATE =================
@@ -197,7 +193,15 @@ public class ParentUserService {
         emptyChild.setChildName(null);
         
         childUserRepository.save(emptyChild);
+        if (parent.getChildUsers() == null) {
+            parent.setChildUsers(new java.util.ArrayList<>());
+        }
         parent.getChildUsers().add(emptyChild);
+
+        // Ensure user is also registered in Firebase Auth
+        if (dto.getEmail() != null) {
+            firebaseAuthService.ensureUser(dto.getEmail(), dto.getName());
+        }
 
         log.info("Created ParentUser with email: {} and automatically created an empty ChildUser", dto.getEmail());
         return parentUserMapper.toDto(parent);
@@ -251,43 +255,44 @@ public class ParentUserService {
         ParentUser parent = parentUserRepository.findById(parentId)
                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
 
-        if (parent.getEmail() != null && !parent.getEmail().trim().isEmpty()) {
-            try {
-                if (!FirebaseApp.getApps().isEmpty()) {
-                    UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmail(parent.getEmail());
-                    FirebaseAuth.getInstance().deleteUser(userRecord.getUid());
-                    log.info("Deleted user from Firebase Auth: {}", parent.getEmail());
-                } else {
-                    log.warn("FirebaseApp not initialized, skipping Firebase user deletion for: {}", parent.getEmail());
-                }
-            } catch (FirebaseAuthException e) {
-                log.warn("User {} not found or failed to delete from Firebase Auth: {}", parent.getEmail(), e.getMessage());
-            } catch (Exception e) {
-                log.warn("Unexpected error deleting user from Firebase Auth for {}: {}", parent.getEmail(), e.getMessage());
-            }
+        // 1. Delete user from Firebase Auth
+        String originalEmail = parent.getEmail();
+        if (originalEmail != null && !originalEmail.trim().isEmpty() && !originalEmail.startsWith("del-")) {
+            firebaseAuthService.deleteUserByEmail(originalEmail);
         }
 
-        // Soft delete the parent
+        // 2. Soft delete the parent
         parent.setIsDeleted(true);
         parent.setDeletedAt(java.time.LocalDateTime.now());
         
-        // Prefix email and username and append timestamp to free up original strings and prevent unique constraint violations
+        // 3. Prefix email and username and append timestamp to prevent unique constraint collisions
         long timestamp = System.currentTimeMillis();
         if (parent.getEmail() != null) {
-            parent.setEmail("del-" + parent.getEmail() + "-" + timestamp);
+            parent.setEmail(makeDeletedIdentifier(parent.getEmail(), timestamp));
         }
         if (parent.getUserName() != null) {
-            parent.setUserName("del-" + parent.getUserName() + "-" + timestamp);
+            parent.setUserName(makeDeletedIdentifier(parent.getUserName(), timestamp));
         }
 
-        // Soft delete all child users
-        for (ChildUser child : parent.getChildUsers()) {
-            child.setIsDeleted(true);
-            child.setDeletedAt(java.time.LocalDateTime.now());
+        // 4. Soft delete all associated child users
+        if (parent.getChildUsers() != null) {
+            for (ChildUser child : parent.getChildUsers()) {
+                child.setIsDeleted(true);
+                child.setDeletedAt(java.time.LocalDateTime.now());
+            }
         }
 
         parentUserRepository.save(parent);
         log.info("Soft-Deleted ParentUser with ID: {}", parentId);
+    }
+
+    private String makeDeletedIdentifier(String original, long timestamp) {
+        if (original == null) return null;
+        String prefix = "del-";
+        String suffix = "-" + timestamp;
+        int maxOriginalLength = 255 - prefix.length() - suffix.length();
+        String trimmed = original.length() > maxOriginalLength ? original.substring(0, maxOriginalLength) : original;
+        return prefix + trimmed + suffix;
     }
 
     // ================= FILTERS =================
@@ -361,45 +366,8 @@ public class ParentUserService {
     // ================= FIREBASE SYNC =================
     public Map<String, Object> syncAllUsersToFirebase() {
         log.info("Admin request to sync all active DB users to Firebase Auth");
-        if (FirebaseApp.getApps().isEmpty()) {
-            return Map.of("error", "FirebaseApp not initialized");
-        }
         List<ParentUser> parents = parentUserRepository.findAll();
-        int created = 0;
-        int alreadyExists = 0;
-        int failed = 0;
-        for (ParentUser parent : parents) {
-            String email = parent.getEmail();
-            if (email == null || email.trim().isEmpty() || email.startsWith("del-")) {
-                continue;
-            }
-            try {
-                try {
-                    FirebaseAuth.getInstance().getUserByEmail(email);
-                    alreadyExists++;
-                } catch (FirebaseAuthException e) {
-                    if ("USER_NOT_FOUND".equals(e.getAuthErrorCode().name())) {
-                        UserRecord.CreateRequest request = new UserRecord.CreateRequest()
-                                .setEmail(email)
-                                .setEmailVerified(true)
-                                .setDisplayName(parent.getName() != null ? parent.getName() : parent.getUserName());
-                        FirebaseAuth.getInstance().createUser(request);
-                        created++;
-                        log.info("Synced parent {} to Firebase Auth", email);
-                    } else {
-                        failed++;
-                    }
-                }
-            } catch (Exception ex) {
-                failed++;
-            }
-        }
-        Map<String, Object> result = new HashMap<>();
-        result.put("totalActiveParentsInDb", parents.size());
-        result.put("createdInFirebase", created);
-        result.put("alreadyExistedInFirebase", alreadyExists);
-        result.put("failed", failed);
-        return result;
+        return firebaseAuthService.syncUsers(parents);
     }
 }
 

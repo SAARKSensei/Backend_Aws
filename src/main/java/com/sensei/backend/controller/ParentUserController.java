@@ -115,14 +115,9 @@ import com.sensei.backend.dto.ParentUserDTO;
 import com.sensei.backend.entity.ParentUser;
 import com.sensei.backend.entity.MasterTransaction;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.HashMap;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
-import com.google.firebase.auth.ExportedUserRecord;
-import com.google.firebase.auth.ListUsersPage;
+import com.sensei.backend.service.FirebaseAuthService;
 import com.sensei.backend.service.ParentUserService;
 
 import jakarta.validation.Valid;
@@ -136,6 +131,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ParentUserController {
 
     private final ParentUserService parentUserService;
+    private final FirebaseAuthService firebaseAuthService;
 
     @PostMapping
     public ResponseEntity<ParentUserDTO> create(@Valid @RequestBody ParentUserDTO dto) {
@@ -207,12 +203,13 @@ public class ParentUserController {
     @GetMapping("/admin/firebase-user")
     public ResponseEntity<?> getFirebaseUserByEmail(@RequestParam String email) {
         log.info("Admin request to check Firebase user by email: {}", email);
-        if (FirebaseApp.getApps().isEmpty()) {
+        if (!firebaseAuthService.isAvailable()) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body(Map.of("error", "FirebaseApp not initialized"));
         }
-        try {
-            UserRecord user = FirebaseAuth.getInstance().getUserByEmail(email);
+        Optional<UserRecord> userOpt = firebaseAuthService.getUserByEmail(email);
+        if (userOpt.isPresent()) {
+            UserRecord user = userOpt.get();
             Map<String, Object> response = new HashMap<>();
             response.put("exists", true);
             response.put("uid", user.getUid());
@@ -220,11 +217,10 @@ public class ParentUserController {
             response.put("displayName", user.getDisplayName());
             response.put("disabled", user.isDisabled());
             return ResponseEntity.ok(response);
-        } catch (FirebaseAuthException e) {
+        } else {
             Map<String, Object> notFound = new HashMap<>();
             notFound.put("exists", false);
-            notFound.put("code", e.getAuthErrorCode().name());
-            notFound.put("message", e.getMessage());
+            notFound.put("message", "User not found in Firebase Auth");
             return ResponseEntity.ok(notFound);
         }
     }
@@ -232,25 +228,11 @@ public class ParentUserController {
     @GetMapping("/admin/firebase-users")
     public ResponseEntity<?> listFirebaseUsers() {
         log.info("Admin request to list Firebase users");
-        if (FirebaseApp.getApps().isEmpty()) {
+        if (!firebaseAuthService.isAvailable()) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body(Map.of("error", "FirebaseApp not initialized"));
         }
-        try {
-            ListUsersPage page = FirebaseAuth.getInstance().listUsers(null);
-            List<Map<String, Object>> users = new ArrayList<>();
-            for (ExportedUserRecord u : page.getValues()) {
-                Map<String, Object> item = new HashMap<>();
-                item.put("uid", u.getUid());
-                item.put("email", u.getEmail());
-                item.put("displayName", u.getDisplayName());
-                users.add(item);
-            }
-            return ResponseEntity.ok(users);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        return ResponseEntity.ok(firebaseAuthService.listUsers(100));
     }
 
     @PostMapping("/admin/firebase-sync")

@@ -37,6 +37,9 @@ class FirebaseAuthIntegrationTest {
     @Autowired
     private ParentUserRepository parentUserRepository;
 
+    @Autowired
+    private FirebaseAuthService firebaseAuthService;
+
     private void assumeFirebaseConfigured() {
         Assumptions.assumeFalse(
                 FirebaseApp.getApps().isEmpty(),
@@ -151,6 +154,33 @@ class FirebaseAuthIntegrationTest {
         assertDoesNotThrow(() -> parentUserService.deleteParentUser(parentId));
 
         assertTrue(parentUserRepository.findById(parentId).isEmpty(), "Parent must be soft-deleted in database");
+    }
+
+    @Test
+    void testFirebaseAuthServiceOperations() {
+        assumeFirebaseConfigured();
+
+        assertTrue(firebaseAuthService.isAvailable(), "FirebaseAuthService should report available");
+
+        String uniqueSuffix = UUID.randomUUID().toString().substring(0, 8);
+        String testEmail = "test-service-" + uniqueSuffix + "@sensei.org.in";
+
+        // 1. Ensure user (creates user)
+        boolean created = firebaseAuthService.ensureUser(testEmail, "Service Test User");
+        assertTrue(created, "ensureUser should succeed");
+
+        // 2. Fetch user
+        java.util.Optional<UserRecord> userOpt = firebaseAuthService.getUserByEmail(testEmail);
+        assertTrue(userOpt.isPresent(), "getUserByEmail should find the created user");
+        assertEquals(testEmail, userOpt.get().getEmail());
+
+        // 3. Delete user
+        boolean deleted = firebaseAuthService.deleteUserByEmail(testEmail);
+        assertTrue(deleted, "deleteUserByEmail should succeed");
+
+        // 4. Verify user no longer exists
+        java.util.Optional<UserRecord> afterDelete = firebaseAuthService.getUserByEmail(testEmail);
+        assertTrue(afterDelete.isEmpty(), "getUserByEmail should return empty after deletion");
     }
 
     @Test

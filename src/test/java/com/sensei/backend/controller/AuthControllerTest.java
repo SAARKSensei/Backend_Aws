@@ -33,6 +33,12 @@ class AuthControllerTest {
     private ParentUserRepository parentUserRepository;
 
     @Mock
+    private com.sensei.backend.repository.ChildUserRepository childUserRepository;
+
+    @Mock
+    private com.sensei.backend.service.FirebaseAuthService firebaseAuthService;
+
+    @Mock
     private JwtUtil jwtUtil;
 
     @InjectMocks
@@ -62,6 +68,7 @@ class AuthControllerTest {
         assertEquals(200, response.getStatusCode().value());
         assertEquals("mock-jwt-token", response.getBody());
         verify(parentUserRepository, never()).save(any(ParentUser.class));
+        verify(firebaseAuthService, times(1)).ensureUser("test@example.com", "Test User");
     }
 
     @Test
@@ -80,6 +87,8 @@ class AuthControllerTest {
         assertEquals(200, response.getStatusCode().value());
         assertEquals("mock-jwt-token", response.getBody());
         verify(parentUserRepository, times(1)).save(any(ParentUser.class));
+        verify(childUserRepository, times(1)).save(any());
+        verify(firebaseAuthService, times(1)).ensureUser("newuser@example.com", "New User");
     }
 
     @Test

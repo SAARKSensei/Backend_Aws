@@ -80,6 +80,7 @@ public class FirebaseConfig {
                     try {
                         options = FirebaseOptions.builder()
                                 .setCredentials(GoogleCredentials.getApplicationDefault())
+                                .setHttpTransport(new com.google.api.client.http.javanet.NetHttpTransport())
                                 .build();
                         log.info("Initialized Firebase Admin SDK from Application Default Credentials.");
                     } catch (Exception ex) {

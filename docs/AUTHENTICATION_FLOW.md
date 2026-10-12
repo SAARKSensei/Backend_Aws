@@ -162,20 +162,20 @@ If you want to test this locally without the app:
 
 ## 4. Firebase Authentication Sync & Account Deletion Flow
 
-### A. Automatic Provisioning on Google Login
-Whenever a user logs in via `POST /api/auth/google`, the backend verifies their Google ID token and:
+### A. Automatic Provisioning & Child User Initialization
+Whenever a user logs in via `POST /api/auth/google` or registers via `POST /api/parent-users`:
 1. Provisions or updates their parent profile in PostgreSQL (`parent_user`).
-2. Checks Firebase Authentication (`sensei-97eef`).
-3. If the user does not exist in Firebase Auth yet, it automatically registers them via the Firebase Admin SDK (`emailVerified = true`, display name set).
+2. Automatically initializes the starting empty child profile (`child_user`) for new registrations so onboarding and dashboard flows work out of the box.
+3. Automatically ensures user presence in Firebase Authentication (`sensei-97eef`) via `FirebaseAuthService`. If absent, registers them with `emailVerified = true` and display name set.
 4. Issues application JWT tokens as normal.
 
 ### B. Account Deletion Lifecycle (`DELETE /api/parent-users/{parentId}`)
 When a parent deletes their account:
-1. **Firebase Permanent Deletion:** The user record is looked up by email and deleted from Firebase Authentication (`FirebaseAuth.getInstance().deleteUser(uid)`). If the user does not exist in Firebase, it safely logs a warning and proceeds.
+1. **Firebase Permanent Deletion:** The user record is looked up by email and deleted from Firebase Authentication via `FirebaseAuthService.deleteUserByEmail(email)`. If the user does not exist in Firebase, it safely logs a warning and proceeds without breaking the DB transaction.
 2. **PostgreSQL Soft-Deletion:**
    - `is_deleted = true`, `deleted_at = NOW()`.
-   - `email` renamed to `del-{email}-{timestamp}`.
-   - `user_name` renamed to `del-{user_name}-{timestamp}`.
+   - `email` renamed to `del-{email}-{timestamp}` (safely bounded within `varchar(255)`).
+   - `user_name` renamed to `del-{user_name}-{timestamp}` (safely bounded within `varchar(255)`).
    - Cascades `is_deleted = true` to all linked `child_user` rows.
 3. **Database Constraints & Re-Registration:**
    - Renaming `email` and `user_name` frees up their original identifiers in PostgreSQL `UNIQUE` constraints.
