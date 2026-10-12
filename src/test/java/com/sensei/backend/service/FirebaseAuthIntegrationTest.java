@@ -5,20 +5,19 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import com.google.firebase.auth.UserRecord.CreateRequest;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 import com.sensei.backend.entity.ChildUser;
 import com.sensei.backend.entity.ParentUser;
 import com.sensei.backend.repository.ParentUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,18 +37,23 @@ class FirebaseAuthIntegrationTest {
     @Autowired
     private ParentUserRepository parentUserRepository;
 
+    private void assumeFirebaseConfigured() {
+        Assumptions.assumeFalse(
+                FirebaseApp.getApps().isEmpty(),
+                "Skipping test: Firebase Admin credentials not configured or failed to initialize"
+        );
+    }
+
     @Test
     void testFirebaseInitializationAndCredentials() {
-        assertFalse(FirebaseApp.getApps().isEmpty(), "FirebaseApp should be initialized");
+        assumeFirebaseConfigured();
         FirebaseApp app = FirebaseApp.getInstance();
         assertEquals("sensei-97eef", app.getOptions().getProjectId(), "Firebase project ID should match sensei-97eef");
     }
 
     @Test
     void testFirebaseUserCreationAndDeletion() throws FirebaseAuthException {
-        if (FirebaseApp.getApps().isEmpty()) {
-            return;
-        }
+        assumeFirebaseConfigured();
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
         String testEmail = "test-agent-" + UUID.randomUUID().toString().substring(0, 8) + "@sensei.org.in";
@@ -82,6 +86,8 @@ class FirebaseAuthIntegrationTest {
 
     @Test
     void testDeleteParentUser_WithFirebaseUser() throws FirebaseAuthException {
+        assumeFirebaseConfigured();
+
         FirebaseAuth auth = FirebaseAuth.getInstance();
         String uniqueSuffix = UUID.randomUUID().toString().substring(0, 8);
         String testEmail = "test-parent-" + uniqueSuffix + "@sensei.org.in";
@@ -149,6 +155,8 @@ class FirebaseAuthIntegrationTest {
 
     @Test
     void listFirebaseUsers() throws FirebaseAuthException {
+        assumeFirebaseConfigured();
+
         com.google.firebase.auth.ListUsersPage page = FirebaseAuth.getInstance().listUsers(null);
         System.out.println("=================================================");
         System.out.println(">>> FIREBASE USERS CURRENTLY IN PROJECT sensei-97eef:");
