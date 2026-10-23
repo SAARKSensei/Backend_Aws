@@ -188,8 +188,8 @@ Below is a list of all active API endpoints available in the system for testing.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/parent-users` | `create` |
-| `GET` | `/api/parent-users/{parentId}` | `getById` |
+| `POST` | `/api/parent-users` | `create` (Requires `childLock` 4-digit PIN) |
+| `GET` | `/api/parent-users/{parentId}` | `getById` (Returns `isChildLockSet` boolean; hides hash) |
 | `GET` | `/api/parent-users` | `getAllParentUsers` (Paginated) |
 | `PUT` | `/api/parent-users/{parentId}` | `update` (Supports partial update with ParentUserUpdateDTO) |
 | `PATCH` | `/api/parent-users/{parentId}` | `patch` (Partial update with ParentUserUpdateDTO) |
@@ -198,6 +198,9 @@ Below is a list of all active API endpoints available in the system for testing.
 | `GET` | `/api/parent-users/phone` | `byPhone` |
 | `GET` | `/api/parent-users/email` | `byEmail` |
 | `GET` | `/api/parent-users/getPricingPlan` | `getPricingPlan` |
+| `POST` | `/api/parent-users/{parentId}/child-lock/verify` | `verifyChildLock` (Verifies 4-digit PIN for Parent View toggle) |
+| `PUT` | `/api/parent-users/{parentId}/child-lock` | `updateChildLock` (Update PIN with currentPin verification) |
+| `POST` | `/api/parent-users/{parentId}/child-lock/reset` | `resetChildLock` (Recovery PIN reset after re-auth) |
 | `GET` | `/api/parent-users/admin/deleted` | `getAllDeletedUsers` (Admin Graveyard API) |
 | `GET` | `/api/parent-users/admin/firebase-user?email={email}` | `getFirebaseUserByEmail` (Inspect user in Firebase Auth) |
 | `GET` | `/api/parent-users/admin/firebase-users` | `listFirebaseUsers` (List active users in Firebase Auth) |

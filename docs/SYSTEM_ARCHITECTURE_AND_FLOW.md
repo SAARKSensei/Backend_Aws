@@ -85,14 +85,22 @@ After login, the frontend should fetch or create the Parent profile.
       "name": "John Doe",
       "email": "john@example.com",
       "phone": "9876543210",
-      "location": "Mumbai"
+      "childLock": "1234",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "pincode": "400001",
+      "country": "India"
   }
   ```
-* **Response (JSON):** Returns the created `ParentUserDTO`. Crucially, **the backend automatically generates an empty ChildUser** and attaches it to this response. Null values are excluded from the JSON to keep it clean.
+  *(Note: `childLock` is a mandatory 4-digit PIN stored securely as a BCrypt hash).*
+* **Response (JSON):** Returns the created `ParentUserDTO`. Crucially, **the backend automatically generates an empty ChildUser** and attaches it to this response. The raw PIN/hash is hidden, and `isChildLockSet: true` is returned.
   ```json
   {
       "parentId": "<parent_uuid>",
       "name": "John Doe",
+      "email": "john@example.com",
+      "phone": "9876543210",
+      "isChildLockSet": true,
       ...
       "childUsers": [
           {
@@ -164,6 +172,54 @@ When a parent requests account deletion, the system performs a dual-action opera
   - `GET /api/parent-users/admin/firebase-user?email={email}`: Inspect single user presence and UID in Firebase Auth.
   - `GET /api/parent-users/admin/firebase-users`: List all active users currently in Firebase Auth.
   - `POST /api/parent-users/admin/firebase-sync`: Bulk sync all active database parent users into Firebase Auth.
+
+### 2G. Child Lock PIN & Mode Switching (Child View ↔ Parent View)
+To protect parent-sensitive sections (Parent Profile, Report Cards, Pricing/Subscription Plans, and Parental Controls), the app operates in **Child View by default**. When the parent wants to access parent sections, they toggle into Parent View using a 4-digit numeric PIN (`childLock`).
+
+* **Security & Storage Design:**
+  - **Storage:** Stored as a **BCrypt hash** in the database (`child_lock varchar(255)`). Plain-text PINs are never persisted.
+  - **In-Transit:** Transmitted securely over encrypted HTTPS.
+  - **Data Leak Prevention:** Marked `@JsonProperty(access = WRITE_ONLY)`, so the hash/PIN is never returned in GET responses.
+  - **Indicator:** `isChildLockSet` boolean is automatically derived in `ParentUserDTO` so frontend knows if a PIN exists.
+
+* **1. Verification API (Switching Child View → Parent View):**
+  - **Endpoint:** `POST /api/parent-users/{parentId}/child-lock/verify`
+  - **Request (JSON):**
+    ```json
+    {
+      "pin": "1234"
+    }
+    ```
+  - **Success Response (200 OK):**
+    ```json
+    {
+      "verified": true,
+      "message": "PIN verified successfully"
+    }
+    ```
+  - **Failure Response (200 OK):**
+    ```json
+    {
+      "verified": false,
+      "message": "Incorrect PIN"
+    }
+    ```
+  - **Frontend Flow:** On `verified: true`, frontend switches local state to `"PARENT"` mode and unlocks profile/reports/plans. To switch back to Child View, frontend flips local state to `"CHILD"` (no PIN required to lock).
+
+* **2. Update PIN API (Dedicated or via Profile Update):**
+  - **Option A (Dedicated):** `PUT /api/parent-users/{parentId}/child-lock`
+    - Request: `{"currentPin": "1234", "newPin": "5678"}`
+    - Verifies `currentPin` before setting `newPin`.
+  - **Option B (General Update):** `PUT /api/parent-users/{parentId}` or `PATCH /api/parent-users/{parentId}`
+    - Request: `{"childLock": "5678"}`
+
+* **3. Forgot PIN & Recovery Flow:**
+  - Parent clicks **"Forgot PIN?"** on the PIN prompt modal.
+  - Frontend triggers Google Sign-In or Firebase re-authentication (or device Biometrics).
+  - Once verified, frontend calls:
+    - **Endpoint:** `POST /api/parent-users/{parentId}/child-lock/reset`
+    - **Request (JSON):** `{"pin": "5678"}`
+    - **Response:** `{"message": "Child lock PIN reset successfully"}`
 
 ---
 

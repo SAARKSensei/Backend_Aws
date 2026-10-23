@@ -33,7 +33,10 @@ public class ParentUser {
     private String email;
 
     private String phone;
-    private String password;
+
+    @Column(name = "child_lock")
+    private String childLock;
+
     private String maritalStatus;
     private String occupation;
     private LocalDate dateOfBirth;

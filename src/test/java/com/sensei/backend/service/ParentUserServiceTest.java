@@ -53,6 +53,9 @@ class ParentUserServiceTest {
     @Mock
     private FirebaseAuthService firebaseAuthService;
 
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private ParentUserService parentUserService;
 
@@ -175,5 +178,61 @@ class ParentUserServiceTest {
         verify(parentUserRepository, times(1)).findById(testId);
         verify(parentUserMapper, times(1)).updateEntityFromUpdateDto(updateDTO, parentUser);
         verify(parentUserRepository, times(1)).save(parentUser);
+    }
+
+    @Test
+    void testVerifyChildLock_Success() {
+        parentUser.setChildLock("hashed_1234");
+        when(parentUserRepository.findById(testId)).thenReturn(Optional.of(parentUser));
+        when(passwordEncoder.matches("1234", "hashed_1234")).thenReturn(true);
+
+        boolean result = parentUserService.verifyChildLock(testId, "1234");
+
+        assertTrue(result);
+    }
+
+    @Test
+    void testVerifyChildLock_IncorrectPin() {
+        parentUser.setChildLock("hashed_1234");
+        when(parentUserRepository.findById(testId)).thenReturn(Optional.of(parentUser));
+        when(passwordEncoder.matches("9999", "hashed_1234")).thenReturn(false);
+
+        boolean result = parentUserService.verifyChildLock(testId, "9999");
+
+        org.junit.jupiter.api.Assertions.assertFalse(result);
+    }
+
+    @Test
+    void testVerifyChildLock_NotSet() {
+        parentUser.setChildLock(null);
+        when(parentUserRepository.findById(testId)).thenReturn(Optional.of(parentUser));
+
+        boolean result = parentUserService.verifyChildLock(testId, "1234");
+
+        org.junit.jupiter.api.Assertions.assertFalse(result);
+    }
+
+    @Test
+    void testUpdateChildLock_Success() {
+        parentUser.setChildLock("hashed_1234");
+        when(parentUserRepository.findById(testId)).thenReturn(Optional.of(parentUser));
+        when(passwordEncoder.matches("1234", "hashed_1234")).thenReturn(true);
+        when(passwordEncoder.encode("5678")).thenReturn("hashed_5678");
+
+        parentUserService.updateChildLock(testId, "1234", "5678");
+
+        verify(parentUserRepository, times(1)).save(parentUser);
+        assertEquals("hashed_5678", parentUser.getChildLock());
+    }
+
+    @Test
+    void testResetChildLock_Success() {
+        when(parentUserRepository.findById(testId)).thenReturn(Optional.of(parentUser));
+        when(passwordEncoder.encode("5678")).thenReturn("hashed_5678");
+
+        parentUserService.resetChildLock(testId, "5678");
+
+        verify(parentUserRepository, times(1)).save(parentUser);
+        assertEquals("hashed_5678", parentUser.getChildLock());
     }
 }

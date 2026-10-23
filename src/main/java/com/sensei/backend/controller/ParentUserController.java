@@ -112,6 +112,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sensei.backend.dto.ChildLockVerifyRequest;
+import com.sensei.backend.dto.ChildLockUpdateRequest;
 import com.sensei.backend.dto.ParentUserDTO;
 import com.sensei.backend.dto.ParentUserUpdateDTO;
 import com.sensei.backend.entity.ParentUser;
@@ -246,5 +248,36 @@ public class ParentUserController {
     public ResponseEntity<?> syncAllUsersToFirebase() {
         log.info("Admin request to sync all active DB users to Firebase Auth");
         return ResponseEntity.ok(parentUserService.syncAllUsersToFirebase());
+    }
+
+    // ================= CHILD LOCK =================
+    @PostMapping("/{parentId}/child-lock/verify")
+    public ResponseEntity<Map<String, Object>> verifyChildLock(
+            @PathVariable UUID parentId,
+            @Valid @RequestBody ChildLockVerifyRequest request) {
+        log.info("Verifying child lock PIN for parent ID: {}", parentId);
+        boolean isCorrect = parentUserService.verifyChildLock(parentId, request.getPin());
+        Map<String, Object> response = new HashMap<>();
+        response.put("verified", isCorrect);
+        response.put("message", isCorrect ? "PIN verified successfully" : "Incorrect PIN");
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{parentId}/child-lock")
+    public ResponseEntity<Map<String, Object>> updateChildLock(
+            @PathVariable UUID parentId,
+            @Valid @RequestBody ChildLockUpdateRequest request) {
+        log.info("Updating child lock PIN for parent ID: {}", parentId);
+        parentUserService.updateChildLock(parentId, request.getCurrentPin(), request.getNewPin());
+        return ResponseEntity.ok(Map.of("message", "Child lock PIN updated successfully"));
+    }
+
+    @PostMapping("/{parentId}/child-lock/reset")
+    public ResponseEntity<Map<String, Object>> resetChildLock(
+            @PathVariable UUID parentId,
+            @Valid @RequestBody ChildLockVerifyRequest request) {
+        log.info("Resetting child lock PIN for parent ID: {}", parentId);
+        parentUserService.resetChildLock(parentId, request.getPin());
+        return ResponseEntity.ok(Map.of("message", "Child lock PIN reset successfully"));
     }
 }

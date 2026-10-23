@@ -26,7 +26,13 @@ public class ParentUserDTO {
     @Pattern(regexp = "^[0-9]{10}$", message = "Phone must be 10 digits")
     private String phone;
 
-    private String password;
+    @NotBlank(message = "Child lock PIN is required")
+    @Pattern(regexp = "^[0-9]{4}$", message = "Child lock PIN must be 4 digits")
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
+    private String childLock;
+
+    private Boolean isChildLockSet;
+
     private String maritalStatus;
     private String occupation;
     private Date dateOfBirth;

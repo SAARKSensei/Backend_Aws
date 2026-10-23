@@ -147,6 +147,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -181,11 +182,17 @@ public class ParentUserService {
     private final ChildUserRepository childUserRepository;
     private final FirebaseAuthService firebaseAuthService;
     private final jakarta.persistence.EntityManager entityManager;
+    private final PasswordEncoder passwordEncoder;
 
     // ================= CREATE =================
     @Transactional
     public ParentUserDTO createParentUser(ParentUserDTO dto) {
         ParentUser parent = parentUserMapper.toEntity(dto);
+
+        if (dto.getChildLock() != null && !dto.getChildLock().trim().isEmpty()) {
+            parent.setChildLock(passwordEncoder.encode(dto.getChildLock().trim()));
+        }
+
         parent = parentUserRepository.save(parent);
         
         // Automatically create an empty child user associated with this parent
@@ -228,6 +235,10 @@ public class ParentUserService {
 
         parentUserMapper.updateEntityFromUpdateDto(dto, parent);
 
+        if (dto.getChildLock() != null && !dto.getChildLock().trim().isEmpty()) {
+            parent.setChildLock(passwordEncoder.encode(dto.getChildLock().trim()));
+        }
+
         ParentUser saved = parentUserRepository.save(parent);
         log.info("Updated ParentUser (partial) with ID: {}", parentId);
         return parentUserMapper.toDto(saved);
@@ -239,6 +250,10 @@ public class ParentUserService {
                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
 
         parentUserMapper.updateEntityFromDto(dto, parent);
+
+        if (dto.getChildLock() != null && !dto.getChildLock().trim().isEmpty()) {
+            parent.setChildLock(passwordEncoder.encode(dto.getChildLock().trim()));
+        }
 
         ParentUser saved = parentUserRepository.save(parent);
         log.info("Updated ParentUser with ID: {}", parentId);
@@ -364,6 +379,57 @@ public class ParentUserService {
         log.info("Admin request to sync all active DB users to Firebase Auth");
         List<ParentUser> parents = parentUserRepository.findAll();
         return firebaseAuthService.syncUsers(parents);
+    }
+
+    // ================= CHILD LOCK =================
+    public boolean verifyChildLock(UUID parentId, String pin) {
+        ParentUser parent = parentUserRepository.findById(parentId)
+                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+
+        if (parent.getChildLock() == null || parent.getChildLock().trim().isEmpty()) {
+            log.warn("Child lock PIN is not set for parent ID: {}", parentId);
+            return false;
+        }
+
+        if (pin == null || pin.trim().isEmpty()) {
+            return false;
+        }
+
+        return passwordEncoder.matches(pin.trim(), parent.getChildLock());
+    }
+
+    @Transactional
+    public void updateChildLock(UUID parentId, String currentPin, String newPin) {
+        ParentUser parent = parentUserRepository.findById(parentId)
+                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+
+        if (newPin == null || !newPin.trim().matches("^[0-9]{4}$")) {
+            throw new IllegalArgumentException("Child lock PIN must be exactly 4 digits");
+        }
+
+        if (parent.getChildLock() != null && !parent.getChildLock().trim().isEmpty()) {
+            if (currentPin == null || !passwordEncoder.matches(currentPin.trim(), parent.getChildLock())) {
+                throw new IllegalArgumentException("Current child lock PIN is incorrect");
+            }
+        }
+
+        parent.setChildLock(passwordEncoder.encode(newPin.trim()));
+        parentUserRepository.save(parent);
+        log.info("Updated child lock PIN for parent ID: {}", parentId);
+    }
+
+    @Transactional
+    public void resetChildLock(UUID parentId, String newPin) {
+        ParentUser parent = parentUserRepository.findById(parentId)
+                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+
+        if (newPin == null || !newPin.trim().matches("^[0-9]{4}$")) {
+            throw new IllegalArgumentException("Child lock PIN must be exactly 4 digits");
+        }
+
+        parent.setChildLock(passwordEncoder.encode(newPin.trim()));
+        parentUserRepository.save(parent);
+        log.info("Reset child lock PIN for parent ID: {}", parentId);
     }
 }
 

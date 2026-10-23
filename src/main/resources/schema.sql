@@ -255,7 +255,7 @@ CREATE TABLE IF NOT EXISTS parent_user (
     marital_status varchar(255),
     name varchar(255),
     occupation varchar(255),
-    password varchar(255),
+    child_lock varchar(255),
     phone varchar(255),
     relation_with_children varchar(255),
     spouse_email varchar(255),
@@ -490,6 +490,7 @@ CREATE TABLE IF NOT EXISTS child_subject_progress (
 
 ALTER TABLE IF EXISTS parent_user DROP COLUMN IF EXISTS address;
 ALTER TABLE IF EXISTS parent_user DROP COLUMN IF EXISTS location;
+ALTER TABLE IF EXISTS parent_user DROP COLUMN IF EXISTS password;
 ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS pincode varchar(255);
 ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS street varchar(255);
 ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS city varchar(255);
@@ -497,6 +498,7 @@ ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS state varchar(255);
 ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS country varchar(255);
 ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS is_deleted boolean default false;
 ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS deleted_at timestamp;
+ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS child_lock varchar(255);
 ALTER TABLE IF EXISTS child_user ADD COLUMN IF NOT EXISTS is_deleted boolean default false;
 ALTER TABLE IF EXISTS child_user ADD COLUMN IF NOT EXISTS deleted_at timestamp;
 

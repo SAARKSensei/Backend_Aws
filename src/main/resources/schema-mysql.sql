@@ -255,7 +255,7 @@ CREATE TABLE IF NOT EXISTS parent_user (
     marital_status varchar(255),
     name varchar(255),
     occupation varchar(255),
-    password varchar(255),
+    child_lock varchar(255),
     phone varchar(255),
     relation_with_children varchar(255),
     spouse_email varchar(255),
@@ -481,6 +481,8 @@ ALTER TABLE parent_user ADD COLUMN state varchar(255);
 ALTER TABLE parent_user ADD COLUMN country varchar(255);
 ALTER TABLE parent_user ADD COLUMN is_deleted boolean default false;
 ALTER TABLE parent_user ADD COLUMN deleted_at timestamp;
+ALTER TABLE parent_user ADD COLUMN child_lock varchar(255);
+ALTER TABLE parent_user DROP COLUMN IF EXISTS password;
 ALTER TABLE child_user ADD COLUMN is_deleted boolean default false;
 ALTER TABLE child_user ADD COLUMN deleted_at timestamp;
 
