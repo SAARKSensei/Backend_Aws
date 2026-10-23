@@ -76,6 +76,11 @@ public class ChildUserDTO {
     private String phoneNumber;
     private Date dateOfBirth;
     private String schoolName;// added new school 
+    private String schoolPhone;
+    private String schoolEmail;
+    private String schoolAddress;
+    private String medicalHistory;
+    private String pfp;
     
     @NotNull(message = "Parent ID is required")
     private UUID parentId;

@@ -30,6 +30,11 @@ public class ChildUserUpdateDTO {
     private String phoneNumber;
     private Date dateOfBirth;
     private String schoolName;
+    private String schoolPhone;
+    private String schoolEmail;
+    private String schoolAddress;
+    private String medicalHistory;
+    private String pfp;
     private UUID parentId;
     private UUID activePlanId;
     private LocalDate planStartDate;

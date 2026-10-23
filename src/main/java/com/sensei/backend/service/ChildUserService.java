@@ -163,6 +163,11 @@ public class ChildUserService {
         child.setPhoneNumber(dto.getPhoneNumber());
         child.setDateOfBirth(dto.getDateOfBirth());
         child.setSchoolName(dto.getSchoolName());
+        child.setSchoolPhone(dto.getSchoolPhone());
+        child.setSchoolEmail(dto.getSchoolEmail());
+        child.setSchoolAddress(dto.getSchoolAddress());
+        child.setMedicalHistory(dto.getMedicalHistory());
+        child.setPfp(dto.getPfp());
 
         ParentUser parent = parentUserRepository.findById(dto.getParentId())
                 .orElseThrow(() -> new RuntimeException("Parent not found"));

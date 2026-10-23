@@ -238,7 +238,12 @@ Since the initial empty child is auto-created during parent registration, you on
       "grade": "5th",
       "ageGroup": "10-12",
       "bloodGroup": "O+",
-      "schoolName": "Delhi Public School"
+      "schoolName": "Delhi Public School",
+      "schoolPhone": "020-26123456",
+      "schoolEmail": "contact@dps.edu",
+      "schoolAddress": "Camp, Pune, Maharashtra",
+      "medicalHistory": "None",
+      "pfp": "NAME"
   }
   ```
 * **Response:** Returns the updated/created `ChildUserDTO`.

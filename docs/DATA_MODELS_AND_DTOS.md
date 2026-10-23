@@ -80,6 +80,11 @@ This guide maps **what is stored in the database** against the **exact JSON para
 | `phoneNumber` | `phone_number` | `VARCHAR(255)` | Optional | ✅ Yes | Child's phone (if applicable) |
 | `dateOfBirth` | `date_of_birth` | `DATE` | Optional | ✅ Yes | Date of birth (e.g. `"2016-04-12"`) |
 | `schoolName` ⚠️ | `school_id` | `VARCHAR(255)` | Optional | ✅ Yes | Name of the school (e.g. `"Delhi Public School"`). *Mapped to `school_id` column in DB.* |
+| `schoolPhone` | `school_phone` | `VARCHAR(255)` | Optional | ✅ Yes | School contact phone number (e.g. `"020-26123456"`) |
+| `schoolEmail` | `school_email` | `VARCHAR(255)` | Optional | ✅ Yes | School contact email (e.g. `"info@dps.edu"`) |
+| `schoolAddress` | `school_address` | `VARCHAR(255)` | Optional | ✅ Yes | Full address of the school (e.g. `"MG Road, Camp, Pune"`) |
+| `medicalHistory` | `medical_history` | `VARCHAR(255)` | Optional | ✅ Yes | Child medical notes / allergies (e.g. `"Asthma, peanut allergy"`) |
+| `pfp` | `pfp` | `VARCHAR(255)` | Optional | ✅ Yes | Profile picture Name/URL or image key (e.g. `"https://cdn.example.com/pfp/child1.png"`) |
 | `activePlanId` | `active_plan_id` | `UUID` | Optional | ✅ Yes | UUID of the currently subscribed pricing plan |
 | `planStartDate` | `plan_start_date` | `DATE` | Optional (Auto-set) | ✅ Yes | Date when active plan started (e.g. `"2026-10-01"`) |
 | `planExpiryDate` | `plan_expiry_date` | `DATE` | Optional | ✅ Yes | Date when active plan expires (e.g. `"2027-10-01"`) |
@@ -148,6 +153,11 @@ This guide maps **what is stored in the database** against the **exact JSON para
   "ageGroup": "8-10",
   "bloodGroup": "B+",
   "schoolName": "The Bishop's School",
+  "schoolPhone": "020-26123456",
+  "schoolEmail": "contact@bishops.edu",
+  "schoolAddress": "Camp, Pune, Maharashtra",
+  "medicalHistory": "Mild asthma, allergic to penicillin",
+  "pfp": "NAME",
   "dateOfBirth": "2016-05-14"
 }
 ```

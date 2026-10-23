@@ -79,6 +79,11 @@ CREATE TABLE IF NOT EXISTS child_user (
     grade varchar(255),
     phone_number varchar(255),
     school_id varchar(255),
+    school_phone varchar(255),
+    school_email varchar(255),
+    school_address varchar(255),
+    medical_history varchar(255),
+    pfp varchar(255),
     plan_status varchar(255),
     primary key (child_id)
 );
@@ -501,6 +506,11 @@ ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS deleted_at timestamp;
 ALTER TABLE IF EXISTS parent_user ADD COLUMN IF NOT EXISTS child_lock varchar(255);
 ALTER TABLE IF EXISTS child_user ADD COLUMN IF NOT EXISTS is_deleted boolean default false;
 ALTER TABLE IF EXISTS child_user ADD COLUMN IF NOT EXISTS deleted_at timestamp;
+ALTER TABLE IF EXISTS child_user ADD COLUMN IF NOT EXISTS school_phone varchar(255);
+ALTER TABLE IF EXISTS child_user ADD COLUMN IF NOT EXISTS school_email varchar(255);
+ALTER TABLE IF EXISTS child_user ADD COLUMN IF NOT EXISTS school_address varchar(255);
+ALTER TABLE IF EXISTS child_user ADD COLUMN IF NOT EXISTS medical_history varchar(255);
+ALTER TABLE IF EXISTS child_user ADD COLUMN IF NOT EXISTS pfp varchar(255);
 
 CREATE TABLE IF NOT EXISTS parent_quiz_attempt_options (
     attempt_id uuid not null,
