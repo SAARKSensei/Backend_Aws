@@ -28,6 +28,7 @@ We have several documentation files to help you navigate, test, and deploy the s
 | **[AUTHENTICATION_FLOW.md](./docs/AUTHENTICATION_FLOW.md)** | Documentation on how JWT and Google OAuth authentication works |
 | **[FRONTEND_API_MIGRATION.md](./docs/FRONTEND_API_MIGRATION.md)** | Guide for frontend devs on integrating with backend API changes |
 | **[LOGGING_GUIDE.md](./docs/LOGGING_GUIDE.md)** | Best practices and standards for application logging |
+| **[DATA_MODELS_AND_DTOS.md](./docs/DATA_MODELS_AND_DTOS.md)** | Technical specification for domain entities and DTOs (ParentUser & ChildUser) |
 | **[CI_CD_SETUP_GUIDE.md](./docs/CI_CD_SETUP_GUIDE.md)** | Detailed guide on configuring GitHub Actions and Docker Hub for automated EC2 deployments |
 
 ---
