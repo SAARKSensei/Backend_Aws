@@ -126,6 +126,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sensei.backend.dto.ChildUserDTO;
+import com.sensei.backend.dto.ChildUserUpdateDTO;
 import com.sensei.backend.entity.ChildUser;
 import com.sensei.backend.entity.ParentUser;
 import com.sensei.backend.entity.PricingPlan;
@@ -207,13 +208,34 @@ public ChildUserDTO createChildUser(ChildUserDTO dto) {
 }
 
 @Transactional
+public ChildUserDTO update(UUID childId, ChildUserUpdateDTO dto) {
+    ChildUser existing = childUserRepository.findById(childId)
+            .orElseThrow(() -> new ResourceNotFoundException("Child not found"));
+
+    childUserMapper.updateEntityFromUpdateDto(dto, existing);
+
+    if (dto.getParentId() != null && (existing.getParentUser() == null || !dto.getParentId().equals(existing.getParentUser().getParentId()))) {
+        ParentUser parent = parentUserRepository.findById(dto.getParentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Parent not found"));
+        existing.setParentUser(parent);
+    }
+
+    if (dto.getActivePlanId() != null && existing.getPlanStartDate() == null) {
+        existing.setPlanStartDate(LocalDate.now());
+    }
+
+    log.info("Updated ChildUser (partial) with ID: {}", childId);
+    return childUserMapper.toDto(childUserRepository.save(existing));
+}
+
+@Transactional
 public ChildUserDTO update(UUID childId, ChildUserDTO dto) {
     ChildUser existing = childUserRepository.findById(childId)
             .orElseThrow(() -> new ResourceNotFoundException("Child not found"));
 
     childUserMapper.updateEntityFromDto(dto, existing);
 
-    if (dto.getActivePlanId() != null) {
+    if (dto.getActivePlanId() != null && existing.getPlanStartDate() == null) {
         existing.setPlanStartDate(LocalDate.now());
     }
 

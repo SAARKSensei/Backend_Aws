@@ -2,6 +2,7 @@ package com.sensei.backend.controller;
 import jakarta.validation.Valid;
 
 import com.sensei.backend.dto.ChildUserDTO;
+import com.sensei.backend.dto.ChildUserUpdateDTO;
 import com.sensei.backend.service.ChildUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,13 @@ public class ChildUserController {
 
     @PutMapping("/{childId}")
     public ResponseEntity<ChildUserDTO> update(@PathVariable UUID childId,
-                                               @Valid @RequestBody ChildUserDTO dto) {
+                                               @Valid @RequestBody ChildUserUpdateDTO dto) {
+        return ResponseEntity.ok(childUserService.update(childId, dto));
+    }
+
+    @PatchMapping("/{childId}")
+    public ResponseEntity<ChildUserDTO> patch(@PathVariable UUID childId,
+                                               @Valid @RequestBody ChildUserUpdateDTO dto) {
         return ResponseEntity.ok(childUserService.update(childId, dto));
     }
 

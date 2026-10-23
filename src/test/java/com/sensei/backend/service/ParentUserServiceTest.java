@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.sensei.backend.dto.ParentUserDTO;
+import com.sensei.backend.dto.ParentUserUpdateDTO;
 import com.sensei.backend.entity.ParentUser;
 import com.sensei.backend.exception.ResourceNotFoundException;
 import com.sensei.backend.mapper.ParentUserMapper;
@@ -155,5 +156,23 @@ class ParentUserServiceTest {
         assertNotNull(result);
         assertEquals(1, result.get("createdInFirebase"));
         verify(firebaseAuthService, times(1)).syncUsers(users);
+    }
+
+    @Test
+    void testUpdateParentUser_Partial() {
+        ParentUserUpdateDTO updateDTO = new ParentUserUpdateDTO();
+        updateDTO.setName("Updated Name");
+        updateDTO.setLocation("New City");
+
+        when(parentUserRepository.findById(testId)).thenReturn(Optional.of(parentUser));
+        when(parentUserRepository.save(parentUser)).thenReturn(parentUser);
+        when(parentUserMapper.toDto(parentUser)).thenReturn(parentUserDTO);
+
+        ParentUserDTO result = parentUserService.updateParentUser(testId, updateDTO);
+
+        assertNotNull(result);
+        verify(parentUserRepository, times(1)).findById(testId);
+        verify(parentUserMapper, times(1)).updateEntityFromUpdateDto(updateDTO, parentUser);
+        verify(parentUserRepository, times(1)).save(parentUser);
     }
 }

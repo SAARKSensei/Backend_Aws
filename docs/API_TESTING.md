@@ -162,7 +162,8 @@ Below is a list of all active API endpoints available in the system for testing.
 |--------|----------|-------------|
 | `POST` | `/api/children` | `create` |
 | `GET` | `/api/children/{childId}` | `getById` |
-| `PUT` | `/api/children/{childId}` | `update` |
+| `PUT` | `/api/children/{childId}` | `update` (Supports partial update with ChildUserUpdateDTO) |
+| `PATCH` | `/api/children/{childId}` | `patch` (Partial update with ChildUserUpdateDTO) |
 | `DELETE` | `/api/children/{childId}` | `delete` |
 | `GET` | `/api/children/phone/{phone}` | `getByPhone` |
 | `GET` | `/api/children` | `unknown` |
@@ -190,7 +191,8 @@ Below is a list of all active API endpoints available in the system for testing.
 | `POST` | `/api/parent-users` | `create` |
 | `GET` | `/api/parent-users/{parentId}` | `getById` |
 | `GET` | `/api/parent-users` | `getAllParentUsers` (Paginated) |
-| `PUT` | `/api/parent-users/{parentId}` | `update` |
+| `PUT` | `/api/parent-users/{parentId}` | `update` (Supports partial update with ParentUserUpdateDTO) |
+| `PATCH` | `/api/parent-users/{parentId}` | `patch` (Partial update with ParentUserUpdateDTO) |
 | `DELETE` | `/api/parent-users/{parentId}` | `delete` (Soft-deletes DB, cascades to children, deletes from Firebase Auth) |
 | `GET` | `/api/parent-users/filter` | `byUserName` |
 | `GET` | `/api/parent-users/phone` | `byPhone` |

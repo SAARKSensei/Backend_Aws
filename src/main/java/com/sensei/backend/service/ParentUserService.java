@@ -151,6 +151,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sensei.backend.dto.ParentUserDTO;
+import com.sensei.backend.dto.ParentUserUpdateDTO;
 import com.sensei.backend.entity.ChildUser;
 import com.sensei.backend.entity.ParentUser;
 import com.sensei.backend.entity.PricingPlan;
@@ -221,28 +222,23 @@ public class ParentUserService {
 
     // ================= UPDATE =================
     @Transactional
-    public ParentUserDTO updateParentUser(UUID parentId, ParentUserDTO dto) {
-
+    public ParentUserDTO updateParentUser(UUID parentId, ParentUserUpdateDTO dto) {
         ParentUser parent = parentUserRepository.findById(parentId)
                 .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
 
-        parent.setName(dto.getName());
-        parent.setUserName(dto.getUserName());
-        parent.setEmail(dto.getEmail());
-        parent.setPhone(dto.getPhone());
-        parent.setPassword(dto.getPassword());
-        parent.setMaritalStatus(dto.getMaritalStatus());
-        parent.setOccupation(dto.getOccupation());
-        parent.setRelationWithChildren(dto.getRelationWithChildren());
-         // ✅ NEW
-        parent.setLocation(dto.getLocation());
-        parent.setAddress(dto.getAddress());
-        parent.setSpouseName(dto.getSpouseName());
-        parent.setSpouseGender(dto.getSpouseGender());
-        parent.setSpouseEmail(dto.getSpouseEmail());
-        parent.setSpousePhone(dto.getSpousePhone());
-        parent.setSpouseOccupation(dto.getSpouseOccupation());
-        parent.setSpouseRelationWithChild(dto.getSpouseRelationWithChild());
+        parentUserMapper.updateEntityFromUpdateDto(dto, parent);
+
+        ParentUser saved = parentUserRepository.save(parent);
+        log.info("Updated ParentUser (partial) with ID: {}", parentId);
+        return parentUserMapper.toDto(saved);
+    }
+
+    @Transactional
+    public ParentUserDTO updateParentUser(UUID parentId, ParentUserDTO dto) {
+        ParentUser parent = parentUserRepository.findById(parentId)
+                .orElseThrow(() -> new ResourceNotFoundException("ParentUser not found"));
+
+        parentUserMapper.updateEntityFromDto(dto, parent);
 
         ParentUser saved = parentUserRepository.save(parent);
         log.info("Updated ParentUser with ID: {}", parentId);
