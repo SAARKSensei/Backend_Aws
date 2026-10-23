@@ -247,8 +247,11 @@ CREATE TABLE IF NOT EXISTS parent_user (
     updated_at timestamp(6) not null,
     parent_id char(36) not null,
     email varchar(255) unique,
-    location varchar(255),
-    address varchar(255),
+    pincode varchar(255),
+    street varchar(255),
+    city varchar(255),
+    state varchar(255),
+    country varchar(255),
     marital_status varchar(255),
     name varchar(255),
     occupation varchar(255),
@@ -471,7 +474,11 @@ CREATE TABLE IF NOT EXISTS child_subject_progress (
     UNIQUE KEY (child_id, subject_id)
 );
 
-ALTER TABLE parent_user ADD COLUMN address varchar(255);
+ALTER TABLE parent_user ADD COLUMN pincode varchar(255);
+ALTER TABLE parent_user ADD COLUMN street varchar(255);
+ALTER TABLE parent_user ADD COLUMN city varchar(255);
+ALTER TABLE parent_user ADD COLUMN state varchar(255);
+ALTER TABLE parent_user ADD COLUMN country varchar(255);
 ALTER TABLE parent_user ADD COLUMN is_deleted boolean default false;
 ALTER TABLE parent_user ADD COLUMN deleted_at timestamp;
 ALTER TABLE child_user ADD COLUMN is_deleted boolean default false;

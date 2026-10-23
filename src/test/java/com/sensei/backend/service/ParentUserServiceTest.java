@@ -162,7 +162,8 @@ class ParentUserServiceTest {
     void testUpdateParentUser_Partial() {
         ParentUserUpdateDTO updateDTO = new ParentUserUpdateDTO();
         updateDTO.setName("Updated Name");
-        updateDTO.setLocation("New City");
+        updateDTO.setCity("Mumbai");
+        updateDTO.setPincode("400001");
 
         when(parentUserRepository.findById(testId)).thenReturn(Optional.of(parentUser));
         when(parentUserRepository.save(parentUser)).thenReturn(parentUser);

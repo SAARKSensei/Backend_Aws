@@ -41,9 +41,9 @@ public class ParentUserDTO {
 
     private List<ChildUserDTO> childUsers;
 
-    // ✅ NEW FIELD
-    @NotBlank(message = "Location is required")
-    private String location;
-
-    private String address;
+    private String pincode;
+    private String street;
+    private String city;
+    private String state;
+    private String country;
 }

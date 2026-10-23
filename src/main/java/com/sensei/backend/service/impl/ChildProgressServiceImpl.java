@@ -395,13 +395,14 @@ public class ChildProgressServiceImpl implements ChildProgressService {
     }
 
     // -----------------------------------------
-    // LOCATION PROGRESS
+    // -----------------------------------------
+    // CITY PROGRESS
     // -----------------------------------------
     @Override
-    public SchoolProgressDTO getLocationProgress(String location) {
+    public SchoolProgressDTO getCityProgress(String city) {
 
         List<ParentUser> parents =
-                parentUserRepository.findByLocation(location);
+                parentUserRepository.findByCity(city);
 
         List<ChildUser> children = parents.stream()
                 .flatMap(p -> p.getChildUsers().stream())
@@ -433,7 +434,7 @@ public class ChildProgressServiceImpl implements ChildProgressService {
                         totalProgress / totalChildren;
 
         return SchoolProgressDTO.builder()
-                .schoolName(location)
+                .schoolName(city)
                 .totalChildren(totalChildren)
                 .activeChildren(totalChildren)
                 .averageProgress(avgProgress)
@@ -441,18 +442,23 @@ public class ChildProgressServiceImpl implements ChildProgressService {
                 .build();
     }
 
+    @Override
+    public SchoolProgressDTO getLocationProgress(String location) {
+        return getCityProgress(location);
+    }
+
     // -----------------------------------------
     // FILTER CHILDREN
     // -----------------------------------------
     @Override
-    public List<ChildUserDTO> getChildrenByFilter(String school, String location) {
+    public List<ChildUserDTO> getChildrenByFilter(String school, String city) {
 
         List<ChildUser> children = childUserRepository.findAll();
 
         return children.stream()
                 .filter(c -> school == null || school.equals(c.getSchoolName()))
-                .filter(c -> location == null ||
-                        location.equals(c.getParentUser().getLocation()))
+                .filter(c -> city == null ||
+                        (c.getParentUser() != null && city.equals(c.getParentUser().getCity())))
                 .map(c -> {
                     ChildUserDTO dto = new ChildUserDTO();
                     dto.setChildId(c.getChildId());

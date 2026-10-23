@@ -99,19 +99,23 @@ public ResponseEntity<SchoolProgressDTO> getSchoolProgress(
 @GetMapping("/children")
 public ResponseEntity<List<ChildUserDTO>> getChildren(
         @RequestParam(required = false) String school,
+        @RequestParam(required = false) String city,
         @RequestParam(required = false) String location) {
 
+    String targetCity = city != null ? city : location;
     return ResponseEntity.ok(
-            childProgressService.getChildrenByFilter(school, location)
+            childProgressService.getChildrenByFilter(school, targetCity)
     );
 }
 
-@GetMapping("/location")
-public ResponseEntity<SchoolProgressDTO> getLocationProgress(
-        @RequestParam String location) {
+@GetMapping({"/city", "/location"})
+public ResponseEntity<SchoolProgressDTO> getCityProgress(
+        @RequestParam(required = false) String city,
+        @RequestParam(required = false) String location) {
 
+    String targetCity = city != null ? city : location;
     return ResponseEntity.ok(
-            childProgressService.getLocationProgress(location)
+            childProgressService.getCityProgress(targetCity)
     );
 }
 

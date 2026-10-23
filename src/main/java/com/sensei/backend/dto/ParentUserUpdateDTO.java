@@ -42,7 +42,10 @@ public class ParentUserUpdateDTO {
     private String spouseOccupation;
     private Date spouseDateOfBirth;
     private String spouseRelationWithChild;
-    private String location;
-    private String address;
+    private String pincode;
+    private String street;
+    private String city;
+    private String state;
+    private String country;
     private Boolean isQuizCompleted;
 }

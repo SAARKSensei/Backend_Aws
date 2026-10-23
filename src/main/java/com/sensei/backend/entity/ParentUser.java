@@ -65,11 +65,11 @@ public class ParentUser {
     @Builder.Default
     private List<ParentQuizAttempt> quizAttempts = new ArrayList<>();
 
-    // ✅ NEW FIELD
-    @Column(name = "location")
-    private String location;
-
-    private String address;
+    private String pincode;
+    private String street;
+    private String city;
+    private String state;
+    private String country;
 
     @Builder.Default
     @Column(name = "is_quiz_completed")

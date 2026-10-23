@@ -28,8 +28,12 @@ public interface ChildProgressService {
 
     SchoolProgressDTO getSchoolProgress(String schoolName);
 
-    List<ChildUserDTO> getChildrenByFilter(String school, String location);
+    List<ChildUserDTO> getChildrenByFilter(String school, String city);
 
-    SchoolProgressDTO getLocationProgress(String location);
+    SchoolProgressDTO getCityProgress(String city);
+
+    default SchoolProgressDTO getLocationProgress(String location) {
+        return getCityProgress(location);
+    }
     
 }

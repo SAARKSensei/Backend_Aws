@@ -66,7 +66,7 @@ public class ReportCardServiceImpl implements ReportCardService {
                 .name(parent.getName())
                 .email(parent.getEmail())
                 .phone(parent.getPhone())
-                .location(parent.getLocation())
+                .city(parent.getCity())
                 .build();
 
         // Life Skills
