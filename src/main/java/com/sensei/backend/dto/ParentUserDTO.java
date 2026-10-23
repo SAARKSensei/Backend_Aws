@@ -31,6 +31,7 @@ public class ParentUserDTO {
     @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     private String childLock;
 
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
     private Boolean isChildLockSet;
 
     private String maritalStatus;
@@ -52,4 +53,9 @@ public class ParentUserDTO {
     private String city;
     private String state;
     private String country;
+
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private Boolean isQuizCompleted;
+
+    private Boolean isSurveyCompleted;
 }

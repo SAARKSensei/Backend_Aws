@@ -17,13 +17,16 @@ public interface ParentUserMapper {
     ParentUserDTO toDto(ParentUser entity);
 
     @Mapping(target = "childLock", ignore = true)
+    @Mapping(target = "isQuizCompleted", ignore = true)
     ParentUser toEntity(ParentUserDTO dto);
 
     @Mapping(target = "childLock", ignore = true)
+    @Mapping(target = "isQuizCompleted", ignore = true)
     void updateEntityFromDto(ParentUserDTO dto, @MappingTarget ParentUser entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "childLock", ignore = true)
+    @Mapping(target = "isQuizCompleted", ignore = true)
     void updateEntityFromUpdateDto(ParentUserUpdateDTO dto, @MappingTarget ParentUser entity);
 
     @AfterMapping

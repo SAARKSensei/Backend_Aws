@@ -67,7 +67,8 @@ public class ParentQuizServiceImpl implements ParentQuizService {
                 .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Child not found"));
 
         if (attemptRepository.existsByParentUser_ParentIdAndChildUser_ChildId(parent.getParentId(), child.getChildId())) {
-            throw new RuntimeException("Quiz attempt already exists for this child. Use the update API instead.");
+            updateQuiz(request);
+            return;
         }
 
         // Process options and unlock lifeskills
@@ -88,8 +89,14 @@ public class ParentQuizServiceImpl implements ParentQuizService {
                 .build();
         attemptRepository.save(attempt);
 
-        // Update parent user to indicate quiz is completed
-        parent.setIsQuizCompleted(true);
+        // Update parent user isQuizCompleted only if all active questions are answered
+        long totalActive = questionRepository.countByIsActiveTrue();
+        long answeredCount = selectedOptions.stream()
+                .map(opt -> opt.getQuestion().getId())
+                .distinct()
+                .count();
+        boolean isAllCompleted = totalActive > 0 && answeredCount >= totalActive;
+        parent.setIsQuizCompleted(isAllCompleted);
         parentUserRepository.save(parent);
     }
 
@@ -147,6 +154,16 @@ public class ParentQuizServiceImpl implements ParentQuizService {
         // Update the attempt with the merged list
         attempt.setSelectedOptions(currentSelectedOptions);
         attemptRepository.save(attempt);
+
+        // Update parent user isQuizCompleted if all active questions are now answered
+        long totalActive = questionRepository.countByIsActiveTrue();
+        long answeredCount = currentSelectedOptions.stream()
+                .map(opt -> opt.getQuestion().getId())
+                .distinct()
+                .count();
+        boolean isAllCompleted = totalActive > 0 && answeredCount >= totalActive;
+        parent.setIsQuizCompleted(isAllCompleted);
+        parentUserRepository.save(parent);
     }
 
     @Override
@@ -180,14 +197,66 @@ public class ParentQuizServiceImpl implements ParentQuizService {
         ParentQuizAttempt attempt = attemptRepository.findFirstByParentUser_ParentIdAndChildUser_ChildIdOrderByCompletedAtDesc(parentId, childId)
                 .orElseThrow(() -> new com.sensei.backend.exception.ResourceNotFoundException("Quiz attempt not found"));
 
-        java.util.List<java.util.UUID> selectedOptionIds = attempt.getSelectedOptions() != null
-                ? attempt.getSelectedOptions().stream().map(ParentQuizOption::getId).collect(Collectors.toList())
+        java.util.List<ParentQuizOption> selectedOptions = attempt.getSelectedOptions() != null
+                ? attempt.getSelectedOptions()
                 : java.util.Collections.emptyList();
+
+        java.util.List<java.util.UUID> selectedOptionIds = selectedOptions.stream()
+                .map(ParentQuizOption::getId)
+                .collect(Collectors.toList());
+
+        java.util.Set<java.util.UUID> answeredQuestionIds = selectedOptions.stream()
+                .map(opt -> opt.getQuestion().getId())
+                .collect(Collectors.toSet());
+
+        List<ParentQuizQuestion> activeQuestions = questionRepository.findAllByIsActiveTrueOrderByOrderIndexAsc();
+        List<java.util.UUID> unansweredQuestionIds = activeQuestions.stream()
+                .map(ParentQuizQuestion::getId)
+                .filter(qId -> !answeredQuestionIds.contains(qId))
+                .collect(Collectors.toList());
+
+        boolean isCompleted = !activeQuestions.isEmpty() && answeredQuestionIds.size() >= activeQuestions.size();
 
         return com.sensei.backend.dto.parentquiz.ParentQuizAttemptResponse.builder()
                 .parentId(parentId)
                 .childId(childId)
                 .selectedOptionIds(selectedOptionIds)
+                .answeredQuestionIds(new java.util.ArrayList<>(answeredQuestionIds))
+                .unansweredQuestionIds(unansweredQuestionIds)
+                .isQuizCompleted(isCompleted)
+                .totalQuestions(activeQuestions.size())
+                .answeredCount(answeredQuestionIds.size())
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ParentQuizResponse> getUnfilledQuizQuestions(java.util.UUID parentId, java.util.UUID childId) {
+        List<ParentQuizQuestion> activeQuestions = questionRepository.findAllByIsActiveTrueOrderByOrderIndexAsc();
+
+        java.util.Optional<ParentQuizAttempt> attemptOpt = attemptRepository.findFirstByParentUser_ParentIdAndChildUser_ChildIdOrderByCompletedAtDesc(parentId, childId);
+
+        java.util.Set<java.util.UUID> answeredQuestionIds = attemptOpt.map(attempt ->
+                attempt.getSelectedOptions() != null
+                        ? attempt.getSelectedOptions().stream().map(opt -> opt.getQuestion().getId()).collect(Collectors.toSet())
+                        : java.util.Collections.<java.util.UUID>emptySet()
+        ).orElse(java.util.Collections.emptySet());
+
+        return activeQuestions.stream()
+                .filter(q -> !answeredQuestionIds.contains(q.getId()))
+                .map(q -> {
+                    List<ParentQuizOption> options = optionRepository.findByQuestion_Id(q.getId());
+                    List<ParentQuizOptionDto> optionDtos = options.stream()
+                            .map(o -> new ParentQuizOptionDto(o.getId(), o.getOptionText(), o.getAssociatedLifeSkills()))
+                            .collect(Collectors.toList());
+
+                    return ParentQuizResponse.builder()
+                            .questionId(q.getId())
+                            .questionText(q.getQuestionText())
+                            .orderIndex(q.getOrderIndex())
+                            .options(optionDtos)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }

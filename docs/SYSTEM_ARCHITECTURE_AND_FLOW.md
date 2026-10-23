@@ -113,7 +113,9 @@ After login, the frontend should fetch or create the Parent profile.
 
 ### 2B. Parent Quiz & Unlocking Baseline Life Skills
 Immediately following parent creation, parents take a baseline quiz that assigns initial life skills to the newly generated child.
-* **Fetch Questions:** `GET /api/v1/parent-quiz`
+* **Fetch All Questions:** `GET /api/v1/parent-quiz`
+* **Fetch Only Unfilled Questions (Resuming Partial Quiz):** `GET /api/v1/parent-quiz/unfilled/{parentId}/{childId}`
+  * Returns only the questions that the child has not answered yet. Useful if a parent answered a few questions, skipped the rest, and returns later.
 * **Submit Answers:** `POST /api/v1/parent-quiz/submit`
   * **Request (JSON):** 
     ```json
@@ -123,32 +125,43 @@ Immediately following parent creation, parents take a baseline quiz that assigns
         "selectedOptionIds": ["<opt_uuid_1>", "<opt_uuid_2>"]
     }
     ```
-  * **Backend Processing:** Checks the associated life skills for the selected options and automatically unlocks them for the `childId` provided. Sets the parent's `isQuizCompleted` flag to true.
-* **Fetch Attempt:** `GET /api/v1/parent-quiz/attempt/{parentId}/{childId}` (Retrieves previous options to pre-fill UI)
+  * **Backend Processing:**
+    * Unlocks associated life skills for the selected options and awards points to the child.
+    * Checks if **all active quiz questions** are answered.
+    * **`isQuizCompleted` Calculation:**
+      * If all questions are answered: Sets parent's `isQuizCompleted` to `true`.
+      * If only partial questions are answered (e.g. 3 of 7): `isQuizCompleted` remains `false`.
+    * If called again for the same child, it seamlessly delegates to `updateQuiz` without throwing duplicate errors.
+* **Fetch Attempt Status:** `GET /api/v1/parent-quiz/attempt/{parentId}/{childId}`
   * **Response (JSON):**
     ```json
     {
         "parentId": "<parent_uuid>",
         "childId": "<child_uuid>",
-        "selectedOptionIds": ["<opt_uuid_1>", "<opt_uuid_2>"]
+        "selectedOptionIds": ["<opt_uuid_1>", "<opt_uuid_2>"],
+        "answeredQuestionIds": ["<q_uuid_1>", "<q_uuid_2>"],
+        "unansweredQuestionIds": ["<q_uuid_3>", "<q_uuid_4>"],
+        "isQuizCompleted": false,
+        "totalQuestions": 7,
+        "answeredCount": 2
     }
     ```
-* **Update Answers:** `PUT /api/v1/parent-quiz/update` (Dynamically supports partial and full updates by calculating the difference, reverting removed life skills, and adding new ones).
-  * **Request (JSON):**
-    ```json
-    {
-        "parentId": "<parent_uuid>",
-        "childId": "<child_uuid>",
-        "selectedOptionIds": ["<new_opt_uuid_1>"] 
-    }
-    ```
+* **Update / Complete Remaining Answers:** `PUT /api/v1/parent-quiz/update`
+  * Merges new answers with previously submitted ones.
+  * Reverts life skills for changed options and awards points for new options.
+  * Re-evaluates total questions answered and sets `isQuizCompleted = true` as soon as all active questions are completed.
+
 ### 2C. Child Life Skills Dashboard
 After the quiz, the frontend can fetch the initially unlocked life skills for the dashboard.
 * **Endpoint:** `GET /api/v1/child/{childId}/lifeskills`
 * **Response:** Returns a `ChildLifeSkillReportResponse` listing all skills the child currently possesses.
 
 ### 2D. Update Parent Profile
-* **Endpoint:** `PUT /api/parent-users/{parentId}`
+Parents can update personal information, contact info, address fields, and the general `isSurveyCompleted` flag.
+* **Endpoint:** `PUT` / `PATCH /api/parent-users/{parentId}`
+* **Note on Flags:**
+  * `isSurveyCompleted`: **Writable** by client in request body (e.g. `{"isSurveyCompleted": true}`).
+  * `isQuizCompleted`: **Read-Only** system flag computed exclusively by the quiz engine. Any values passed in profile update requests are ignored.
 
 ### 2E. Fetch Parent Transactions
 Parents can view their history of wallet top-ups and plan purchases.

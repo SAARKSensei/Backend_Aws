@@ -16,4 +16,9 @@ public class ParentQuizAttemptResponse {
     private UUID parentId;
     private UUID childId;
     private List<UUID> selectedOptionIds;
+    private List<UUID> answeredQuestionIds;
+    private List<UUID> unansweredQuestionIds;
+    private Boolean isQuizCompleted;
+    private Integer totalQuestions;
+    private Integer answeredCount;
 }

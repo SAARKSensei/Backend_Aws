@@ -46,4 +46,11 @@ public class ParentQuizController {
             @PathVariable java.util.UUID childId) {
         return ResponseEntity.ok(parentQuizService.getQuizAttempt(parentId, childId));
     }
+
+    @GetMapping("/unfilled/{parentId}/{childId}")
+    public ResponseEntity<List<ParentQuizResponse>> getUnfilledQuizQuestions(
+            @PathVariable java.util.UUID parentId,
+            @PathVariable java.util.UUID childId) {
+        return ResponseEntity.ok(parentQuizService.getUnfilledQuizQuestions(parentId, childId));
+    }
 }

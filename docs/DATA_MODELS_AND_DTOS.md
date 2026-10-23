@@ -42,11 +42,12 @@ This guide maps **what is stored in the database** against the **exact JSON para
 | `spouseDateOfBirth` | `spouse_date_of_birth` | `DATE` | Optional | ✅ Yes | Spouse's birth date (e.g. `"1987-08-20"`) |
 | `spouseRelationWithChild`| `spouse_relation_with_child`| `VARCHAR(255)` | Optional | ✅ Yes | Spouse relation (e.g. `"Mother"`, `"Guardian"`) |
 | `street` | `street` | `VARCHAR(255)` | Optional | ✅ Yes | Street address (e.g. `"123 MG Road"`) |
-| `city` | `city` | `VARCHAR(255)` | Optional | ✅ Yes | City name (e.g. `"Bengaluru"`) |
-| `state` | `state` | `VARCHAR(255)` | Optional | ✅ Yes | State / Province (e.g. `"Karnataka"`) |
+| `city` | `city` | `VARCHAR(255)` | Optional | ✅ Yes | City name (e.g. `"Pune"`) |
+| `state` | `state` | `VARCHAR(255)` | Optional | ✅ Yes | State / Province (e.g. `"Maharashtra"`) |
 | `country` | `country` | `VARCHAR(255)` | Optional | ✅ Yes | Country (e.g. `"India"`) |
-| `pincode` | `pincode` | `VARCHAR(255)` | Optional | ✅ Yes | Postal / ZIP code (e.g. `"560001"`) |
-| `isQuizCompleted` | `is_quiz_completed` | `BOOLEAN` | Optional (Update) | ✅ Yes | Indicates if onboarding quiz is completed (`true`/`false`) |
+| `pincode` | `pincode` | `VARCHAR(255)` | Optional | ✅ Yes | Postal / ZIP code (e.g. `"411001"`) |
+| `isQuizCompleted` | `is_quiz_completed` | `BOOLEAN` | ❌ Read-Only (System calculated) | ✅ Yes | Indicates if onboarding quiz is completed (`true`/`false`) |
+| `isSurveyCompleted` | `is_survey_completed` | `BOOLEAN` | Optional (Create / Update) | ✅ Yes | Indicates if parent survey is completed (`true`/`false`) |
 | `childUsers` | *(Relationship)* | `List<ChildUserDTO>` | ❌ Do not send on create | ✅ Yes | List of associated children objects returned in GET |
 
 #### Internal Database Audit Columns (Never sent by frontend):
@@ -116,6 +117,13 @@ This guide maps **what is stored in the database** against the **exact JSON para
 ### ⚠️ Gotcha 4: Address Columns
 - Old columns `address` and `location` were dropped.
 - Frontend must use the specific fields: `street`, `city`, `state`, `country`, and `pincode`.
+
+### ⚠️ Gotcha 5: `isQuizCompleted` is System-Calculated (Read-Only)
+- **Frontend cannot set this:** The backend marks this field as read-only. Calling `POST /api/parent-users` or `PATCH /api/parent-users/{parentId}` with `isQuizCompleted` will be ignored.
+- **How it turns `true`:** Only when **all active quiz questions** are answered via `POST /api/v1/parent-quiz/submit` or `PUT /api/v1/parent-quiz/update`. Partial submissions (e.g. 3 of 7 answered) leave `isQuizCompleted` as `false`.
+
+### ⚠️ Gotcha 6: `isSurveyCompleted` is General (Writable)
+- **Frontend can set this:** Clients can read or update `isSurveyCompleted` via `POST /api/parent-users` or `PATCH /api/parent-users/{parentId}` (e.g. `{"isSurveyCompleted": true}`).
 
 ---
 

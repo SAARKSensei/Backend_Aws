@@ -17,8 +17,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import com.sensei.backend.dto.auth.AuthResponse;
 
 /**
  * @author vaishnav88sk
@@ -107,6 +109,32 @@ class AuthControllerTest {
 
         assertEquals(403, response.getStatusCode().value());
         assertEquals("Not allowed", response.getBody());
+    }
+
+    @Test
+    void testGoogleLoginAppClient() {
+        GoogleIdToken.Payload payload = new GoogleIdToken.Payload();
+        payload.setEmail("test@example.com");
+        payload.set("name", "Test User");
+
+        when(googleAuthService.verifyToken("valid-token")).thenReturn(payload);
+
+        ParentUser existingUser = new ParentUser();
+        existingUser.setEmail("test@example.com");
+        existingUser.setIsQuizCompleted(true);
+
+        when(parentUserRepository.findByEmail("test@example.com")).thenReturn(Optional.of(existingUser));
+        when(jwtUtil.generateToken("test@example.com")).thenReturn("mock-access-token");
+        when(jwtUtil.generateRefreshToken("test@example.com")).thenReturn("mock-refresh-token");
+
+        ResponseEntity<?> response = authController.googleLogin("valid-token", "app");
+
+        assertEquals(200, response.getStatusCode().value());
+        assertTrue(response.getBody() instanceof AuthResponse);
+        AuthResponse authResponse = (AuthResponse) response.getBody();
+        assertEquals("mock-access-token", authResponse.getAccessToken());
+        assertEquals("mock-refresh-token", authResponse.getRefreshToken());
+        assertEquals(true, authResponse.getIsQuizCompleted());
     }
 }
 

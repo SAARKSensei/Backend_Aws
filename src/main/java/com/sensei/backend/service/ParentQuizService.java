@@ -11,4 +11,5 @@ public interface ParentQuizService {
     void addQuizQuestions(java.util.List<com.sensei.backend.dto.parentquiz.CreateQuizQuestionRequest> requestList);
     void updateQuiz(SubmitQuizRequest request);
     com.sensei.backend.dto.parentquiz.ParentQuizAttemptResponse getQuizAttempt(java.util.UUID parentId, java.util.UUID childId);
+    List<ParentQuizResponse> getUnfilledQuizQuestions(java.util.UUID parentId, java.util.UUID childId);
 }

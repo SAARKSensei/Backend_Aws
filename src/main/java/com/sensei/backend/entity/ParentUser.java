@@ -78,6 +78,10 @@ public class ParentUser {
     @Column(name = "is_quiz_completed")
     private Boolean isQuizCompleted = false;
 
+    @Builder.Default
+    @Column(name = "is_survey_completed")
+    private Boolean isSurveyCompleted = false;
+
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
     private Boolean isDeleted = false;

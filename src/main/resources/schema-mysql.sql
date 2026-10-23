@@ -271,6 +271,7 @@ CREATE TABLE IF NOT EXISTS parent_user (
     spouse_relation_with_child varchar(255),
     user_name varchar(255) unique,
     is_quiz_completed boolean default false,
+    is_survey_completed boolean default false,
     primary key (parent_id)
 );
 
@@ -487,6 +488,7 @@ ALTER TABLE parent_user ADD COLUMN country varchar(255);
 ALTER TABLE parent_user ADD COLUMN is_deleted boolean default false;
 ALTER TABLE parent_user ADD COLUMN deleted_at timestamp;
 ALTER TABLE parent_user ADD COLUMN child_lock varchar(255);
+ALTER TABLE parent_user ADD COLUMN is_survey_completed boolean default false;
 ALTER TABLE parent_user DROP COLUMN IF EXISTS password;
 ALTER TABLE child_user ADD COLUMN is_deleted boolean default false;
 ALTER TABLE child_user ADD COLUMN deleted_at timestamp;

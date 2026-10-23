@@ -346,6 +346,15 @@ Below is a list of all active API endpoints available in the system for testing.
 | `POST` | `/api/v1/parent-quiz/submit` | `submitQuiz` |
 | `PUT` | `/api/v1/parent-quiz/update` | `updateQuiz` (Supports Partial/Full updates) |
 | `GET` | `/api/v1/parent-quiz/attempt/{parentId}/{childId}` | `getQuizAttempt` |
+| `GET` | `/api/v1/parent-quiz/unfilled/{parentId}/{childId}` | `getUnfilledQuizQuestions` (Returns only unanswered questions) |
+
+> [!NOTE]
+> **Parent Quiz Workflow & Partial Attempts:**
+> - `POST /api/v1/parent-quiz/submit`: Submits answers for a child. If called again for the same child, it automatically updates existing answers seamlessly.
+> - `PUT /api/v1/parent-quiz/update`: Merges new option answers with previously submitted ones and adjusts life skills points.
+> - `GET /api/v1/parent-quiz/attempt/{parentId}/{childId}`: Returns `selectedOptionIds`, `answeredQuestionIds`, `unansweredQuestionIds`, `totalQuestions`, `answeredCount`, and `isQuizCompleted`.
+> - `GET /api/v1/parent-quiz/unfilled/{parentId}/{childId}`: Returns only the question objects that have not yet been answered by the child.
+> - `isQuizCompleted` on the Parent account is only set to `true` once **all** active questions have been answered.
 
 
 ## ChildLifeSkill
