@@ -15,7 +15,7 @@ jobs:
     
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Required to fetch all commit history for the changelog
 
@@ -64,7 +64,7 @@ jobs:
 
       - name: Update GitHub Release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.release.tag_name }}
           body: ${{steps.build_changelog.outputs.changelog}}
