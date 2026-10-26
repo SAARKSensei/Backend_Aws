@@ -41,6 +41,9 @@ class AuthControllerTest {
     private com.sensei.backend.service.FirebaseAuthService firebaseAuthService;
 
     @Mock
+    private com.sensei.backend.service.ReferralService referralService;
+
+    @Mock
     private JwtUtil jwtUtil;
 
     @InjectMocks

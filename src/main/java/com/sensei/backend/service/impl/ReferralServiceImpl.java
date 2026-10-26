@@ -10,6 +10,7 @@ import com.sensei.backend.repository.ReferralUsageRepository;
 import com.sensei.backend.service.ReferralService;
 import com.sensei.backend.service.WalletService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -25,8 +26,11 @@ public class ReferralServiceImpl implements ReferralService {
     private final ReferralUsageRepository referralUsageRepository;
     private final WalletService walletService;
 
-    private static final int MAX_REFERRAL_USES = 5;
-    private static final int REFERRAL_REWARD_AMOUNT = 100;
+    @Value("${app.referral.max-usage:10}")
+    private int maxReferralUses;
+
+    @Value("${app.referral.reward-amount:100}")
+    private int referralRewardAmount;
 
     // ---------------------------------------
     // GENERATE REFERRAL CODE
@@ -45,7 +49,7 @@ public class ReferralServiceImpl implements ReferralService {
                     ReferralCode referralCode = ReferralCode.builder()
                             .parentId(parentId)
                             .code(code)
-                            .maxUsage(MAX_REFERRAL_USES)
+                            .maxUsage(maxReferralUses)
                             .usedCount(0)
                             .active(true)
                             .createdAt(LocalDateTime.now())
@@ -90,20 +94,23 @@ public class ReferralServiceImpl implements ReferralService {
                 .referralCodeId(referralCode.getId())
                 .referrerParentId(referralCode.getParentId())
                 .referredParentId(referredParentId)
-                .rewardAmount(REFERRAL_REWARD_AMOUNT)
+                .rewardAmount(referralRewardAmount)
                 .usedAt(LocalDateTime.now())
                 .build();
 
         referralUsageRepository.save(usage);
 
         referralCode.setUsedCount(referralCode.getUsedCount() + 1);
+        if (referralCode.getUsedCount() >= referralCode.getMaxUsage()) {
+            referralCode.setActive(false);
+        }
         referralCodeRepository.save(referralCode);
 
         // Credit referrer
         walletService.credit(
                 WalletCreditRequestDTO.builder()
                         .parentId(referralCode.getParentId())
-                        .amount(REFERRAL_REWARD_AMOUNT)
+                        .amount(referralRewardAmount)
                         .transactionType("REFERRAL_REWARD")
                         .referenceType("REFERRAL")
                         .referenceId(usage.getId())
@@ -115,7 +122,7 @@ public class ReferralServiceImpl implements ReferralService {
         walletService.credit(
                 WalletCreditRequestDTO.builder()
                         .parentId(referredParentId)
-                        .amount(REFERRAL_REWARD_AMOUNT)
+                        .amount(referralRewardAmount)
                         .transactionType("REFERRAL_REWARD")
                         .referenceType("REFERRAL")
                         .referenceId(usage.getId())

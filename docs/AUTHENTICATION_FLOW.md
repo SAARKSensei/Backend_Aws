@@ -7,7 +7,7 @@ This document outlines how the stateless refresh token architecture works for bo
 ### A. Web Login (Preserved Backward Compatibility)
 For the web frontend, we continue to return the raw Access Token as a plain string.
 - **Endpoint:** `POST /api/auth/google`
-- **Params:** `idToken=<google_token>`
+- **Params:** `idToken=<google_token>`, `referralCode=<optional_string>`
 - **Response Type:** `String`
 - **Example Response:**
   ```text
@@ -17,7 +17,7 @@ For the web frontend, we continue to return the raw Access Token as a plain stri
 ### B. Mobile App Login
 The Flutter app needs both tokens. We achieve this by passing the `client=app` parameter.
 - **Endpoint:** `POST /api/auth/google?client=app`
-- **Params:** `idToken=<google_token>`
+- **Params:** `idToken=<google_token>`, `referralCode=<optional_string>`
 - **Response Type:** `JSON` (Wrapped in standard `ApiResponse`)
 - **Example Response:**
   ```json
@@ -32,6 +32,7 @@ The Flutter app needs both tokens. We achieve this by passing the `client=app` p
   }
   ```
 - **Note on `isQuizCompleted`:** This boolean flag indicates whether the parent has completed the initial onboarding quiz. The Flutter app should use this flag to decide whether to route the user to the Quiz screen (`false`) or the main Dashboard (`true`) immediately after login.
+- **Note on `referralCode`:** If the user signed up via an invite link (e.g. `?ref=SENSEI-4B8C-7312`), pass this code in the login call. For first-time signups, the backend automatically credits ₹100 into both wallets. For full details, see [REFERRAL_SYSTEM.md](./REFERRAL_SYSTEM.md).
 
 ### C. Refreshing the Token
 When the `accessToken` expires (it throws a `401 Unauthorized`), the Flutter app must use the `refreshToken` to get a new pair of tokens.

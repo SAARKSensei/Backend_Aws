@@ -246,7 +246,7 @@ Below is a list of all active API endpoints available in the system for testing.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/auth/google` | `googleLogin` |
+| `POST` | `/api/auth/google` | `googleLogin` (Params: `idToken`, optional `client`, optional `referralCode`) |
 | `POST` | `/api/auth/test-login` | `testLogin` |
 | `POST` | `/api/auth/refresh` | `refreshAccessToken` |
 

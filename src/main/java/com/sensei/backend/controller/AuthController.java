@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import com.sensei.backend.service.FirebaseAuthService;
+import com.sensei.backend.service.ReferralService;
 import com.sensei.backend.repository.ChildUserRepository;
 import com.sensei.backend.entity.ChildUser;
 
@@ -32,12 +33,14 @@ public class AuthController {
     private final ParentUserRepository parentUserRepository;
     private final ChildUserRepository childUserRepository;
     private final FirebaseAuthService firebaseAuthService;
+    private final ReferralService referralService;
     private final JwtUtil jwtUtil;
 
-    // GOOGLE LOGIN (UNCHANGED)
+    // GOOGLE LOGIN
     @PostMapping("/google")
     public ResponseEntity<?> googleLogin(@RequestParam String idToken, 
-                                         @RequestParam(required = false, defaultValue = "web") String client) {
+                                         @RequestParam(required = false, defaultValue = "web") String client,
+                                         @RequestParam(required = false) String referralCode) {
         log.info("Google login attempt for client: {}", client);
         GoogleIdToken.Payload payload = googleAuthService.verifyToken(idToken);
 
@@ -70,6 +73,23 @@ public class AuthController {
             user.getChildUsers().add(emptyChild);
 
             log.info("New parent user created from Google login: {}", email);
+
+            // Auto-apply referral code if provided for new user
+            if (referralCode != null && !referralCode.trim().isEmpty()) {
+                try {
+                    referralService.applyReferralCode(user.getParentId(), referralCode.trim());
+                    log.info("Referral code '{}' applied successfully for new user: {}", referralCode, email);
+                } catch (Exception e) {
+                    log.warn("Failed to apply referral code '{}' for user {}: {}", referralCode, email, e.getMessage());
+                }
+            }
+
+            // Auto-generate their own referral code
+            try {
+                referralService.generateReferralCode(user.getParentId());
+            } catch (Exception e) {
+                log.warn("Failed to generate referral code for user {}: {}", email, e.getMessage());
+            }
         }
 
         // Ensure user is also registered in Firebase Auth
@@ -89,6 +109,10 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(accessToken);
+    }
+
+    public ResponseEntity<?> googleLogin(String idToken, String client) {
+        return googleLogin(idToken, client, null);
     }
 
     @Value("${TEST_ADMIN_EMAIL:admin.sensei.org.in@gmail.com}")

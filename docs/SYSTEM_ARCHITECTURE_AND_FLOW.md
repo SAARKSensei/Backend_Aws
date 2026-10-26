@@ -330,6 +330,13 @@ When the frontend calls the plan purchase API, the backend resolves the payment 
 4. **Activation:** Once fully paid (or if free), the backend updates the `ChildUserDTO`. It sets the `planStartDate` to today, calculates the `planExpiryDate` based on the plan's duration (e.g., +365 days), and sets `planStatus` to `ACTIVE`. 
 5. **Expiration Enforcement:** The backend enforces these dates. If a child tries to fetch `Subject` data after the `planExpiryDate`, the API will deny access until a new purchase is made.
 
+### 4D. Referral System & Wallet Bonuses
+* **Overview:** Parents earn wallet rewards by sharing their unique referral code (e.g. `SENSEI-4B8C-7312`).
+* **Wallet Credit:** Upon successful first-time signup by a friend, **₹100 is automatically credited to BOTH wallets**.
+* **Usage Limit:** A code can be used a maximum of **10 times** (`REFERRAL_MAX_USAGE`). Once reached, the code deactivates (`is_active = false`). Subsequent users can still log in, but no bonus is deposited.
+* **Google Login Integration:** The frontend sends the referral code directly during Google login (`POST /api/auth/google?referralCode=...`).
+* **Full Specification:** See dedicated guide [docs/REFERRAL_SYSTEM.md](./REFERRAL_SYSTEM.md).
+
 ---
 
 ## 5. Content Fetching Hierarchy
