@@ -87,6 +87,7 @@ It will:
    - Runs a live smoke test against `/actuator/health` (up to 60s).
    - **Automatic Rollback:** If the health check fails or times out, it automatically restores the previous working image and aborts the workflow.
    - Cleans up old dangling images (`docker image prune -f`).
+   - Logs out of Docker Hub to remove cached credentials from disk.
 
 ---
 

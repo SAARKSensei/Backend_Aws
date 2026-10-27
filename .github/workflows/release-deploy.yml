@@ -101,6 +101,7 @@ jobs:
             
             # 3. Log in to Docker Hub so we can pull private images
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            trap 'docker logout || true' EXIT
             
             # 4. Save current working image ID for automatic rollback in case new deploy fails
             PREV_IMAGE_ID=$(docker inspect --format='{{.Image}}' sensei-backend 2>/dev/null || echo "")
@@ -126,3 +127,7 @@ jobs:
 
             # 8. Clean up old dangling images so the server never runs out of space again
             docker image prune -f
+
+            # 9. Log out of Docker Hub to ensure credentials are not retained on disk
+            docker logout
+
