@@ -32,5 +32,5 @@ COPY --from=builder /app/target-java25/*.jar app.jar
 # Expose the port used by Spring Boot
 EXPOSE 9090
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run the application (supports runtime JAVA_OPTS passed from .env/environment)
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
