@@ -69,8 +69,20 @@ jobs:
         with:
           image-ref: ${{ secrets.DOCKER_USERNAME }}/sensei-backend:${{ github.event.release.tag_name }}
           format: 'table'
+          output: 'trivy-report.txt'
           exit-code: '0'
           severity: 'CRITICAL,HIGH'
+
+      - name: Publish Security Report to Actions Summary
+        if: always()
+        run: |
+          if [ -s trivy-report.txt ]; then
+            echo "## 🛡️ Trivy Container Security Scan Report" >> $GITHUB_STEP_SUMMARY
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            cat trivy-report.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            rm -f trivy-report.txt
+          fi
 
   # ==========================================
   # JOB 3: Deploy to EC2
