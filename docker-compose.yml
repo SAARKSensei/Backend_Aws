@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     # Build the image using the local Dockerfile (use this for local testing)
