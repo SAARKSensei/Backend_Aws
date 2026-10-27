@@ -5,7 +5,7 @@ services:
     # Build the image using the local Dockerfile (use this for local testing)
     build: .
     # For EC2: comment out 'build: .' above, and uncomment the line below:
-    # image: your-dockerhub-username/sensei-backend:latest
+    # image: sankalpsensei/sensei-backend:latest
     container_name: sensei-backend
     # Use host networking so 'localhost' perfectly maps to the physical machine locally. 
     # This natively exposes port 9090, working flawlessly for both Local (physical DB) and EC2 (RDS).
@@ -32,7 +32,7 @@ services:
 
   # Init container to dynamically generate the users.yml from .env credentials
   dozzle-init:
-    image: amir20/dozzle:alpine
+    image: amir20/dozzle:v11.3.5-alpine
     container_name: dozzle-init
     volumes:
       - dozzle-data:/data
@@ -45,8 +45,8 @@ services:
 
   # dozzle for viewing logs
   dozzle:
-    # Use the official, ultra-lightweight Dozzle image
-    image: amir20/dozzle:latest
+    # Use the official, ultra-lightweight Dozzle image (pinned to v11.3.5)
+    image: amir20/dozzle:v11.3.5
     container_name: dozzle
     # Give Dozzle read-only access to the Docker socket so it can read other containers' logs
     volumes:
