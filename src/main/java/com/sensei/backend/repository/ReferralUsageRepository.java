@@ -24,4 +24,7 @@ public interface ReferralUsageRepository
 
     // Used to find referral usage for a user
     Optional<ReferralUsage> findByReferredParentId(UUID referredParentId);
+
+    // Check if user has already redeemed any referral code
+    boolean existsByReferredParentId(UUID referredParentId);
 }

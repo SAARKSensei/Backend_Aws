@@ -80,14 +80,11 @@ public class ReferralServiceImpl implements ReferralService {
             throw new RuntimeException("Cannot use your own referral code");
         }
 
-        boolean alreadyUsed =
-                referralUsageRepository.existsByReferralCodeIdAndReferredParentId(
-                        referralCode.getId(),
-                        referredParentId
-                );
+        boolean alreadyRedeemed =
+                referralUsageRepository.existsByReferredParentId(referredParentId);
 
-        if (alreadyUsed) {
-            throw new RuntimeException("Referral already applied");
+        if (alreadyRedeemed) {
+            throw new RuntimeException("You have already redeemed a referral code");
         }
 
         ReferralUsage usage = ReferralUsage.builder()

@@ -169,7 +169,7 @@ Pass the optional `referralCode` query parameter directly when logging in with G
 |---|---|---|
 | **Organic signup (No link / No code)** | `referralCode` is null or empty | Account created normally; ₹0 bonus deposited; own referral code is still auto-generated. |
 | **Self-Referral** | User tries to use their own referral code | Rejected with `"Cannot use your own referral code"`. |
-| **Duplicate Redemption** | Same user tries to redeem the same code twice | Rejected by `unique (referral_code_id, referred_parent_id)`. |
+| **Duplicate Redemption (Same or Another Code)** | User tries to redeem a code again or use a second friend's code | Rejected with `"You have already redeemed a referral code"`. Users can only ever be referred once. |
 | **Limit Reached (11th user)** | Code has already reached `maxUsage` (10) | Rejected with `"Referral limit reached"`. User account is created successfully, but ₹0 bonus is credited to either user. |
 | **Code Auto-Deactivation** | Code is used for the 10th time | `used_count` becomes 10 and `is_active` is updated to `false`. |
 | **Missing Wallet** | User doesn't have an existing wallet row | `walletService.credit()` creates an active wallet row with balance 0 and credits ₹100. |
