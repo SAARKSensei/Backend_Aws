@@ -12,4 +12,6 @@ public interface ReferralCodeRepository
     Optional<ReferralCode> findByParentId(UUID parentId);
 
     Optional<ReferralCode> findByCodeAndActiveTrue(String code);
+
+    boolean existsByCode(String code);
 }

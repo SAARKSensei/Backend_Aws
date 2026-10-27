@@ -5,11 +5,13 @@ import com.sensei.backend.dto.referral.ReferralUsageResponseDTO;
 import com.sensei.backend.dto.wallet.WalletCreditRequestDTO;
 import com.sensei.backend.entity.ReferralCode;
 import com.sensei.backend.entity.ReferralUsage;
+import com.sensei.backend.exception.ValidationException;
 import com.sensei.backend.repository.ReferralCodeRepository;
 import com.sensei.backend.repository.ReferralUsageRepository;
 import com.sensei.backend.service.ReferralService;
 import com.sensei.backend.service.WalletService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional(readOnly = true)
 public class ReferralServiceImpl implements ReferralService {
 
@@ -33,18 +36,14 @@ public class ReferralServiceImpl implements ReferralService {
     private int referralRewardAmount;
 
     // ---------------------------------------
-    // GENERATE REFERRAL CODE
+    // GET OR CREATE REFERRAL CODE
     // ---------------------------------------
-    @Override
     @Transactional
-    public String generateReferralCode(UUID parentId) {
-
+    public ReferralCode getOrCreateReferralCode(UUID parentId) {
         return referralCodeRepository
                 .findByParentId(parentId)
-                .map(ReferralCode::getCode)
                 .orElseGet(() -> {
-
-                    String code = generateReadableCode(parentId);
+                    String code = generateUniqueReadableCode(parentId);
 
                     ReferralCode referralCode = ReferralCode.builder()
                             .parentId(parentId)
@@ -55,9 +54,18 @@ public class ReferralServiceImpl implements ReferralService {
                             .createdAt(LocalDateTime.now())
                             .build();
 
-                    referralCodeRepository.save(referralCode);
-                    return code;
+                    log.info("Auto-generated referral code '{}' for parent: {}", code, parentId);
+                    return referralCodeRepository.save(referralCode);
                 });
+    }
+
+    // ---------------------------------------
+    // GENERATE REFERRAL CODE
+    // ---------------------------------------
+    @Override
+    @Transactional
+    public String generateReferralCode(UUID parentId) {
+        return getOrCreateReferralCode(parentId).getCode();
     }
 
     // ---------------------------------------
@@ -67,24 +75,30 @@ public class ReferralServiceImpl implements ReferralService {
     @Transactional
     public void applyReferralCode(UUID referredParentId, String referralCodeValue) {
 
+        if (referralCodeValue == null || referralCodeValue.trim().isEmpty()) {
+            throw new ValidationException("Referral code cannot be empty");
+        }
+
+        String normalizedCode = referralCodeValue.trim().toUpperCase();
+
         ReferralCode referralCode =
                 referralCodeRepository
-                        .findByCodeAndActiveTrue(referralCodeValue)
-                        .orElseThrow(() -> new RuntimeException("Invalid referral code"));
+                        .findByCodeAndActiveTrue(normalizedCode)
+                        .orElseThrow(() -> new ValidationException("Invalid referral code"));
 
         if (referralCode.getUsedCount() >= referralCode.getMaxUsage()) {
-            throw new RuntimeException("Referral limit reached");
+            throw new ValidationException("Referral limit reached");
         }
 
         if (referralCode.getParentId().equals(referredParentId)) {
-            throw new RuntimeException("Cannot use your own referral code");
+            throw new ValidationException("Cannot use your own referral code");
         }
 
         boolean alreadyRedeemed =
                 referralUsageRepository.existsByReferredParentId(referredParentId);
 
         if (alreadyRedeemed) {
-            throw new RuntimeException("You have already redeemed a referral code");
+            throw new ValidationException("You have already redeemed a referral code");
         }
 
         ReferralUsage usage = ReferralUsage.builder()
@@ -128,49 +142,51 @@ public class ReferralServiceImpl implements ReferralService {
         );
     }
 
-    private String generateReadableCode(UUID parentId) {
-        return "SENSEI-" +
-                parentId.toString().substring(0, 4).toUpperCase() +
-                "-" + (int) (Math.random() * 9000 + 1000);
+    private String generateUniqueReadableCode(UUID parentId) {
+        String code;
+        int attempts = 0;
+        do {
+            code = "SENSEI-" +
+                    parentId.toString().substring(0, 4).toUpperCase() +
+                    "-" + (int) (Math.random() * 9000 + 1000);
+            attempts++;
+        } while (referralCodeRepository.existsByCode(code) && attempts < 10);
+        return code;
     }
 
     @Override
-public ReferralCodeResponseDTO getReferralCodeForParent(UUID parentId) {
+    @Transactional
+    public ReferralCodeResponseDTO getReferralCodeForParent(UUID parentId) {
+        ReferralCode code = getOrCreateReferralCode(parentId);
 
-    ReferralCode code = referralCodeRepository
-            .findByParentId(parentId)
-            .orElseThrow(() -> new RuntimeException("Referral code not found"));
+        return ReferralCodeResponseDTO.builder()
+                .id(code.getId())
+                .parentId(code.getParentId())
+                .code(code.getCode())
+                .usedCount(code.getUsedCount())
+                .maxUsage(code.getMaxUsage())
+                .active(code.getActive())
+                .build();
+    }
 
-    return ReferralCodeResponseDTO.builder()
-            .id(code.getId())
-            .parentId(code.getParentId())
-            .code(code.getCode())
-            .usedCount(code.getUsedCount())
-            .maxUsage(code.getMaxUsage())
-            .active(code.getActive())
-            .build();
-        }
-
-
-        @Override
-        public List<ReferralUsageResponseDTO> getReferralUsage(UUID parentId) {
-
-    ReferralCode code = referralCodeRepository
-            .findByParentId(parentId)
-            .orElseThrow(() -> new RuntimeException("Referral code not found"));
-
-    return referralUsageRepository
-            .findByReferralCodeId(code.getId())
-            .stream()
-            .map(usage -> ReferralUsageResponseDTO.builder()
-                    .referralCodeId(usage.getReferralCodeId())
-                    .referrerParentId(usage.getReferrerParentId())
-                    .referredParentId(usage.getReferredParentId())
-                    .rewardAmount(usage.getRewardAmount())
-                    .usedAt(usage.getUsedAt())
-                    .build()
-            )
-            .toList();
-}
+    @Override
+    public List<ReferralUsageResponseDTO> getReferralUsage(UUID parentId) {
+        return referralCodeRepository
+                .findByParentId(parentId)
+                .map(code -> referralUsageRepository
+                        .findByReferralCodeId(code.getId())
+                        .stream()
+                        .map(usage -> ReferralUsageResponseDTO.builder()
+                                .referralCodeId(usage.getReferralCodeId())
+                                .referrerParentId(usage.getReferrerParentId())
+                                .referredParentId(usage.getReferredParentId())
+                                .rewardAmount(usage.getRewardAmount())
+                                .usedAt(usage.getUsedAt())
+                                .build()
+                        )
+                        .toList()
+                )
+                .orElseGet(List::of);
+    }
 
 }
