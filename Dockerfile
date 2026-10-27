@@ -1,5 +1,6 @@
 # Start with a JDK base image
-FROM eclipse-temurin:25-jdk AS builder
+# Using --platform=$BUILDPLATFORM compiles natively on host runner architecture, avoiding slow QEMU emulation for multi-arch builds
+FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk AS builder
 
 # Set working directory
 WORKDIR /app
