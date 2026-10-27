@@ -77,9 +77,53 @@ Once the above is done, you never have to do it again. To deploy new code:
 ### What Happens Next?
 The moment you click Publish, go to the **Actions** tab in GitHub. You will see your deployment workflow running! 
 It will:
-1. Run `mvn test` (If tests fail, it turns red and stops immediately).
-2. Build your Docker image and push it to Docker Hub.
-3. Securely SSH into your EC2 instance.
-4. Pull the new image and restart the containers silently.
+1. **Run Unit Tests:** Executes `mvn clean test`. If any test fails, deployment aborts immediately.
+2. **Build Multi-Arch Docker Image:** Builds for both `linux/amd64` and `linux/arm64` using native host compilation (`--platform=$BUILDPLATFORM`) and GitHub Actions layer caching.
+3. **Security Scan (Trivy):** Scans the built image for `CRITICAL` and `HIGH` vulnerabilities.
+4. **Deploy to EC2 via SSH:**
+   - Saves the current working container image ID (`PREV_IMAGE_ID`).
+   - Pulls the newly pushed image.
+   - Restarts containers using `docker compose up -d`.
+   - Runs a live smoke test against `/actuator/health` (up to 60s).
+   - **Automatic Rollback:** If the health check fails or times out, it automatically restores the previous working image and aborts the workflow.
+   - Cleans up old dangling images (`docker image prune -f`).
 
-You can then open `http://<EC2-IP>:9999` to watch your live logs in Dozzle!
+---
+
+## 🛠 Complete CI/CD Pipeline Reference
+
+### 1. Workflows Overview
+
+| Workflow File | Trigger | Purpose |
+| :--- | :--- | :--- |
+| **`release-deploy.yml`** | On GitHub Release Published | Tests, builds multi-arch image, scans with Trivy, deploys to EC2 with auto-rollback. |
+| **`ci.yaml`** | Push & PR to `main` / `test` | Runs **in parallel**: Code Quality (PMD/SpotBugs/No-Emoji), Security Scan (CodeQL), and Build & Test (MySQL service container). |
+| **`lint-pr.yml`** | PR opened / edited / synchronized | Enforces Conventional Commit PR titles (`feat:`, `fix:`, etc.) to guarantee release notes formatting. |
+| **`auto-release-notes.yml`** | On GitHub Release Published | Auto-generates structured release notes categorized by commit types. |
+
+---
+
+### 2. Performance Optimizations (12 mins ➔ 3 mins)
+
+* **Native Multi-Arch Build (`--platform=$BUILDPLATFORM`):**
+  GitHub Actions runners are x86_64 (`amd64`). Compiling Java inside QEMU software emulation for ARM64 previously took ~8 minutes. By using `--platform=$BUILDPLATFORM` in the Dockerfile builder stage, Java compiles natively on the host runner at full speed, and the pre-built `.jar` is simply copied into both amd64 and arm64 Alpine runtime images in under 30 seconds.
+* **Docker Layer Caching (`type=gha`):**
+  Uses GitHub Actions cache to avoid re-downloading unchanged base image layers and Maven dependencies between release runs.
+* **Parallel CI Jobs:**
+  `build-and-test`, `code-quality`, and `security-scan` run simultaneously, providing test results within 2 minutes instead of waiting sequentially.
+* **Concurrency (`cancel-in-progress: true`):**
+  Automatically cancels older runs when rapid commits are pushed to the same branch or PR, saving runner quota.
+
+---
+
+### 3. Production Reliability Safeguards
+
+* **Automatic Production Rollback:**
+  Before swapping containers, the deployment script records the running image ID. If the new release fails to pass the live health check within 60 seconds (e.g. database connection error or bad config), it instantly re-tags and restarts the previous working version. Production is never left down.
+* **Graceful Shutdown:**
+  Configured via `server.shutdown=graceful` and `spring.lifecycle.timeout-per-shutdown-phase=20s` in `application.properties`. During container swaps, Spring Boot stops accepting new traffic and allows active in-flight requests up to 20 seconds to finish.
+* **Container Healthcheck:**
+  `docker-compose.yml` runs a lightweight healthcheck every 90 seconds against `/actuator/health` (with a 40-second startup grace period), allowing `docker ps` to display `Up (healthy)`.
+* **Runtime Memory Tuning (`JAVA_OPTS`):**
+  The Dockerfile entrypoint uses `exec java $JAVA_OPTS -jar app.jar`. Memory limits can be customized per-server in `.env` (e.g. `JAVA_OPTS=-Xmx768m`) without rebuilding the Docker image.
+
