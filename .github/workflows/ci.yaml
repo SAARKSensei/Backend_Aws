@@ -21,6 +21,10 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/sensei-springboot-backend
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   code-quality:
     if: github.repository == 'SAARKSensei/Backend_Aws'
@@ -84,7 +88,6 @@ jobs:
     if: github.repository == 'SAARKSensei/Backend_Aws'
     name: Build & Test
     runs-on: ubuntu-latest
-    needs: [code-quality, security-scan]
     services:
       mysql:
         image: mysql:8.0
