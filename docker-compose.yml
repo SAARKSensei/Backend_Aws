@@ -25,10 +25,10 @@ services:
     # Healthcheck to verify Spring Boot is responding and mark the container healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://localhost:9090/actuator/health | grep -q 'UP' || exit 1"]
-      interval: 15s
+      interval: 90s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 40s
 
   # Init container to dynamically generate the users.yml from .env credentials
   dozzle-init:
